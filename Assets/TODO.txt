@@ -1,0 +1,51 @@
+Add exhaustion to sprinting								-- 
+Add controller support to main menu						-- 
+Add spectate mode if player is dead						-- Need testing
+No endscreen for spectator								-- Need testing
+
+
+Add player healthbars									-- DONE
+Tweak animations better									-- DONE
+Player body was able to glitch through the bridge ramp	-- DONE
+Add weapon unlocking System								-- DONE
+Minimap dot was spawned on host and client.				-- DONE
+Look into issue with bullet positioning on client		-- DONE
+Add highscore list (inGame)								-- DONE
+	Add single player support							-- DONE
+	Add multiplayer support								-- DONE
+	Add support to open/close highscorelist				-- DONE
+Look into issue with weapon reloads						-- DONE
+Look into issue with fullscreen startup					-- DONE
+Add end screen if (all) player(s) is/are dead			-- DONE
+	Add endscreen for normal players					-- DONE
+	Add endscreen for spectators						-- DONE
+Look into issue with AI spawning (Shop area)			-- DONE
+Add pause menu (inGame)									-- DONE
+	Add controlls menu									-- DONE
+	Add video menu										-- DONE
+	Add audio menu										-- DONE
+Add audio system										-- DONE
+	zombie sounds										-- DONE
+	weapon sounds										-- DONE
+	main menu music										-- DONE
+	audio menu in main menu								-- DONE
+	audio menu in pause menu							-- DONE
+Change player network position to RPC calls				-- DONE
+
+Optional:
+Add night map											-- 
+	Add level selector in room creator					-- 
+	Add level info in inRoomMenu						-- 
+	Add level info in roomSelectorMenu					-- 
+Add chacter selector to inRoomMenu						-- 
+Add credits menu										-- 
+Look into issue with AI performance						-- 
+Add notifications on player leaved/ on player death		--  
+	Also update highscore list							-- 
+Redesign UI to look prettier							-- 
+	Highscore list										-- 
+	Control rebinding menu								-- 
+	audio menu											-- 
+	video menu											-- 
+Add a crosshair for the weapons							-- 
+Change default button for weapon menu					-- 
