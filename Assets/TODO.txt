@@ -2,6 +2,19 @@ Add exhaustion to sprinting								--
 Add controller support to main menu						-- 
 Add spectate mode if player is dead						-- Need testing
 No endscreen for spectator								-- Need testing
+Add character selection screen							-- 
+Add gamemode selection									-- 
+Add different gamemodes									-- 
+	Team Deathmatch										-- 
+		Add class selection/creation					-- 
+		Add spawnpoints setup							-- 
+		Add more than 4 player support					-- 
+			Highscore list								-- 
+			Room creation								-- 
+	Trouble In Terrorist Town							-- 
+		Add weapon/ammo generation						-- 
+	?
+
 
 
 Add player healthbars									-- DONE

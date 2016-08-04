@@ -52,6 +52,8 @@ public class Player : OverridableMonoBehaviour
 	private PauseMenuManager pauseMenuManager;
 	[SerializeField]
 	private GameObject[] nonRendarableBodyParts;
+	[SerializeField]
+	private GameObject[] allBodyParts;
 
 	private float currentHealth;
 	private float currentWeaponMenuTimer;
@@ -147,6 +149,22 @@ public class Player : OverridableMonoBehaviour
 			else
 			{
 				AssignStartValuesForOthers();
+			}
+
+			if (PhotonNetwork.player.customProperties.ContainsKey("playerSkin"))
+			{
+				foreach (Player photonPlayer in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values)
+				{
+					if(photonPlayer.photonView.viewID != photonView.viewID)
+					{
+						continue;
+					}
+
+					for (int i = 0; i < allBodyParts.Length; i++)
+					{
+						allBodyParts[i].GetComponent<SkinnedMeshRenderer>().material.SetTexture("_MainTex", GameManager.GetInstance().AllPlayerSkins[(int)PhotonPlayer.Find(photonView.ownerId).customProperties["playerSkin"]]);
+					}  
+				}
 			}
 
 			hasLoadedSettings = true;

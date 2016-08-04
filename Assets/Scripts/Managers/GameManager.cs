@@ -9,6 +9,8 @@ public class GameManager : OverridableMonoBehaviour
 	private NetworkManager networkManagerPrefab;
 	[SerializeField]
 	private AudioManager audioManagerPrefab;
+	[SerializeField]
+	private Texture[] allPlayerSkins;
 
 	private static GameManager instance;
 	private AIManager aIManager;
@@ -20,6 +22,10 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		get { return inGame; }
 		set { inGame = value; }
+	}
+	public Texture[] AllPlayerSkins
+	{
+		get { return allPlayerSkins; }
 	}
 
 	public static GameManager GetInstance()

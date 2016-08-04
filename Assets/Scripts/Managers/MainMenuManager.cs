@@ -258,7 +258,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 				{
 					sceneActivationWaitTimer -= Time.deltaTime;
 
-					if(sceneActivationWaitTimer <= 0)
+					if (sceneActivationWaitTimer <= 0)
 					{
 						asyncOperation.allowSceneActivation = true;
 					}
