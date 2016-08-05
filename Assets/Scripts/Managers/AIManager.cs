@@ -274,8 +274,6 @@ public class AIManager : OverridableMonoBehaviour
 			yield return null;
 		}
 
-
-
 		UpdateAIStats();
 		startedSpawning = false;
 	}

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Samgsung Game Pad EI-GP20";
 			Meta = "Samgsung Game Pad EI-GP20 on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"ANDROID"
 			};
 

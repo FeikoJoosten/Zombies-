@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Logitech F310 Controller";
 			Meta = "Logitech F310 Controller on Windows (XInput Mode)";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

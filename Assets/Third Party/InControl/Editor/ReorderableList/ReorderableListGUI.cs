@@ -128,21 +128,26 @@ namespace InControl.ReorderableList
 
 		private static void InitStyles()
 		{
-			defaultTitleStyle = new GUIStyle();
-			defaultTitleStyle.border = new RectOffset( 2, 2, 2, 1 );
-			defaultTitleStyle.margin = new RectOffset( 5, 5, 5, 0 );
-			defaultTitleStyle.padding = new RectOffset( 5, 5, 0, 0 );
-			defaultTitleStyle.alignment = TextAnchor.MiddleLeft;
-			defaultTitleStyle.normal.background = ReorderableListResources.texTitleBackground;
-			defaultTitleStyle.normal.textColor = EditorGUIUtility.isProSkin
-				? new Color( 0.8f, 0.8f, 0.8f )
-				: new Color( 0.2f, 0.2f, 0.2f );
+			//defaultTitleStyle = new GUIStyle();
+			//defaultTitleStyle.border = new RectOffset( 2, 2, 2, 1 );
+			//defaultTitleStyle.margin = new RectOffset( 5, 5, 5, 0 );
+			//defaultTitleStyle.padding = new RectOffset( 5, 5, 0, 0 );
+			//defaultTitleStyle.alignment = TextAnchor.MiddleLeft;
+			//defaultTitleStyle.normal.background = ReorderableListResources.texTitleBackground;
+			//defaultTitleStyle.normal.textColor = EditorGUIUtility.isProSkin
+			//	? new Color( 0.8f, 0.8f, 0.8f )
+			//	: new Color( 0.0f, 0.0f, 0.0f );
 
-			defaultContainerStyle = new GUIStyle();
-			defaultContainerStyle.border = new RectOffset( 2, 2, 1, 2 );
-			defaultContainerStyle.margin = new RectOffset( 5, 5, 5, 5 );
+			defaultTitleStyle = new GUIStyle( InControl.Internal.EditorUtility.titleStyle );
+
+			//defaultContainerStyle = new GUIStyle();
+			//defaultContainerStyle.border = new RectOffset( 2, 2, 1, 2 );
+			//defaultContainerStyle.margin = new RectOffset( 5, 5, 5, 5 );
+			//defaultContainerStyle.padding = new RectOffset( 1, 1, 2, 2 );
+			//defaultContainerStyle.normal.background = ReorderableListResources.texContainerBackground;
+
+			defaultContainerStyle = new GUIStyle( InControl.Internal.EditorUtility.groupStyle );
 			defaultContainerStyle.padding = new RectOffset( 1, 1, 2, 2 );
-			defaultContainerStyle.normal.background = ReorderableListResources.texContainerBackground;
 
 			defaultAddButtonStyle = new GUIStyle();
 			defaultAddButtonStyle.fixedWidth = 30;

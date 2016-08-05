@@ -13,7 +13,7 @@ namespace InControl
 			Name = "IPEGA PG-9023";
 			Meta = "IPEGA PG-9023 on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

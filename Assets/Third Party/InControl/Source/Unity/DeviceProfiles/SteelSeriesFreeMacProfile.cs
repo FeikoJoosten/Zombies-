@@ -12,7 +12,7 @@ namespace InControl
 			Name = "SteelSeries Free";
 			Meta = "SteelSeries Free on Mac";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X",
 			};
 

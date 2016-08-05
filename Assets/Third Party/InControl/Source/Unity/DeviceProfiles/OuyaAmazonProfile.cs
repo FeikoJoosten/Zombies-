@@ -12,7 +12,7 @@ namespace InControl
 			Name = "OUYA Controller";
 			Meta = "OUYA Controller on Amazon Fire TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT"			
 			};
 

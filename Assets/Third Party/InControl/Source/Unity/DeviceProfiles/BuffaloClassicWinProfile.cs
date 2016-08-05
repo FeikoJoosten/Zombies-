@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Buffalo Class Gamepad";
 			Meta = "Buffalo Class Gamepad on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 			};
 

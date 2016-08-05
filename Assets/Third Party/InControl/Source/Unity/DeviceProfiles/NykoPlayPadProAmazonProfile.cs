@@ -14,7 +14,7 @@ namespace InControl
 			Name = "Nyko PlayPad Pro";
 			Meta = "Nyko PlayPad Pro on Amazon Fire TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT"
 			};
 

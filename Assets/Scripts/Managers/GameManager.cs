@@ -17,6 +17,7 @@ public class GameManager : OverridableMonoBehaviour
 	private NetworkManager networkManager;
 	private AudioManager audioManager;
 	private bool inGame;
+	private GameTypes currentGameType;
 
 	public bool InGame
 	{
@@ -26,6 +27,11 @@ public class GameManager : OverridableMonoBehaviour
 	public Texture[] AllPlayerSkins
 	{
 		get { return allPlayerSkins; }
+	}
+	public GameTypes CurrentGameType
+	{
+		get { return currentGameType; }
+		set { currentGameType = value; }
 	}
 
 	public static GameManager GetInstance()

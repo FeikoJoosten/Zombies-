@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Logitech F510 Controller";
 			Meta = "Logitech F510 Controller on Mac (Mode X)";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X"
 			};
 

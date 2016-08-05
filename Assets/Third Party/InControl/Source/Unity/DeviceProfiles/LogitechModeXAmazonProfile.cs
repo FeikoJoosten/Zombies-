@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Logitech Controller";
 			Meta = "Logitech Controller on Amazon Fire TV (Mode X)";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT"
 			};
 

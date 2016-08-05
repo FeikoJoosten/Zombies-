@@ -8,9 +8,9 @@ namespace InControl
 	public class MouseBindingSource : BindingSource
 	{
 		public Mouse Control { get; protected set; }
-		public static float ScaleX = 0.2f;
-		public static float ScaleY = 0.2f;
-		public static float ScaleZ = 0.2f;
+		public static float ScaleX = 0.05f;
+		public static float ScaleY = 0.05f;
+		public static float ScaleZ = 0.05f;
 
 
 		internal MouseBindingSource()
@@ -42,7 +42,7 @@ namespace InControl
 
 
 		// This is necessary to maintain backward compatibility. :(
-		readonly static int[] buttonTable = new [] {
+		readonly static int[] buttonTable = new[] {
 			-1, 0, 1, 2, -1, -1, -1, -1, -1, -1, 3, 4, 5, 6, 7, 8
 		};
 
@@ -67,20 +67,20 @@ namespace InControl
 
 			switch (Control)
 			{
-				case Mouse.NegativeX:
-					return -Mathf.Min( Input.GetAxisRaw( "mouse x" ) * ScaleX, 0.0f );
-				case Mouse.PositiveX:
-					return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse x" ) * ScaleX );
+			case Mouse.NegativeX:
+				return -Mathf.Min( Input.GetAxisRaw( "mouse x" ) * ScaleX, 0.0f );
+			case Mouse.PositiveX:
+				return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse x" ) * ScaleX );
 
-				case Mouse.NegativeY:
-					return -Mathf.Min( Input.GetAxisRaw( "mouse y" ) * ScaleY, 0.0f );
-				case Mouse.PositiveY:
-					return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse y" ) * ScaleY );
+			case Mouse.NegativeY:
+				return -Mathf.Min( Input.GetAxisRaw( "mouse y" ) * ScaleY, 0.0f );
+			case Mouse.PositiveY:
+				return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse y" ) * ScaleY );
 
-				case Mouse.NegativeScrollWheel:
-					return -Mathf.Min( Input.GetAxisRaw( "mouse z" ) * ScaleZ, 0.0f );
-				case Mouse.PositiveScrollWheel:
-					return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse z" ) * ScaleZ );
+			case Mouse.NegativeScrollWheel:
+				return -Mathf.Min( Input.GetAxisRaw( "mouse z" ) * ScaleZ, 0.0f );
+			case Mouse.PositiveScrollWheel:
+				return Mathf.Max( 0.0f, Input.GetAxisRaw( "mouse z" ) * ScaleZ );
 			}
 
 			return 0.0f;
@@ -94,7 +94,7 @@ namespace InControl
 
 
 		public override string Name
-		{ 
+		{
 			get
 			{
 				return Control.ToString();
@@ -103,7 +103,7 @@ namespace InControl
 
 
 		public override string DeviceName
-		{ 
+		{
 			get
 			{
 				return "Mouse";
@@ -151,7 +151,7 @@ namespace InControl
 		}
 
 
-		internal override BindingSourceType BindingSourceType
+		public override BindingSourceType BindingSourceType
 		{
 			get
 			{

@@ -11,7 +11,7 @@ namespace InControl
 			Name = "Level Up Black Hawk Controller";
 			Meta = "Level Up Black Hawk Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

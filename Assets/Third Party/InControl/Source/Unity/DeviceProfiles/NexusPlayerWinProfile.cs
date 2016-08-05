@@ -15,7 +15,7 @@ namespace InControl
 			Name = "Nexus Player Controller";
 			Meta = "Nexus Player Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 			};
 

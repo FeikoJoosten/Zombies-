@@ -154,7 +154,7 @@ namespace InControl
 				{
 					return -1.0f;
 				}
-					
+
 				return (value + lowerDeadZone) / (upperDeadZone - lowerDeadZone);
 			}
 			else
@@ -174,10 +174,29 @@ namespace InControl
 		}
 
 
+		// This is useful for DPad calculations where the control will snap to 8 directions
+		// as some DPads on analogs provide slight noise preventing accurate calculations.
+		public static Vector2 ApplySeparateDeadZone( float x, float y, float lowerDeadZone, float upperDeadZone )
+		{
+			return new Vector2(
+				ApplyDeadZone( x, lowerDeadZone, upperDeadZone ),
+				ApplyDeadZone( y, lowerDeadZone, upperDeadZone )
+			).normalized;
+		}
+
+
 		public static Vector2 ApplyCircularDeadZone( Vector2 v, float lowerDeadZone, float upperDeadZone )
 		{
-			var magnitude = Mathf.InverseLerp( lowerDeadZone, upperDeadZone, v.magnitude );
-			return v.normalized * magnitude;
+			var magnitude = v.magnitude;
+			if (magnitude < lowerDeadZone)
+			{
+				return Vector2.zero;
+			}
+			if (magnitude > upperDeadZone)
+			{
+				return v.normalized;
+			}
+			return v.normalized * ((magnitude - lowerDeadZone) / (upperDeadZone - lowerDeadZone));
 		}
 
 
@@ -199,13 +218,26 @@ namespace InControl
 			var maxDelta = deltaTime * sensitivity * 100.0f;
 
 			// Snap to zero when changing direction quickly.
-			if (Mathf.Sign( lastValue ) != Mathf.Sign( thisValue ))
+			if (IsNotZero( thisValue ) && Mathf.Sign( lastValue ) != Mathf.Sign( thisValue ))
 			{
 				lastValue = 0.0f;
 			}
 
 			return Mathf.MoveTowards( lastValue, thisValue, maxDelta );
 		}
+
+
+		//		float ApplySmoothing( float lastValue, float thisValue, float deltaTime, float sensitivity )
+		//		{
+		//			sensitivity = Mathf.Clamp( sensitivity, 0.001f, 1.0f );
+		//
+		//			if (Mathf.Approximately( sensitivity, 1.0f ))
+		//			{
+		//				return thisValue;
+		//			}
+		//
+		//			return Mathf.Lerp( lastValue, thisValue, deltaTime * sensitivity * 100.0f );
+		//		}
 
 
 		public static float ApplySnapping( float value, float threshold )
@@ -224,15 +256,22 @@ namespace InControl
 		}
 
 
+		// TODO: This meaningless distinction should probably be removed entirely.
 		internal static bool TargetIsButton( InputControlType target )
 		{
-			return (target >= InputControlType.Action1 && target <= InputControlType.Action4) || (target >= InputControlType.Button0 && target <= InputControlType.Button19);
+			return (target >= InputControlType.Action1 && target <= InputControlType.Action12) || (target >= InputControlType.Button0 && target <= InputControlType.Button19);
 		}
 
 
 		internal static bool TargetIsStandard( InputControlType target )
 		{
 			return target >= InputControlType.LeftStickUp && target <= InputControlType.RightBumper;
+		}
+
+
+		internal static bool TargetIsAlias( InputControlType target )
+		{
+			return target >= InputControlType.Command && target <= InputControlType.DPadY;
 		}
 
 
@@ -289,10 +328,16 @@ namespace InControl
 		}
 
 
-		public static bool Approximately( float value1, float value2 )
+		public static bool Approximately( float v1, float v2 )
 		{
-			var delta = value1 - value2;
+			var delta = v1 - v2;
 			return (delta >= -Epsilon) && (delta <= Epsilon);
+		}
+
+
+		public static bool Approximately( Vector2 v1, Vector2 v2 )
+		{
+			return Approximately( v1.x, v2.x ) && Approximately( v1.y, v2.y );
 		}
 
 
@@ -337,6 +382,18 @@ namespace InControl
 				return 0.0f;
 			}
 			return Utility.NormalizeAngle( Mathf.Atan2( vector.x, vector.y ) * Mathf.Rad2Deg );
+		}
+
+
+		public static float Min( float v0, float v1 )
+		{
+			return (v0 >= v1) ? v1 : v0;
+		}
+
+
+		public static float Max( float v0, float v1 )
+		{
+			return (v0 <= v1) ? v1 : v0;
 		}
 
 
@@ -391,7 +448,7 @@ namespace InControl
 			}
 		}
 
-	
+
 		internal static bool Is64Bit
 		{
 			get
@@ -418,7 +475,7 @@ namespace InControl
 				return null;
 			}
 		}
-		
+
 		public static string GetWindowsVersion()
 		{
 			var product = HKLM_GetString( @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName" );
@@ -426,11 +483,33 @@ namespace InControl
 			{
 				var version = HKLM_GetString( @"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CSDVersion" );
 				var bitSize = Is32Bit ? "32Bit" : "64Bit";
-				return product + (version != null ? " " + version : "") + " " + bitSize; 
+				return product + (version != null ? " " + version : "") + " " + bitSize;
 			}
 			return SystemInfo.operatingSystem;
 		}
 		#endif
+
+
+		internal static void LoadScene( string sceneName )
+		{
+			#if UNITY_4_6 || UNITY_4_7 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2
+			Application.LoadLevel( sceneName );
+			#else
+			UnityEngine.SceneManagement.SceneManager.LoadScene( sceneName );
+			#endif
+		}
+
+
+		internal static string PluginFileExtension()
+		{
+			#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+			return ".bundle";
+			#elif UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+			return ".dylib";
+			#else
+			return ".dll";
+			#endif
+		}
 	}
 }
 

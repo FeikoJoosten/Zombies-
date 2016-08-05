@@ -13,7 +13,7 @@ namespace InControl
 			Name = "PlayStation 4 Controller";
 			Meta = "PlayStation 4 Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

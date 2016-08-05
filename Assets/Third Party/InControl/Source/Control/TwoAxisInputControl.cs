@@ -6,6 +6,8 @@ namespace InControl
 {
 	public class TwoAxisInputControl : IInputControl
 	{
+		public static readonly TwoAxisInputControl Null = new TwoAxisInputControl();
+
 		public float X { get; protected set; }
 		public float Y { get; protected set; }
 

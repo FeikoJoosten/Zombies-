@@ -12,7 +12,7 @@ namespace InControl
 			Name = "PlayStation Mobile";
 			Meta = "PlayStation Mobile on Vita";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"PSM UNITY FOR PSM",
 				"PSM ON PS VITA",
 				"PS VITA",

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Nexus Player Controller";
 			Meta = "Nexus Player Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android",
 			};
 

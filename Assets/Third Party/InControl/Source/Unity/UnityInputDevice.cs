@@ -8,97 +8,217 @@ namespace InControl
 {
 	public class UnityInputDevice : InputDevice
 	{
+		static string[,] analogQueries;
+		static string[,] buttonQueries;
+
 		public const int MaxDevices = 10;
 		public const int MaxButtons = 20;
 		public const int MaxAnalogs = 20;
 
 		internal int JoystickId { get; private set; }
-		public InputDeviceProfile Profile { get; protected set; }
+
+		UnityInputDeviceProfileBase profile;
 
 
-		public UnityInputDevice( InputDeviceProfile profile, int joystickId )
-			: base( profile.Name )
+		public UnityInputDevice( UnityInputDeviceProfileBase deviceProfile )
+			: this( deviceProfile, 0, "" )
 		{
-			Initialize( profile, joystickId );
 		}
 
 
-		public UnityInputDevice( InputDeviceProfile profile )
-			: base( profile.Name )
+		public UnityInputDevice( int joystickId, string joystickName )
+			: this( null, joystickId, joystickName )
 		{
-			Initialize( profile, 0 );
 		}
 
 
-		void Initialize( InputDeviceProfile profile, int joystickId )
+		public UnityInputDevice( UnityInputDeviceProfileBase deviceProfile, int joystickId, string joystickName )
 		{
-			Profile = profile;
-			Meta = Profile.Meta;
-
-			var analogMappingCount = Profile.AnalogCount;
-			for (int i = 0; i < analogMappingCount; i++)
-			{
-				var analogMapping = Profile.AnalogMappings[i];
-				var analogControl = AddControl( analogMapping.Target, analogMapping.Handle );
-
-				analogControl.Sensitivity = Mathf.Min( Profile.Sensitivity, analogMapping.Sensitivity );
-				analogControl.LowerDeadZone = Mathf.Max( Profile.LowerDeadZone, analogMapping.LowerDeadZone );
-				analogControl.UpperDeadZone = Mathf.Min( Profile.UpperDeadZone, analogMapping.UpperDeadZone );
-				analogControl.Raw = analogMapping.Raw;
-			}
-
-			var buttonMappingCount = Profile.ButtonCount;
-			for (int i = 0; i < buttonMappingCount; i++)
-			{
-				var buttonMapping = Profile.ButtonMappings[i];
-				AddControl( buttonMapping.Target, buttonMapping.Handle );
-			}
+			profile = deviceProfile;
 
 			JoystickId = joystickId;
 			if (joystickId != 0)
 			{
 				SortOrder = 100 + joystickId;
 			}
+
+			SetupAnalogQueries();
+			SetupButtonQueries();
+
+			AnalogSnapshot = null;
+
+			if (IsKnown)
+			{
+				Name = profile.Name;
+				Meta = profile.Meta;
+
+				var analogMappingCount = profile.AnalogCount;
+				for (int i = 0; i < analogMappingCount; i++)
+				{
+					var analogMapping = profile.AnalogMappings[i];
+					if (Utility.TargetIsAlias( analogMapping.Target ))
+					{
+						Debug.LogError( "Cannot map control \"" + analogMapping.Handle + "\" as InputControlType." + analogMapping.Target + " in profile \"" + deviceProfile.Name + "\" because this target is reserved as an alias. The mapping will be ignored." );
+					}
+					else
+					{
+						var analogControl = AddControl( analogMapping.Target, analogMapping.Handle );
+						analogControl.Sensitivity = Mathf.Min( profile.Sensitivity, analogMapping.Sensitivity );
+						analogControl.LowerDeadZone = Mathf.Max( profile.LowerDeadZone, analogMapping.LowerDeadZone );
+						analogControl.UpperDeadZone = Mathf.Min( profile.UpperDeadZone, analogMapping.UpperDeadZone );
+						analogControl.Raw = analogMapping.Raw;
+						analogControl.Passive = analogMapping.Passive;
+					}
+				}
+
+				var buttonMappingCount = profile.ButtonCount;
+				for (int i = 0; i < buttonMappingCount; i++)
+				{
+					var buttonMapping = profile.ButtonMappings[i];
+					if (Utility.TargetIsAlias( buttonMapping.Target ))
+					{
+						Debug.LogError( "Cannot map control \"" + buttonMapping.Handle + "\" as InputControlType." + buttonMapping.Target + " in profile \"" + deviceProfile.Name + "\" because this target is reserved as an alias. The mapping will be ignored." );
+					}
+					else
+					{
+						var buttonControl = AddControl( buttonMapping.Target, buttonMapping.Handle );
+						buttonControl.Passive = buttonMapping.Passive;
+					}
+				}
+			}
+			else
+			{
+				Name = "Unknown Device";
+				Meta = "\"" + joystickName + "\"";
+
+				for (int i = 0; i < NumUnknownButtons; i++)
+				{
+					AddControl( InputControlType.Button0 + i, "Button " + i );
+				}
+
+				for (int i = 0; i < NumUnknownAnalogs; i++)
+				{
+					AddControl( InputControlType.Analog0 + i, "Analog " + i, 0.2f, 0.9f );
+				}
+			}
 		}
 
 
 		public override void Update( ulong updateTick, float deltaTime )
 		{
-			if (Profile == null)
+			if (IsKnown)
 			{
-				return;
-			}
-
-			var analogMappingCount = Profile.AnalogCount;
-			for (int i = 0; i < analogMappingCount; i++)
-			{
-				var analogMapping = Profile.AnalogMappings[i];
-				var analogValue = analogMapping.Source.GetValue( this );
-				var targetControl = GetControl( analogMapping.Target );
-
-				if (!(analogMapping.IgnoreInitialZeroValue && targetControl.IsOnZeroTick && Utility.IsZero( analogValue )))
+				var analogMappingCount = profile.AnalogCount;
+				for (int i = 0; i < analogMappingCount; i++)
 				{
-					var mappedValue = analogMapping.MapValue( analogValue );
-					targetControl.UpdateWithValue( mappedValue, updateTick, deltaTime );
+					var analogMapping = profile.AnalogMappings[i];
+					var analogValue = analogMapping.Source.GetValue( this );
+					var targetControl = GetControl( analogMapping.Target );
+
+					if (!(analogMapping.IgnoreInitialZeroValue && targetControl.IsOnZeroTick && Utility.IsZero( analogValue )))
+					{
+						var mappedValue = analogMapping.MapValue( analogValue );
+						targetControl.UpdateWithValue( mappedValue, updateTick, deltaTime );
+					}
+				}
+
+				var buttonMappingCount = profile.ButtonCount;
+				for (int i = 0; i < buttonMappingCount; i++)
+				{
+					var buttonMapping = profile.ButtonMappings[i];
+					var buttonState = buttonMapping.Source.GetState( this );
+
+					UpdateWithState( buttonMapping.Target, buttonState, updateTick, deltaTime );
 				}
 			}
-
-			var buttonMappingCount = Profile.ButtonCount;
-			for (int i = 0; i < buttonMappingCount; i++)
+			else
 			{
-				var buttonMapping = Profile.ButtonMappings[i];
-				var buttonState = buttonMapping.Source.GetState( this );
+				for (int i = 0; i < NumUnknownButtons; i++)
+				{
+					UpdateWithState( InputControlType.Button0 + i, ReadRawButtonState( i ), updateTick, deltaTime );
+				}
 
-				UpdateWithState( buttonMapping.Target, buttonState, updateTick, deltaTime );
+				for (int i = 0; i < NumUnknownAnalogs; i++)
+				{
+					UpdateWithValue( InputControlType.Analog0 + i, ReadRawAnalogValue( i ), updateTick, deltaTime );
+				}
 			}
+		}
+
+
+		static void SetupAnalogQueries()
+		{
+			if (analogQueries == null)
+			{
+				analogQueries = new string[ MaxDevices, MaxAnalogs ];
+
+				for (int joystickId = 1; joystickId <= MaxDevices; joystickId++)
+				{
+					for (int analogId = 0; analogId < MaxAnalogs; analogId++)
+					{
+						analogQueries[joystickId - 1, analogId] = "joystick " + joystickId + " analog " + analogId;
+					}
+				}
+			}
+		}
+
+
+		static void SetupButtonQueries()
+		{
+			if (buttonQueries == null)
+			{
+				buttonQueries = new string[ MaxDevices, MaxButtons ];
+
+				for (int joystickId = 1; joystickId <= MaxDevices; joystickId++)
+				{
+					for (int buttonId = 0; buttonId < MaxButtons; buttonId++)
+					{
+						buttonQueries[joystickId - 1, buttonId] = "joystick " + joystickId + " button " + buttonId;
+					}
+				}
+			}
+		}
+
+
+		static string GetAnalogKey( int joystickId, int analogId )
+		{
+			return analogQueries[joystickId - 1, analogId];
+		}
+
+
+		static string GetButtonKey( int joystickId, int buttonId )
+		{
+			return buttonQueries[joystickId - 1, buttonId];
+		}
+
+
+		internal override bool ReadRawButtonState( int index )
+		{
+			if (index < MaxButtons)
+			{
+				var buttonQuery = buttonQueries[JoystickId - 1, index];
+				return Input.GetKey( buttonQuery );
+			}
+			return false;
+		}
+
+
+		internal override float ReadRawAnalogValue( int index )
+		{
+			if (index < MaxAnalogs)
+			{
+				var analogQuery = analogQueries[JoystickId - 1, index];
+				return Input.GetAxisRaw( analogQuery );
+			}
+			return 0.0f;
 		}
 
 
 		public override bool IsSupportedOnThisPlatform
 		{
 			get
-			{ 
-				return Profile != null && Profile.IsSupportedOnThisPlatform; 
+			{
+				return profile == null || profile.IsSupportedOnThisPlatform;
 			}
 		}
 
@@ -106,8 +226,26 @@ namespace InControl
 		public override bool IsKnown
 		{
 			get
-			{ 
-				return Profile != null && Profile.IsKnown; 
+			{
+				return profile != null;
+			}
+		}
+
+
+		internal override int NumUnknownButtons
+		{
+			get
+			{
+				return MaxButtons;
+			}
+		}
+
+
+		internal override int NumUnknownAnalogs
+		{
+			get
+			{
+				return MaxAnalogs;
 			}
 		}
 	}

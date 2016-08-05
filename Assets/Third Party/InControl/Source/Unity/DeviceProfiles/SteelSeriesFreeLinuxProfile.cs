@@ -12,7 +12,7 @@ namespace InControl
 			Name = "SteelSeries Free";
 			Meta = "SteelSeries Free on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux",
 			};
 

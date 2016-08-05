@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Logitech WingMan Controller";
 			Meta = "Logitech WingMan Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

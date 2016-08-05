@@ -12,7 +12,7 @@ namespace InControl
 			Name = "GameCube Controller";
 			Meta = "GameCube Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

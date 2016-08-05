@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace InControl
 {
-	[CustomEditor(typeof(TouchButtonControl))]
+	[CustomEditor( typeof(TouchButtonControl) )]
 	public class TouchButtonControlEditor : TouchControlEditor
 	{
 		void OnEnable()
 		{
-			LoadHeaderImage( "Images/TouchButtonHeader.png" );
-		}		
+			headerTexture = Internal.EditorTextures.TouchButtonHeader;
+		}
 	}
 }
 #endif

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "GameStick Controller";
 			Meta = "GameStick Controller on GameStick";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"GameStick"
 			};
 

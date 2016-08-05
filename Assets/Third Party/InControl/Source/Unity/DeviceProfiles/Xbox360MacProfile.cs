@@ -12,7 +12,7 @@ namespace InControl
 			Name = "XBox 360 Controller";
 			Meta = "XBox 360 Controller on Mac";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X"
 			};
 

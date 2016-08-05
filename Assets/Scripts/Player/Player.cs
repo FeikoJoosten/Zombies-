@@ -13,6 +13,12 @@ public class Player : OverridableMonoBehaviour
 	[SerializeField]
 	private float sprintSpeed;
 	[SerializeField]
+	private float sprintEndurance;
+	[SerializeField]
+	private float sprintEnduranceLoweringSpeed;
+	[SerializeField]
+	private float sprintEnduranceRaisingSpeed;
+	[SerializeField]
 	private float rotationSpeed;
 	[SerializeField]
 	private float maxYRotation;
@@ -58,6 +64,7 @@ public class Player : OverridableMonoBehaviour
 	private float currentHealth;
 	private float currentWeaponMenuTimer;
 	private float savedTimescale;
+	private float currentSprintEndurance;
 	private int reloadHashID;
 	private int cameraRotationXHashID;
 	private int sprintingHashID;
@@ -151,21 +158,7 @@ public class Player : OverridableMonoBehaviour
 				AssignStartValuesForOthers();
 			}
 
-			if (PhotonNetwork.player.customProperties.ContainsKey("playerSkin"))
-			{
-				foreach (Player photonPlayer in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values)
-				{
-					if(photonPlayer.photonView.viewID != photonView.viewID)
-					{
-						continue;
-					}
-
-					for (int i = 0; i < allBodyParts.Length; i++)
-					{
-						allBodyParts[i].GetComponent<SkinnedMeshRenderer>().material.SetTexture("_MainTex", GameManager.GetInstance().AllPlayerSkins[(int)PhotonPlayer.Find(photonView.ownerId).customProperties["playerSkin"]]);
-					}  
-				}
-			}
+			AssignCharacterSkin();
 
 			hasLoadedSettings = true;
 			return;
@@ -201,6 +194,8 @@ public class Player : OverridableMonoBehaviour
 			highScoreList.CreateSingleplayerHighScoreList(gameObject.GetInstanceID());
 		}
 
+		currentSprintEndurance = sprintEndurance;
+
 		UpdateWeaponUIInfo();
 	}
 
@@ -214,6 +209,25 @@ public class Player : OverridableMonoBehaviour
 		}
 
 		playerController.enabled = false;
+	}
+
+	void AssignCharacterSkin()
+	{
+		if (PhotonNetwork.player.customProperties.ContainsKey("playerSkin"))
+		{
+			foreach (Player photonPlayer in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values)
+			{
+				if (photonPlayer.photonView.viewID != photonView.viewID)
+				{
+					continue;
+				}
+
+				for (int i = 0; i < allBodyParts.Length; i++)
+				{
+					allBodyParts[i].GetComponent<SkinnedMeshRenderer>().material.SetTexture("_MainTex", GameManager.GetInstance().AllPlayerSkins[(int)PhotonPlayer.Find(photonView.ownerId).customProperties["playerSkin"]]);
+				}
+			}
+		}
 	}
 
 	void GetAnimationHashIDs()
@@ -255,6 +269,21 @@ public class Player : OverridableMonoBehaviour
 				{
 					UpdateWeaponMenuTimeoutTimer();
 				}
+
+				if (playerController.IsSprinting == false)
+				{
+					if (currentSprintEndurance < sprintEndurance)
+					{
+						if (currentSprintEndurance + sprintEnduranceRaisingSpeed * Time.deltaTime < sprintEndurance)
+						{
+							currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime; 
+						}
+						else
+						{
+							currentSprintEndurance = sprintEndurance;
+						}
+					} 
+				}
 			}
 			else
 			{
@@ -266,6 +295,14 @@ public class Player : OverridableMonoBehaviour
 			if (weaponMenu.IsEnabled == true)
 			{
 				UpdateWeaponMenuTimeoutTimer();
+			}
+
+			if (playerController.IsSprinting == false)
+			{
+				if (currentSprintEndurance < sprintEndurance)
+				{
+					currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
+				}
 			}
 		}
 	}
@@ -302,7 +339,26 @@ public class Player : OverridableMonoBehaviour
 		{
 			if (isSprinting == true)
 			{
-				rig.MovePosition(transform.position + (movement.normalized * sprintSpeed * Time.deltaTime));
+				if (value.x != 0 || value.y != 0)
+				{
+					if (currentSprintEndurance < 0)
+					{
+						rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
+					}
+					else
+					{
+						if (currentSprintEndurance - sprintEnduranceLoweringSpeed * Time.deltaTime > 0)
+						{
+							currentSprintEndurance -= sprintEnduranceLoweringSpeed * Time.deltaTime; 
+						}
+						else
+						{
+							currentSprintEndurance = 0;
+						}
+						rig.MovePosition(transform.position + (movement.normalized * sprintSpeed * Time.deltaTime));
+					} 
+				}
+
 			}
 			else
 			{

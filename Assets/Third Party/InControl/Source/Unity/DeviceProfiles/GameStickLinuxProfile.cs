@@ -12,7 +12,7 @@ namespace InControl
 			Name = "GameStick Controller";
 			Meta = "GameStick Controller on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux"
 			};
 

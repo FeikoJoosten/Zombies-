@@ -11,7 +11,7 @@ namespace InControl
 			Name = "Red Samurai Wireless Controller";
 			Meta = "Red Samurai Wireless Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

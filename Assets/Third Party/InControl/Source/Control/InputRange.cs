@@ -12,19 +12,28 @@ namespace InControl
 	{
 		public static readonly InputRange None = new InputRange( 0.0f, 0.0f, InputRangeType.None );
 		public static readonly InputRange MinusOneToOne = new InputRange( -1.0f, 1.0f, InputRangeType.MinusOneToOne );
+		public static readonly InputRange OneToMinusOne = new InputRange( 1.0f, -1.0f, InputRangeType.OneToMinusOne );
 		public static readonly InputRange ZeroToOne = new InputRange( 0.0f, 1.0f, InputRangeType.ZeroToOne );
 		public static readonly InputRange ZeroToMinusOne = new InputRange( 0.0f, -1.0f, InputRangeType.ZeroToMinusOne );
+		public static readonly InputRange OneToZero = new InputRange( 1.0f, 0.0f, InputRangeType.OneToZero );
+		public static readonly InputRange MinusOneToZero = new InputRange( -1.0f, 0.0f, InputRangeType.MinusOneToZero );
 
 		// TODO: These should be deprecated when custom profiles are.
 		public static readonly InputRange ZeroToNegativeInfinity = new InputRange( 0.0f, float.NegativeInfinity, InputRangeType.ZeroToNegativeInfinity );
 		public static readonly InputRange ZeroToPositiveInfinity = new InputRange( 0.0f, float.PositiveInfinity, InputRangeType.ZeroToPositiveInfinity );
 		public static readonly InputRange Everything = new InputRange( float.NegativeInfinity, float.PositiveInfinity, InputRangeType.Everything );
 
+
 		static readonly InputRange[] TypeToRange = new InputRange[] {
 			None,
 			MinusOneToOne,
+			OneToMinusOne,
 			ZeroToOne,
 			ZeroToMinusOne,
+			OneToZero,
+			MinusOneToZero,
+
+			// TODO: These should be deprecated when custom profiles are.
 			ZeroToNegativeInfinity,
 			ZeroToPositiveInfinity,
 			Everything

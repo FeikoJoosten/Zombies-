@@ -237,7 +237,7 @@ namespace InControl.ReorderableList
 			s_CurrentItemIndex = new Stack<int>();
 			s_CurrentItemIndex.Push( -1 );
 
-			if (EditorGUIUtility.isProSkin)
+			if (InControl.Internal.EditorUtility.IsProSkin)
 			{
 				AnchorBackgroundColor = new Color( 85f / 255f, 85f / 255f, 85f / 255f, 0.85f );
 				TargetBackgroundColor = new Color( 0, 0, 0, 0.5f );
@@ -266,7 +266,7 @@ namespace InControl.ReorderableList
 		{
 			int controlID = GUIUtility.GetControlID( FocusType.Passive );
 
-			var control = GUIUtility.GetStateObject( typeof(ReorderableListControl), controlID ) as ReorderableListControl;
+			var control = GUIUtility.GetStateObject( typeof( ReorderableListControl ), controlID ) as ReorderableListControl;
 			control.flags = flags;
 			control.Draw( controlID, adaptor, drawEmpty );
 		}
@@ -282,7 +282,7 @@ namespace InControl.ReorderableList
 		{
 			int controlID = GUIUtility.GetControlID( FocusType.Passive );
 
-			var control = GUIUtility.GetStateObject( typeof(ReorderableListControl), controlID ) as ReorderableListControl;
+			var control = GUIUtility.GetStateObject( typeof( ReorderableListControl ), controlID ) as ReorderableListControl;
 			control.flags = flags;
 			control.Draw( position, controlID, adaptor, drawEmpty );
 		}
@@ -558,49 +558,49 @@ namespace InControl.ReorderableList
 
 			switch (Event.current.GetTypeForControl( controlID ))
 			{
-				case EventType.MouseDown:
-					// Do not allow button to be pressed using right mouse button since
-					// context menu should be shown instead!
-					if (GUI.enabled && Event.current.button != 1 && position.Contains( mousePosition ))
+			case EventType.MouseDown:
+				// Do not allow button to be pressed using right mouse button since
+				// context menu should be shown instead!
+				if (GUI.enabled && Event.current.button != 1 && position.Contains( mousePosition ))
+				{
+					GUIUtility.hotControl = controlID;
+					GUIUtility.keyboardControl = 0;
+					Event.current.Use();
+				}
+				break;
+
+			case EventType.MouseDrag:
+				if (GUIUtility.hotControl == controlID)
+					Event.current.Use();
+				break;
+
+			case EventType.MouseUp:
+				if (GUIUtility.hotControl == controlID)
+				{
+					GUIUtility.hotControl = 0;
+
+					if (position.Contains( mousePosition ))
 					{
-						GUIUtility.hotControl = controlID;
-						GUIUtility.keyboardControl = 0;
 						Event.current.Use();
+						return true;
 					}
-					break;
-
-				case EventType.MouseDrag:
-					if (GUIUtility.hotControl == controlID)
+					else
+					{
 						Event.current.Use();
-					break;
-
-				case EventType.MouseUp:
-					if (GUIUtility.hotControl == controlID)
-					{
-						GUIUtility.hotControl = 0;
-
-						if (position.Contains( mousePosition ))
-						{
-							Event.current.Use();
-							return true;
-						}
-						else
-						{
-							Event.current.Use();
-							return false;
-						}
+						return false;
 					}
-					break;
+				}
+				break;
 
-				case EventType.Repaint:
-					if (visible)
-					{
-						var content = (GUIUtility.hotControl == controlID && position.Contains( mousePosition ))
-							? s_RemoveButtonActiveContent
-							: s_RemoveButtonNormalContent;
-						removeButtonStyle.Draw( position, content, controlID );
-					}
-					break;
+			case EventType.Repaint:
+				if (visible)
+				{
+					var content = (GUIUtility.hotControl == controlID && position.Contains( mousePosition ))
+						? s_RemoveButtonActiveContent
+						: s_RemoveButtonNormalContent;
+					removeButtonStyle.Draw( position, content, controlID );
+				}
+				break;
 			}
 
 			return false;
@@ -820,70 +820,72 @@ namespace InControl.ReorderableList
 
 			switch (eventType)
 			{
-				case EventType.MouseDown:
-					if (_tracking)
-					{
-						// Cancel drag when other mouse button is pressed.
-						s_TrackingCancelBlockContext = true;
-						Event.current.Use();
-					}
-					break;
+			case EventType.MouseDown:
+				if (_tracking)
+				{
+					// Cancel drag when other mouse button is pressed.
+					s_TrackingCancelBlockContext = true;
+					Event.current.Use();
+				}
+				break;
 
-				case EventType.MouseDrag:
-					if (_tracking)
-					{
-						// Reset target index and adjust when looping through list items.
-						if (mousePosition.y < firstItemY)
-							newTargetIndex = 0;
-						else
-						if (mousePosition.y >= position.yMax)
-							newTargetIndex = adaptor.Count;
+			case EventType.MouseDrag:
+				if (_tracking)
+				{
+					// Reset target index and adjust when looping through list items.
+					if (mousePosition.y < firstItemY)
+						newTargetIndex = 0;
+					else
+					if (mousePosition.y >= position.yMax)
+						newTargetIndex = adaptor.Count;
 
-						s_DragItemPosition.y = Mathf.Clamp( mousePosition.y + s_AnchorMouseOffset, firstItemY, position.yMax - s_DragItemPosition.height - 1 );
-					}
-					break;
+					s_DragItemPosition.y = Mathf.Clamp( mousePosition.y + s_AnchorMouseOffset, firstItemY, position.yMax - s_DragItemPosition.height - 1 );
+				}
+				break;
 
-				case EventType.MouseUp:
-					if (controlID == GUIUtility.hotControl)
-					{
-						// Allow user code to change control over reordering during drag.
-						if (!s_TrackingCancelBlockContext && _allowReordering)
-							AcceptReorderDrag( adaptor );
-						else
-							StopTrackingReorderDrag();
-						Event.current.Use();
-					}
-					break;
-
-				case EventType.KeyDown:
-					if (_tracking && Event.current.keyCode == KeyCode.Escape)
-					{
+			case EventType.MouseUp:
+				if (controlID == GUIUtility.hotControl)
+				{
+					// Allow user code to change control over reordering during drag.
+					if (!s_TrackingCancelBlockContext && _allowReordering)
+						AcceptReorderDrag( adaptor );
+					else
 						StopTrackingReorderDrag();
+					Event.current.Use();
+				}
+				break;
+
+			case EventType.KeyDown:
+				if (_tracking && Event.current.keyCode == KeyCode.Escape)
+				{
+					StopTrackingReorderDrag();
+					Event.current.Use();
+				}
+				break;
+
+			case EventType.ExecuteCommand:
+				if (s_ContextControlID == controlID)
+				{
+					int itemIndex = s_ContextItemIndex;
+					try
+					{
+						DoCommand( s_ContextCommandName, itemIndex, adaptor );
 						Event.current.Use();
 					}
-					break;
-
-				case EventType.ExecuteCommand:
-					if (s_ContextControlID == controlID)
+					finally
 					{
-						int itemIndex = s_ContextItemIndex;
-						try
-						{
-							DoCommand( s_ContextCommandName, itemIndex, adaptor );
-							Event.current.Use();
-						}
-						finally
-						{
-							s_ContextControlID = 0;
-							s_ContextItemIndex = 0;
-						}
+						s_ContextControlID = 0;
+						s_ContextItemIndex = 0;
 					}
-					break;
+				}
+				break;
 
-				case EventType.Repaint:
-					// Draw caption area of list.
-					containerStyle.Draw( position, GUIContent.none, false, false, false, false );
-					break;
+			case EventType.Repaint:
+				// Draw caption area of list.
+				InControl.Internal.EditorUtility.SetTintColor();
+				containerStyle.Draw( position, GUIContent.none, false, false, false, false );
+				InControl.Internal.EditorUtility.PopTintColor();
+				break;
 			}
 
 			ReorderableListGUI.indexOfChangedItem = -1;
@@ -976,33 +978,33 @@ namespace InControl.ReorderableList
 				{
 					switch (eventType)
 					{
-						case EventType.MouseDown:
-							if (GUI.enabled && itemPosition.Contains( mousePosition ))
+					case EventType.MouseDown:
+						if (GUI.enabled && itemPosition.Contains( mousePosition ))
+						{
+							// Remove input focus from control before attempting a context click or drag.
+							GUIUtility.keyboardControl = 0;
+
+							if (_allowReordering && adaptor.CanDrag( i ) && Event.current.button == 0)
 							{
-								// Remove input focus from control before attempting a context click or drag.
-								GUIUtility.keyboardControl = 0;
+								s_DragItemPosition = itemPosition;
 
-								if (_allowReordering && adaptor.CanDrag( i ) && Event.current.button == 0)
-								{
-									s_DragItemPosition = itemPosition;
+								BeginTrackingReorderDrag( controlID, i );
+								s_AnchorMouseOffset = itemPosition.y - mousePosition.y;
+								s_TargetIndex = i;
 
-									BeginTrackingReorderDrag( controlID, i );
-									s_AnchorMouseOffset = itemPosition.y - mousePosition.y;
-									s_TargetIndex = i;
-
-									Event.current.Use();
-								}
+								Event.current.Use();
 							}
-							break;
-/* DEBUG
-						case EventType.Repaint:
-							GUI.color = Color.red;
-							GUI.DrawTexture(new Rect(0, lastMidPoint, 10, 1), EditorGUIUtility.whiteTexture);
-							GUI.color = Color.yellow;
-							GUI.DrawTexture(new Rect(5, itemPosition.y + itemPosition.height / 2f, 10, 1), EditorGUIUtility.whiteTexture);
-							GUI.color = Color.white;
-							break;
-//*/
+						}
+						break;
+						/* DEBUG
+												case EventType.Repaint:
+													GUI.color = Color.red;
+													GUI.DrawTexture(new Rect(0, lastMidPoint, 10, 1), EditorGUIUtility.whiteTexture);
+													GUI.color = Color.yellow;
+													GUI.DrawTexture(new Rect(5, itemPosition.y + itemPosition.height / 2f, 10, 1), EditorGUIUtility.whiteTexture);
+													GUI.color = Color.white;
+													break;
+						//*/
 					}
 				}
 			}
@@ -1023,13 +1025,13 @@ namespace InControl.ReorderableList
 				}
 
 				DrawFloatingListItem( eventType, adaptor, targetSlotPosition );
-/* DEBUG
-				if (eventType == EventType.Repaint) {
-					GUI.color = Color.blue;
-					GUI.DrawTexture(new Rect(100, lastMidPoint, 20, 1), EditorGUIUtility.whiteTexture);
-					GUI.color = Color.white;
-				}
-//*/
+				/* DEBUG
+								if (eventType == EventType.Repaint) {
+									GUI.color = Color.blue;
+									GUI.DrawTexture(new Rect(100, lastMidPoint, 20, 1), EditorGUIUtility.whiteTexture);
+									GUI.color = Color.white;
+								}
+				//*/
 			}
 
 			// Fake control to catch input focus if auto focus was not possible.
@@ -1065,11 +1067,11 @@ namespace InControl.ReorderableList
 			if (hasAddButton)
 			{
 				Rect addButtonRect = new Rect(
-					                     position.xMax - addButtonStyle.fixedWidth,
-					                     position.yMax - 1,
-					                     addButtonStyle.fixedWidth,
-					                     addButtonStyle.fixedHeight
-				                     );
+										 position.xMax - addButtonStyle.fixedWidth,
+										 position.yMax - 1,
+										 addButtonStyle.fixedWidth,
+										 addButtonStyle.fixedHeight
+									 );
 				DoAddButton( addButtonRect, controlID, adaptor );
 			}
 		}
@@ -1197,7 +1199,9 @@ namespace InControl.ReorderableList
 			else
 				position = DrawLayoutEmptyList( drawEmpty );
 
+			InControl.Internal.EditorUtility.SetTintColor();
 			DrawFooterControls( position, controlID, adaptor );
+			InControl.Internal.EditorUtility.PopTintColor();
 		}
 
 		/// <inheritdoc cref="Draw(int, IReorderableListAdaptor, DrawEmpty)"/>
@@ -1441,32 +1445,32 @@ namespace InControl.ReorderableList
 		{
 			switch (commandName)
 			{
-				case "Move to Top":
-					MoveItem( adaptor, itemIndex, 0 );
-					return true;
-				case "Move to Bottom":
-					MoveItem( adaptor, itemIndex, adaptor.Count );
-					return true;
+			case "Move to Top":
+				MoveItem( adaptor, itemIndex, 0 );
+				return true;
+			case "Move to Bottom":
+				MoveItem( adaptor, itemIndex, adaptor.Count );
+				return true;
 
-				case "Insert Above":
-					InsertItem( adaptor, itemIndex );
-					return true;
-				case "Insert Below":
-					InsertItem( adaptor, itemIndex + 1 );
-					return true;
-				case "Duplicate":
-					DuplicateItem( adaptor, itemIndex );
-					return true;
+			case "Insert Above":
+				InsertItem( adaptor, itemIndex );
+				return true;
+			case "Insert Below":
+				InsertItem( adaptor, itemIndex + 1 );
+				return true;
+			case "Duplicate":
+				DuplicateItem( adaptor, itemIndex );
+				return true;
 
-				case "Remove":
-					RemoveItem( adaptor, itemIndex );
-					return true;
-				case "Clear All":
-					ClearAll( adaptor );
-					return true;
+			case "Remove":
+				RemoveItem( adaptor, itemIndex );
+				return true;
+			case "Clear All":
+				ClearAll( adaptor );
+				return true;
 
-				default:
-					return false;
+			default:
+				return false;
 			}
 		}
 

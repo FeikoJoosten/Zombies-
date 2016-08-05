@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Air Flo Wired PS3 Controller";
 			Meta = "Air Flo Wired PS3 Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

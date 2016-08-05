@@ -12,7 +12,7 @@ namespace InControl
 			Name = "PlayStation 4 Controller";
 			Meta = "PlayStation 4 Controller on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux"
 			};
 

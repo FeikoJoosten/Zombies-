@@ -1,4 +1,4 @@
-﻿#if UNITY_4_6 || UNITY_5
+﻿#if UNITY_4_6 || UNITY_4_7 || UNITY_5
 using UnityEngine;
 using UnityEngine.EventSystems;
 using InControl;
@@ -263,7 +263,7 @@ namespace InControl
 		}
 
 
-		InputDevice Device
+		public InputDevice Device
 		{
 			set
 			{
@@ -391,7 +391,7 @@ namespace InControl
 
 		// Copied from StandaloneInputModule where these are marked private instead of protected in Unity 5.0
 		#if UNITY_5_0
-
+		
 		bool SendUpdateEventToSelectedObject()
 		{
 			if (eventSystem.currentSelectedGameObject == null)

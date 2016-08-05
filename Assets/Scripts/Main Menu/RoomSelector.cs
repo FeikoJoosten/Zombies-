@@ -10,6 +10,8 @@ public class RoomSelector : MonoBehaviour
 	private Text currentPlayerCount;
 	[SerializeField]
 	private Text maxPlayerCount;
+	[SerializeField]
+	private Text gameType;
 
 	public string RoomName
 	{
@@ -23,5 +25,10 @@ public class RoomSelector : MonoBehaviour
 	public string MaxPlayerCount
 	{
 		set { maxPlayerCount.text = value; }
+	}
+	public string GameType
+	{
+		get { return gameType.text; }
+		set { gameType.text = value; }
 	}
 }

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3758f8f58fdef43803eb9be1df0608, type: 3}
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
-  HostType: 4
+  HostType: 1
   Protocol: 0
   ServerAddress: 
   ServerPort: 5055
@@ -21,33 +21,28 @@ MonoBehaviour:
   JoinLobby: 1
   EnableLobbyStatistics: 0
   RpcList:
+  - AddHealth
+  - AddNumberToKillCountForPlayer
   - AssignTargetForSpecificAI
   - Chat
+  - CreatePositionPointOnMinimap
   - DestroyRpc
+  - Grunt
+  - InstantiateBullet
+  - InstantiateGrenade
   - InstantiateRpc
+  - InstantiateShotgunBullet
   - OnAwakeRPC
   - PickupItemInit
   - PunPickup
   - PunPickupSimple
   - PunRespawn
+  - RemoveHealth
+  - RequestForPickupItems
   - RequestForPickupTimes
   - SendLoadingData
-  - SetLoadSceneTrue
-  - RemoveHealth
-  - SwitchWeapon
-  - DestroyObject
-  - InstantiateGrenade
-  - InstantiateBullet
-  - UpdateKillCountForPlayer
-  - AddNumberToKillCountForPlayer
   - StartMultiPlayerGame
-  - InstantiateShotgunBullet
-  - AddHealth
-  - CreatePositionPointOnMinimap
-  - PlaySFXSound
-  - QueSFXSound
+  - SwitchWeapon
   - UpdateMovement
   - UpdateRotation
-  - PlayMPSFXSound
-  - Grunt
   DisableAutoOpenWizard: 1

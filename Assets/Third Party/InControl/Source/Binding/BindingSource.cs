@@ -120,9 +120,11 @@ namespace InControl
 		}
 
 
+		public abstract BindingSourceType BindingSourceType { get; }
+
+
 		#region Internal
 
-		internal abstract BindingSourceType BindingSourceType { get; }
 		internal abstract void Save( BinaryWriter writer );
 		internal abstract void Load( BinaryReader reader );
 		internal PlayerAction BoundTo { get; set; }

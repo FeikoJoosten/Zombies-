@@ -29,10 +29,10 @@ namespace InControl
 			AddControl( InputControlType.Action2, "Button 2" );
 			AddControl( InputControlType.Action3, "Button 3" );
 			AddControl( InputControlType.Action4, "Button 4" );
-			AddControl( InputControlType.Button0, "Button 5" );
-			AddControl( InputControlType.Button1, "Button 6" );
-			AddControl( InputControlType.Button2, "Button 7" );
-			AddControl( InputControlType.Button3, "Button 8" );
+			AddControl( InputControlType.Action5, "Button 5" );
+			AddControl( InputControlType.Action6, "Button 6" );
+			AddControl( InputControlType.Action7, "Button 7" );
+			AddControl( InputControlType.Action8, "Button 8" );
 
 //			AddControl( InputControlType.LeftTrigger, "Left Trigger" );
 //			AddControl( InputControlType.RightTrigger, "Right Trigger" );
@@ -54,10 +54,10 @@ namespace InControl
 			UpdateWithState( InputControlType.Action2, IsPressed( ICadeState.Button2 ), updateTick, deltaTime );
 			UpdateWithState( InputControlType.Action3, IsPressed( ICadeState.Button3 ), updateTick, deltaTime );
 			UpdateWithState( InputControlType.Action4, IsPressed( ICadeState.Button4 ), updateTick, deltaTime );
-			UpdateWithState( InputControlType.Button0, IsPressed( ICadeState.Button5 ), updateTick, deltaTime );
-			UpdateWithState( InputControlType.Button1, IsPressed( ICadeState.Button6 ), updateTick, deltaTime );
-			UpdateWithState( InputControlType.Button2, IsPressed( ICadeState.Button7 ), updateTick, deltaTime );
-			UpdateWithState( InputControlType.Button3, IsPressed( ICadeState.Button8 ), updateTick, deltaTime );
+			UpdateWithState( InputControlType.Action5, IsPressed( ICadeState.Button5 ), updateTick, deltaTime );
+			UpdateWithState( InputControlType.Action6, IsPressed( ICadeState.Button6 ), updateTick, deltaTime );
+			UpdateWithState( InputControlType.Action7, IsPressed( ICadeState.Button7 ), updateTick, deltaTime );
+			UpdateWithState( InputControlType.Action8, IsPressed( ICadeState.Button8 ), updateTick, deltaTime );
 
 //			UpdateWithState( InputControlType.RightTrigger, IsPressed( ICadeState.Button5 ), updateTick, deltaTime );
 //			UpdateWithState( InputControlType.LeftTrigger, IsPressed( ICadeState.Button6 ), updateTick, deltaTime );

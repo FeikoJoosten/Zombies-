@@ -11,7 +11,7 @@ namespace InControl
 			Name = "Moga Hero Power";
 			Meta = "Moga Hero Power on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

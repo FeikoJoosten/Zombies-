@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace InControl
 {
-	[CustomEditor(typeof(TouchSwipeControl))]
+	[CustomEditor( typeof(TouchSwipeControl) )]
 	public class TouchSwipeControlEditor : TouchControlEditor
 	{
 		void OnEnable()
 		{
-			LoadHeaderImage( "Images/TouchSwipeHeader.png" );
+			headerTexture = Internal.EditorTextures.TouchSwipeHeader;
 		}
 	}
 }

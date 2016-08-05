@@ -1,14 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
-using System.Collections;
 
 
 namespace InControl
 {
 	[ExecuteInEditMode]
-	public class TouchManager : SingletonMonoBehavior<TouchManager>
+	public class TouchManager : SingletonMonoBehavior<TouchManager, InControlManager>
 	{
 		const int MaxTouches = 16;
 
@@ -52,9 +52,9 @@ namespace InControl
 		Vector2 lastMousePosition;
 		bool isReady;
 
-		#pragma warning disable 414
+#pragma warning disable 414
 		Touch mouseTouch;
-		#pragma warning restore 414
+#pragma warning restore 414
 
 
 		protected TouchManager()
@@ -64,10 +64,44 @@ namespace InControl
 
 		void OnEnable()
 		{
-			if (!SetupSingleton())
+			var manager = GetComponent<InControlManager>();
+			if (manager == null)
 			{
+				Debug.LogError( "Touch Manager component can only be added to the InControl Manager object." );
+				DestroyImmediate( this );
 				return;
 			}
+
+			if (EnforceSingletonComponent() == false)
+			{
+				Debug.LogWarning( "There is already a Touch Manager component on this game object." );
+				return;
+			}
+
+#if UNITY_EDITOR
+			if (touchCamera == null)
+			{
+				foreach (var component in manager.gameObject.GetComponentsInChildren<Camera>())
+				{
+					DestroyImmediate( component.gameObject );
+				}
+
+				var cameraGameObject = new GameObject( "Touch Camera" );
+				cameraGameObject.transform.parent = manager.gameObject.transform;
+				cameraGameObject.transform.SetAsFirstSibling();
+
+				touchCamera = cameraGameObject.AddComponent<Camera>();
+				touchCamera.transform.position = new Vector3( 0.0f, 0.0f, -10.0f );
+				touchCamera.clearFlags = CameraClearFlags.Nothing;
+				touchCamera.cullingMask = 1 << LayerMask.NameToLayer( "UI" );
+				touchCamera.orthographic = true;
+				touchCamera.orthographicSize = 5.0f;
+				touchCamera.nearClipPlane = 0.3f;
+				touchCamera.farClipPlane = 1000.0f;
+				touchCamera.rect = new Rect( 0.0f, 0.0f, 1.0f, 1.0f );
+				touchCamera.depth = 100;
+			}
+#endif
 
 			touchControls = GetComponentsInChildren<TouchControl>( true );
 
@@ -120,20 +154,9 @@ namespace InControl
 		}
 
 
-		void Start()
-		{
-			// This little hack is necessary because right after Unity starts up,
-			// cameras don't seem to have a correct projection matrix until after
-			// their first update or around that time. So we basically need to
-			// wait until the end of the first frame before everything is quite ready.
-			StartCoroutine( Ready() );
-		}
-
-
-		IEnumerator Ready()
+		IEnumerator UpdateScreenSizeAtEndOfFrame()
 		{
 			yield return new WaitForEndOfFrame();
-			isReady = true;
 			UpdateScreenSize( new Vector2( Screen.width, Screen.height ) );
 			yield return null;
 		}
@@ -141,12 +164,20 @@ namespace InControl
 
 		void Update()
 		{
+			var currentScreenSize = new Vector2( Screen.width, Screen.height );
+
 			if (!isReady)
 			{
+				// This little hack is necessary because right after Unity starts up,
+				// cameras don't seem to have a correct projection matrix until after
+				// their first update or around that time. So we basically need to
+				// wait until the end of the first frame before everything is quite ready.
+				StartCoroutine( UpdateScreenSizeAtEndOfFrame() );
+				UpdateScreenSize( currentScreenSize );
+				isReady = true;
 				return;
 			}
 
-			var currentScreenSize = new Vector2( Screen.width, Screen.height );
 			if (screenSize != currentScreenSize)
 			{
 				UpdateScreenSize( currentScreenSize );
@@ -162,8 +193,7 @@ namespace InControl
 
 		void CreateDevice()
 		{
-			device = new InputDevice( "TouchDevice" );
-			device.RawSticks = true;
+			device = new TouchInputDevice();
 
 			device.AddControl( InputControlType.LeftStickLeft, "LeftStickLeft" );
 			device.AddControl( InputControlType.LeftStickRight, "LeftStickRight" );
@@ -286,12 +316,12 @@ namespace InControl
 		{
 			activeTouches.Clear();
 
-			#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBPLAYER || UNITY_WEBGL
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBPLAYER || UNITY_WEBGL || UNITY_WSA
 			if (mouseTouch.SetWithMouseData( updateTick, deltaTime ))
 			{
 				activeTouches.Add( mouseTouch );
 			}
-			#endif
+#endif
 
 			for (int i = 0; i < Input.touchCount; i++)
 			{
@@ -376,21 +406,21 @@ namespace InControl
 				var touch = activeTouches[i];
 				switch (touch.phase)
 				{
-					case TouchPhase.Began:
-						SendTouchBegan( touch );
-						break;
+				case TouchPhase.Began:
+					SendTouchBegan( touch );
+					break;
 
-					case TouchPhase.Moved:
-						SendTouchMoved( touch );
-						break;
+				case TouchPhase.Moved:
+					SendTouchMoved( touch );
+					break;
 
-					case TouchPhase.Ended:
-						SendTouchEnded( touch );
-						break;
+				case TouchPhase.Ended:
+					SendTouchEnded( touch );
+					break;
 
-					case TouchPhase.Canceled:
-						SendTouchEnded( touch );
-						break;
+				case TouchPhase.Canceled:
+					SendTouchEnded( touch );
+					break;
 				}
 			}
 		}
@@ -680,4 +710,3 @@ namespace InControl
 		}
 	}
 }
-

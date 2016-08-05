@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Android TV Remote";
 			Meta = "Android TV Remote on Android TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

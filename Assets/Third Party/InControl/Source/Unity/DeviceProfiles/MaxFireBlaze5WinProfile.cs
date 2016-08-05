@@ -12,7 +12,7 @@ namespace InControl
 			Name = "MaxFire Blaze5";
 			Meta = "MaxFire Blaze5 Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

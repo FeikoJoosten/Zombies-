@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Speedlink Strike Controller";
 			Meta = "Speedlink Strike Controller on Mac (Analog Mode)";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X"
 			};
 

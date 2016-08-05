@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Speedlink Strike Controller";
 			Meta = "Speedlink Strike Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Win"
 			};
 

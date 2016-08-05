@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Moga Pro Controller";
 			Meta = "Moga Pro Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 			};
 

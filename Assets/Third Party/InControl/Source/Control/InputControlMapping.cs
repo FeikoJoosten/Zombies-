@@ -19,6 +19,9 @@ namespace InControl
 		// Raw inputs won't be processed except for scaling (mice and trackpads).
 		public bool Raw = false;
 
+		// Changes won't trigger changes in active device or update tick.
+		public bool Passive = false;
+
 		// This is primarily to fix a bug with the wired Xbox controller on Mac.
 		public bool IgnoreInitialZeroValue = false;
 
@@ -60,7 +63,7 @@ namespace InControl
 
 		public string Handle
 		{
-			get { return (string.IsNullOrEmpty( handle )) ? Target.ToString() : handle; }
+			get { return string.IsNullOrEmpty( handle ) ? Target.ToString() : handle; }
 			set { handle = value; }
 		}
 	}

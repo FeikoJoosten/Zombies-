@@ -12,7 +12,7 @@ namespace InControl
 			Name = "SteelSeries Free";
 			Meta = "SteelSeries Free on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android",
 			};
 

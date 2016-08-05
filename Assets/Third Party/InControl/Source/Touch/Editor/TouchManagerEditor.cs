@@ -6,29 +6,27 @@ using System.IO;
 
 namespace InControl
 {
-	[CustomEditor( typeof(TouchManager) )]
+	[CustomEditor( typeof( TouchManager ) )]
 	public class TouchManagerEditor : Editor
 	{
 		TouchManager touchManager;
 		Texture headerTexture;
-		
-		
+
+
 		void OnEnable()
 		{
 			touchManager = target as TouchManager;
-
-			var path = AssetDatabase.GetAssetPath( MonoScript.FromScriptableObject( this ) );
-			headerTexture = EditorUtility.LoadAssetAtPath<Texture>( Path.GetDirectoryName( path ) + "/Images/TouchManagerHeader.png" );
+			headerTexture = Internal.EditorTextures.TouchManagerHeader;
 		}
-		
-		
+
+
 		public override void OnInspectorGUI()
 		{
 			GUILayout.Space( 5.0f );
-			
+
 			var headerRect = GUILayoutUtility.GetRect( 0.0f, -22.0f );
-			headerRect.width = headerTexture.width;
-			headerRect.height = headerTexture.height;
+			headerRect.width = headerTexture.width / 2;
+			headerRect.height = headerTexture.height / 2;
 			GUILayout.Space( headerRect.height );
 
 			DrawDefaultInspector();
@@ -82,18 +80,17 @@ namespace InControl
 			style.richText = true;
 			bool showWarning = false;
 			var text = "" +
-			           "<b>Warning:</b>\n" +
-			           "Some cameras are set to include the current touch controls layer (" +
-			           LayerMask.LayerToName( controlsLayer ) +
-			           ") in their culling mask. This may cause duplicates ghosting of controls or other " +
-			           "unexpected visual results. You will almost certainly want to exclude the " +
-			           "touch controls layer from being rendered in your main game camera.";
-			
+					   "<b>Warning:</b>\n" +
+					   "Some cameras are set to include the current touch controls layer (" +
+					   LayerMask.LayerToName( controlsLayer ) +
+					   ") in their culling mask. This may cause duplicates ghosting of controls or other " +
+						"unexpected visual results.";
+
 			foreach (var camera in Camera.allCameras)
 			{
 				if (camera != touchManager.touchCamera && (camera.cullingMask & (1 << controlsLayer)) > 0)
 				{
-					text += "\n  • " + camera.gameObject.name;
+					text += "\n •  " + camera.gameObject.name;
 					showWarning = true;
 				}
 			}
@@ -116,16 +113,16 @@ namespace InControl
 			style.richText = true;
 			bool showWarning = false;
 			var text = "" +
-			           "<b>Warning:</b>\n" +
-			           "Some controls are not on the current touch controls layer (" +
-			           LayerMask.LayerToName( controlsLayer ) +
-			           "). This will most likely cause these controls to both render and function incorrectly.";
+					   "<b>Warning:</b>\n" +
+					   "Some controls are not on the current touch controls layer (" +
+					   LayerMask.LayerToName( controlsLayer ) +
+					   "). This will most likely cause these controls to both render and function incorrectly.";
 
 			foreach (var control in FindObjectsOfType<TouchControl>())
-			{				
+			{
 				if (control.gameObject.layer != controlsLayer)
 				{
-					text += "\n  • " + control.gameObject.name;
+					text += "\n •  " + control.gameObject.name;
 					showWarning = true;
 				}
 			}

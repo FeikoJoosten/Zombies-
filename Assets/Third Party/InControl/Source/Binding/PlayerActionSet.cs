@@ -9,21 +9,32 @@ namespace InControl
 {
 	/// <summary>
 	/// An action set represents a set of actions, usually for a single player. This class must be subclassed to be used.
-	/// An action set can contain both explicit, bindable single value actions (for example, "Jump", "Left" and "Right") and implicit, 
+	/// An action set can contain both explicit, bindable single value actions (for example, "Jump", "Left" and "Right") and implicit,
 	/// aggregate actions which combine together other actions into one or two axes, for example "Move", which might consist
-	/// of "Left", "Right", "Up" and "Down" filtered into a single two-axis control with its own applied circular deadzone, 
+	/// of "Left", "Right", "Up" and "Down" filtered into a single two-axis control with its own applied circular deadzone,
 	/// queryable vector value, etc.
 	/// </summary>
 	public abstract class PlayerActionSet
 	{
 		/// <summary>
-		/// The device which this set should query from, if applicable. 
-		/// When set to <c>null</c> this set will query <see cref="InputManager.ActiveDevice" /> when required.
+		/// Optionally specifies a device which this action set should query from, if applicable.
+		/// When set to <c>null</c> (default) this action set will try to find an active device when required.
 		/// </summary>
 		public InputDevice Device { get; set; }
 
 		/// <summary>
-		/// Gets the actions in this set as a readonly collection.
+		/// A list of devices which this action set should include when searching for an active device.
+		/// When empty, all attached devices will be considered.
+		/// </summary>
+		public List<InputDevice> IncludeDevices { get; private set; }
+
+		/// <summary>
+		/// A list of devices which this action set should exclude when searching for an active device.
+		/// </summary>
+		public List<InputDevice> ExcludeDevices { get; private set; }
+
+		/// <summary>
+		/// Gets the actions in this action set as a readonly collection.
 		/// </summary>
 		public ReadOnlyCollection<PlayerAction> Actions { get; private set; }
 
@@ -42,6 +53,7 @@ namespace InControl
 		/// </summary>
 		public bool Enabled { get; set; }
 
+
 		List<PlayerAction> actions = new List<PlayerAction>();
 		List<PlayerOneAxisAction> oneAxisActions = new List<PlayerOneAxisAction>();
 		List<PlayerTwoAxisAction> twoAxisActions = new List<PlayerTwoAxisAction>();
@@ -52,8 +64,11 @@ namespace InControl
 
 		protected PlayerActionSet()
 		{
-			Actions = new ReadOnlyCollection<PlayerAction>( actions );
 			Enabled = true;
+			Device = null;
+			IncludeDevices = new List<InputDevice>();
+			ExcludeDevices = new List<InputDevice>();
+			Actions = new ReadOnlyCollection<PlayerAction>( actions );
 			InputManager.AttachPlayerActionSet( this );
 		}
 
@@ -75,18 +90,21 @@ namespace InControl
 		/// <exception cref="InControlException">Thrown when trying to create an action with a non-unique name for this set.</exception>
 		protected PlayerAction CreatePlayerAction( string name )
 		{
-			var action = new PlayerAction( name, this );
-			action.Device = Device ?? InputManager.ActiveDevice;
+			return new PlayerAction( name, this );
+		}
 
-			if (actionsByName.ContainsKey( name ))
+
+		internal void AddPlayerAction( PlayerAction action )
+		{
+			action.Device = FindActiveDevice();
+
+			if (actionsByName.ContainsKey( action.Name ))
 			{
-				throw new InControlException( "Action '" + name + "' already exists in this set." );
+				throw new InControlException( "Action '" + action.Name + "' already exists in this set." );
 			}
 
 			actions.Add( action );
-			actionsByName.Add( name, action );
-
-			return action;
+			actionsByName.Add( action.Name, action );
 		}
 
 
@@ -129,9 +147,27 @@ namespace InControl
 		}
 
 
+		/// <summary>
+		/// Gets the action with the specified action name. If the action does not exist, <c>null</c> is returned.
+		/// </summary>
+		/// <param name="actionName">The name of the action to get.</param>
+		public PlayerAction this[string actionName]
+		{
+			get
+			{
+				PlayerAction action;
+				if (actionsByName.TryGetValue( actionName, out action ))
+				{
+					return action;
+				}
+				throw new KeyNotFoundException( "Action '" + actionName + "' does not exist in this action set." );
+			}
+		}
+
+
 		internal void Update( ulong updateTick, float deltaTime )
 		{
-			var device = Device ?? InputManager.ActiveDevice;
+			var device = Device ?? FindActiveDevice();
 
 			var actionsCount = actions.Count;
 			for (int i = 0; i < actionsCount; i++)
@@ -171,6 +207,38 @@ namespace InControl
 			{
 				actions[i].ResetBindings();
 			}
+		}
+
+
+		InputDevice FindActiveDevice()
+		{
+			var hasIncludeDevices = IncludeDevices.Count > 0;
+			var hasExcludeDevices = ExcludeDevices.Count > 0;
+
+			if (hasIncludeDevices || hasExcludeDevices)
+			{
+				var foundDevice = InputDevice.Null;
+				int deviceCount = InputManager.Devices.Count;
+				for (int i = 0; i < deviceCount; i++)
+				{
+					var device = InputManager.Devices[i];
+					if (device != foundDevice && device.LastChangedAfter( foundDevice ))
+					{
+						if (hasExcludeDevices && ExcludeDevices.Contains( device ))
+						{
+							continue;
+						}
+
+						if (!hasIncludeDevices || IncludeDevices.Contains( device ))
+						{
+							foundDevice = device;
+						}
+					}
+				}
+				return foundDevice;
+			}
+
+			return InputManager.ActiveDevice;
 		}
 
 
@@ -250,7 +318,7 @@ namespace InControl
 
 
 		/// <summary>
-		/// Returns the state of this action set and all bindings encoded into a string 
+		/// Returns the state of this action set and all bindings encoded into a string
 		/// that you can save somewhere.
 		/// Pass this string to Load() to restore the state of this action set.
 		/// </summary>
@@ -293,7 +361,7 @@ namespace InControl
 			{
 				return;
 			}
-				
+
 			try
 			{
 				using (var stream = new MemoryStream( Convert.FromBase64String( data ) ))
@@ -330,4 +398,3 @@ namespace InControl
 		}
 	}
 }
-

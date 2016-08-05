@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Apple MFi Controller";
 			Meta = "Apple MFi Controller on iOS";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"iPhone"
 			};
 

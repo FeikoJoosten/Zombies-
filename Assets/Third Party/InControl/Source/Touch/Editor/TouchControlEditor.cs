@@ -12,13 +12,6 @@ namespace InControl
 		Rect headerTextureRect;
 
 
-		protected void LoadHeaderImage( string fileName )
-		{
-			var path = AssetDatabase.GetAssetPath( MonoScript.FromScriptableObject( this ) );
-			headerTexture = EditorUtility.LoadAssetAtPath<Texture>( Path.GetDirectoryName( path ) + "/" + fileName );
-		}
-
-
 		protected void AddHeaderImageSpace()
 		{
 			if (headerTexture != null)
@@ -26,8 +19,8 @@ namespace InControl
 				GUILayout.Space( 5 );
 
 				headerTextureRect = GUILayoutUtility.GetRect( 0.0f, -22.0f );
-				headerTextureRect.width = headerTexture.width;
-				headerTextureRect.height = headerTexture.height;
+				headerTextureRect.width = headerTexture.width / 2;
+				headerTextureRect.height = headerTexture.height / 2;
 
 				GUILayout.Space( headerTextureRect.height );
 			}

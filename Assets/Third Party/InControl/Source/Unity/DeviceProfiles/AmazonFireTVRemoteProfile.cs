@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Amazon Fire TV Remote";
 			Meta = "Amazon Fire TV Remote on Amazon Fire TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT",
 			};
 

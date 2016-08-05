@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Moga Pro";
 			Meta = "Moga Pro on Mac";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X",
 			};
 

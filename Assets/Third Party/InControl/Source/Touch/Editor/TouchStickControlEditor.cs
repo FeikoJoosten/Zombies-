@@ -11,7 +11,7 @@ namespace InControl
 	{
 		void OnEnable()
 		{
-			LoadHeaderImage( "Images/TouchStickHeader.png" );
+			headerTexture = Internal.EditorTextures.TouchStickHeader;
 		}
 	}
 }

@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace InControl
 {
+	public enum LockAxis : int
+	{
+		None,
+		Horizontal,
+		Vertical,
+	}
+
+
 	public class TouchStickControl : TouchControl
 	{
 		[Header( "Position" )]
@@ -28,6 +36,7 @@ namespace InControl
 
 		public AnalogTarget target = AnalogTarget.LeftStick;
 		public SnapAngles snapAngles = SnapAngles.None;
+		public LockAxis lockToAxis = LockAxis.None;
 
 		[Range( 0, 1 )] 
 		public float lowerDeadZone = 0.1f;
@@ -216,7 +225,22 @@ namespace InControl
 			if (snapAngles == SnapAngles.None)
 			{
 				snappedValue = value;
-				KnobPosition = movedPosition;	
+
+				if (lockToAxis == LockAxis.Horizontal)
+				{
+					snappedValue.y = 0.0f;
+					KnobPosition = beganPosition + (snappedValue * worldKnobRange);
+				}
+				else
+				if (lockToAxis == LockAxis.Vertical)
+				{
+					snappedValue.x = 0.0f;
+					KnobPosition = beganPosition + (snappedValue * worldKnobRange);
+				}
+				else
+				{
+					KnobPosition = movedPosition;
+				}
 			}
 			else
 			{

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Moga Pro";
 			Meta = "Moga Pro on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux",
 			};
 

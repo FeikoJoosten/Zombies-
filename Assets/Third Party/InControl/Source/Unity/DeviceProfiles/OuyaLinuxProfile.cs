@@ -13,7 +13,7 @@ namespace InControl
 			Name = "OUYA Controller";
 			Meta = "OUYA Controller on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux"
 			};
 

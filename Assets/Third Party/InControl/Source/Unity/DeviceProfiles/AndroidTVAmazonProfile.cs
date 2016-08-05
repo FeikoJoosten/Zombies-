@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Android TV Controller";
 			Meta = "Android TV Controller on Android TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT"
 			};
 

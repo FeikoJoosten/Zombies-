@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Executioner X Controller";
 			Meta = "Executioner X Controller";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 				"OS X"
 			};

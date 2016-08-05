@@ -12,7 +12,7 @@ namespace InControl
 			Name = "XBox 360 Rock Candy Controller";
 			Meta = "XBox 360 Rock Candy Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android"
 			};
 

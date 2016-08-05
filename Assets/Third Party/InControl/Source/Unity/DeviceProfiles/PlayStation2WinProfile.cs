@@ -12,7 +12,7 @@ namespace InControl
 			Name = "PlayStation DualShock 2 Controller";
 			Meta = "Compatible with PlayStation 2 Controller to USB adapter.";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

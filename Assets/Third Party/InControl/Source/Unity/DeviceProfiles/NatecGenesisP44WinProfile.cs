@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Natec Genesis P44 Controller";
 			Meta = "Natec Genesis P44 Controller on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

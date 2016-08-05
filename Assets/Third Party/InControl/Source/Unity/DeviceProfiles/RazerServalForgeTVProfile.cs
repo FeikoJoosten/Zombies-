@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Razer Serval Controller";
 			Meta = "Razer Serval Controller on Razer Forge TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Razer Forge"
 			};
 

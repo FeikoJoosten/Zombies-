@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Generic Controller";
 			Meta = "Generic Controller on Linux";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Linux"
 			};
 

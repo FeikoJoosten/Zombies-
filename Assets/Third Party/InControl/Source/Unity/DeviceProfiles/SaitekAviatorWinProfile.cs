@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Saitek AV8R";
 			Meta = "Saitek AV8R on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 			};
 

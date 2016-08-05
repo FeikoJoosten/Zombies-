@@ -104,22 +104,22 @@ namespace InControl
 
 			if (modifiersAsKeys)
 			{
-				for (var i = 1; i < 5; i++)
-				{
-					if (KeyInfo.KeyList[i].IsPressed)
-					{
-						keyCombo.AddInt( i );
-					}
-				}
-			}
-			else
-			{
 				for (var i = 5; i < 13; i++)
 				{
 					if (KeyInfo.KeyList[i].IsPressed)
 					{
 						keyCombo.AddInt( i );
 						return keyCombo;
+					}
+				}
+			}
+			else
+			{
+				for (var i = 1; i < 5; i++)
+				{
+					if (KeyInfo.KeyList[i].IsPressed)
+					{
+						keyCombo.AddInt( i );
 					}
 				}
 			}

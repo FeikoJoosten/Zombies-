@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 
@@ -8,121 +10,225 @@ namespace InControl
 	{
 		public static readonly InputDevice Null = new InputDevice( "None" );
 
-		internal int SortOrder = int.MaxValue;
-
 		public string Name { get; protected set; }
 		public string Meta { get; protected set; }
+		public int SortOrder { get; protected set; }
 
-		public ulong LastChangeTick { get; protected set; }
+		public Guid GUID { get; private set; }
+		public ulong LastChangeTick { get; private set; }
+		public bool IsAttached { get; private set; }
 
-		public InputControl[] Controls { get; protected set; }
+		protected bool RawSticks { get; private set; }
 
-		public OneAxisInputControl LeftStickX { get; protected set; }
-		public OneAxisInputControl LeftStickY { get; protected set; }
-		public TwoAxisInputControl LeftStick { get; protected set; }
+		List<InputControl> controls;
+		public ReadOnlyCollection<InputControl> Controls { get; protected set; }
+		protected InputControl[] ControlsByTarget { get; private set; }
 
-		public OneAxisInputControl RightStickX { get; protected set; }
-		public OneAxisInputControl RightStickY { get; protected set; }
-		public TwoAxisInputControl RightStick { get; protected set; }
+		public TwoAxisInputControl LeftStick { get; private set; }
+		public TwoAxisInputControl RightStick { get; private set; }
+		public TwoAxisInputControl DPad { get; private set; }
 
-		public OneAxisInputControl DPadX { get; protected set; }
-		public OneAxisInputControl DPadY { get; protected set; }
-		public TwoAxisInputControl DPad { get; protected set; }
 
-		public InputControl Command { get; protected set; }
+		protected struct AnalogSnapshotEntry
+		{
+			public float value;
+			public float maxValue;
+			public float minValue;
 
-		public bool IsAttached { get; internal set; }
+			public void TrackMinMaxValue( float currentValue )
+			{
+				maxValue = Mathf.Max( maxValue, currentValue );
+				minValue = Mathf.Min( minValue, currentValue );
+			}
+		}
 
-		internal bool RawSticks { get; set; }
+		protected AnalogSnapshotEntry[] AnalogSnapshot { get; set; }
+
+
+		public InputDevice()
+			: this( "" )
+		{
+
+		}
 
 
 		public InputDevice( string name )
+			: this( name, false )
+		{
+		}
+
+
+		public InputDevice( string name, bool rawSticks )
 		{
 			Name = name;
-			Meta = "";
+			RawSticks = rawSticks;
 
+			Meta = "";
+			GUID = Guid.NewGuid();
 			LastChangeTick = 0;
+			SortOrder = int.MaxValue;
 
 			const int numInputControlTypes = (int) InputControlType.Count + 1;
-			Controls = new InputControl[numInputControlTypes];
+			ControlsByTarget = new InputControl[numInputControlTypes];
+			controls = new List<InputControl>( 32 );
+			Controls = new ReadOnlyCollection<InputControl>( controls );
 
-			LeftStickX = new OneAxisInputControl();
-			LeftStickY = new OneAxisInputControl();
-			LeftStick = new TwoAxisInputControl();
-
-			RightStickX = new OneAxisInputControl();
-			RightStickY = new OneAxisInputControl();
-			RightStick = new TwoAxisInputControl();
-
-			DPadX = new OneAxisInputControl();
-			DPadY = new OneAxisInputControl();
-			DPad = new TwoAxisInputControl();
-
-			Command = AddControl( InputControlType.Command, "Command" );
+			RemoveAliasControls();
 		}
 
 
-		public bool HasControl( InputControlType inputControlType )
+		internal void OnAttached()
 		{
-			return Controls[(int) inputControlType] != null;
+			IsAttached = true;
+			AddAliasControls();
 		}
 
 
-		public InputControl GetControl( InputControlType inputControlType )
+		internal void OnDetached()
 		{
-			var control = Controls[(int) inputControlType];
-			return control ?? InputControl.Null;
+			IsAttached = false;
+			StopVibration();
+			RemoveAliasControls();
+		}
+
+
+		void AddAliasControls()
+		{
+			RemoveAliasControls();
+
+			if (IsKnown)
+			{
+				LeftStick = new TwoAxisInputControl();
+				RightStick = new TwoAxisInputControl();
+				DPad = new TwoAxisInputControl();
+
+				AddControl( InputControlType.LeftStickX, "Left Stick X" );
+				AddControl( InputControlType.LeftStickY, "Left Stick Y" );
+				AddControl( InputControlType.RightStickX, "Right Stick X" );
+				AddControl( InputControlType.RightStickY, "Right Stick Y" );
+				AddControl( InputControlType.DPadX, "DPad X" );
+				AddControl( InputControlType.DPadY, "DPad Y" );
+				AddControl( InputControlType.Command, "Command" );
+
+				ExpireControlCache();
+			}
+		}
+
+
+		void RemoveAliasControls()
+		{
+			LeftStick = TwoAxisInputControl.Null;
+			RightStick = TwoAxisInputControl.Null;
+			DPad = TwoAxisInputControl.Null;
+
+			RemoveControl( InputControlType.LeftStickX );
+			RemoveControl( InputControlType.LeftStickY );
+			RemoveControl( InputControlType.RightStickX );
+			RemoveControl( InputControlType.RightStickY );
+			RemoveControl( InputControlType.DPadX );
+			RemoveControl( InputControlType.DPadY );
+			RemoveControl( InputControlType.Command );
+
+			ExpireControlCache();
+		}
+
+
+		protected void ClearControls()
+		{
+			Array.Clear( ControlsByTarget, 0, ControlsByTarget.Length );
+			controls.Clear();
+			ExpireControlCache();
+		}
+
+
+		public bool HasControl( InputControlType controlType )
+		{
+			return ControlsByTarget[(int) controlType] != null;
+		}
+
+
+		/// <summary>
+		/// Gets the control with the specified control type. If the control does not exist, <c>InputControl.Null</c> is returned.
+		/// </summary>
+		/// <param name="controlType">The control type of the control to get.</param>
+		public InputControl GetControl( InputControlType controlType )
+		{
+			var inputControl = ControlsByTarget[(int) controlType];
+			return inputControl ?? InputControl.Null;
+		}
+
+
+		/// <summary>
+		/// Gets the control with the specified control type. If the control does not exist, <c>InputControl.Null</c> is returned.
+		/// </summary>
+		/// <param name="controlType">The control type of the control to get.</param>
+		public InputControl this[InputControlType controlType]
+		{
+			get
+			{
+				return GetControl( controlType );
+			}
 		}
 
 
 		// Warning: this is super inefficient. Don't use it unless you have to, m'kay?
 		public static InputControlType GetInputControlTypeByName( string inputControlName )
 		{
-			return (InputControlType) Enum.Parse( typeof(InputControlType), inputControlName );
+			return (InputControlType) Enum.Parse( typeof( InputControlType ), inputControlName );
 		}
 
 
 		// Warning: this is super inefficient. Don't use it unless you have to, m'kay?
-		public InputControl GetControlByName( string inputControlName )
+		public InputControl GetControlByName( string controlName )
 		{
-			var inputControlType = GetInputControlTypeByName( inputControlName );
+			var inputControlType = GetInputControlTypeByName( controlName );
 			return GetControl( inputControlType );
 		}
 
 
-		public InputControl AddControl( InputControlType inputControlType, string handle )
+		public InputControl AddControl( InputControlType controlType, string handle )
 		{
-			var inputControl = new InputControl( handle, inputControlType );
-			Controls[(int) inputControlType] = inputControl;
+			var inputControl = ControlsByTarget[(int) controlType];
+			if (inputControl == null)
+			{
+				inputControl = new InputControl( handle, controlType );
+				ControlsByTarget[(int) controlType] = inputControl;
+				controls.Add( inputControl );
+				ExpireControlCache();
+			}
 			return inputControl;
 		}
 
 
-		public InputControl AddControl( InputControlType inputControlType, string handle, float lowerDeadZone, float upperDeadZone )
+		public InputControl AddControl( InputControlType controlType, string handle, float lowerDeadZone, float upperDeadZone )
 		{
-			var inputControl = AddControl( inputControlType, handle );
+			var inputControl = AddControl( controlType, handle );
 			inputControl.LowerDeadZone = lowerDeadZone;
 			inputControl.UpperDeadZone = upperDeadZone;
 			return inputControl;
 		}
 
 
+		void RemoveControl( InputControlType controlType )
+		{
+			var inputControl = ControlsByTarget[(int) controlType];
+			if (inputControl != null)
+			{
+				ControlsByTarget[(int) controlType] = null;
+				controls.Remove( inputControl );
+				ExpireControlCache();
+			}
+		}
+
+
 		public void ClearInputState()
 		{
-			LeftStickX.ClearInputState();
-			LeftStickY.ClearInputState();
 			LeftStick.ClearInputState();
-
-			RightStickX.ClearInputState();
-			RightStickY.ClearInputState();
 			RightStick.ClearInputState();
-
-			DPadX.ClearInputState();
-			DPadY.ClearInputState();
 			DPad.ClearInputState();
 
-			var controlCount = Controls.Length;
-			for (int i = 0; i < controlCount; i++)
+			var controlsCount = Controls.Count;
+			for (int i = 0; i < controlsCount; i++)
 			{
 				var control = Controls[i];
 				if (control != null)
@@ -133,15 +239,15 @@ namespace InControl
 		}
 
 
-		internal void UpdateWithState( InputControlType inputControlType, bool state, ulong updateTick, float deltaTime )
+		protected void UpdateWithState( InputControlType controlType, bool state, ulong updateTick, float deltaTime )
 		{
-			GetControl( inputControlType ).UpdateWithState( state, updateTick, deltaTime );
+			GetControl( controlType ).UpdateWithState( state, updateTick, deltaTime );
 		}
 
 
-		internal void UpdateWithValue( InputControlType inputControlType, float value, ulong updateTick, float deltaTime )
+		protected void UpdateWithValue( InputControlType controlType, float value, ulong updateTick, float deltaTime )
 		{
-			GetControl( inputControlType ).UpdateWithValue( value, updateTick, deltaTime );
+			GetControl( controlType ).UpdateWithValue( value, updateTick, deltaTime );
 		}
 
 
@@ -237,7 +343,7 @@ namespace InControl
 
 		public virtual void Update( ulong updateTick, float deltaTime )
 		{
-			// Implemented by subclasses.
+			// Implemented by subclasses, but does nothing by default.
 		}
 
 
@@ -245,7 +351,7 @@ namespace InControl
 		{
 			for (int i = (int) InputControlType.Back; i <= (int) InputControlType.Power; i++)
 			{
-				var control = Controls[i];
+				var control = ControlsByTarget[i];
 				if (control != null && control.IsPressed)
 				{
 					return true;
@@ -256,13 +362,13 @@ namespace InControl
 		}
 
 
-		internal void ProcessLeftStick( ulong updateTick, float deltaTime )
+		void ProcessLeftStick( ulong updateTick, float deltaTime )
 		{
 			var x = Utility.ValueFromSides( LeftStickLeft.NextRawValue, LeftStickRight.NextRawValue );
 			var y = Utility.ValueFromSides( LeftStickDown.NextRawValue, LeftStickUp.NextRawValue, InputManager.InvertYAxis );
 
 			Vector2 v;
-			if (RawSticks)
+			if (RawSticks || LeftStickLeft.Raw || LeftStickRight.Raw || LeftStickUp.Raw || LeftStickDown.Raw)
 			{
 				v = new Vector2( x, y );
 			}
@@ -289,13 +395,13 @@ namespace InControl
 		}
 
 
-		internal void ProcessRightStick( ulong updateTick, float deltaTime )
+		void ProcessRightStick( ulong updateTick, float deltaTime )
 		{
 			var x = Utility.ValueFromSides( RightStickLeft.NextRawValue, RightStickRight.NextRawValue );
 			var y = Utility.ValueFromSides( RightStickDown.NextRawValue, RightStickUp.NextRawValue, InputManager.InvertYAxis );
 
 			Vector2 v;
-			if (RawSticks)
+			if (RawSticks || RightStickLeft.Raw || RightStickRight.Raw || RightStickUp.Raw || RightStickDown.Raw)
 			{
 				v = new Vector2( x, y );
 			}
@@ -322,14 +428,22 @@ namespace InControl
 		}
 
 
-		internal void ProcessDPad( ulong updateTick, float deltaTime )
+		void ProcessDPad( ulong updateTick, float deltaTime )
 		{
-			var lowerDeadZone = Utility.Max( DPadLeft.LowerDeadZone, DPadRight.LowerDeadZone, DPadUp.LowerDeadZone, DPadDown.LowerDeadZone );
-			var upperDeadZone = Utility.Min( DPadLeft.UpperDeadZone, DPadRight.UpperDeadZone, DPadUp.UpperDeadZone, DPadDown.UpperDeadZone );
-
 			var x = Utility.ValueFromSides( DPadLeft.NextRawValue, DPadRight.NextRawValue );
 			var y = Utility.ValueFromSides( DPadDown.NextRawValue, DPadUp.NextRawValue, InputManager.InvertYAxis );
-			var v = Utility.ApplyCircularDeadZone( x, y, lowerDeadZone, upperDeadZone );
+
+			Vector2 v;
+			if (RawSticks || DPadLeft.Raw || DPadRight.Raw || DPadUp.Raw || DPadDown.Raw)
+			{
+				v = new Vector2( x, y );
+			}
+			else
+			{
+				var lowerDeadZone = Utility.Max( DPadLeft.LowerDeadZone, DPadRight.LowerDeadZone, DPadUp.LowerDeadZone, DPadDown.LowerDeadZone );
+				var upperDeadZone = Utility.Min( DPadLeft.UpperDeadZone, DPadRight.UpperDeadZone, DPadUp.UpperDeadZone, DPadDown.UpperDeadZone );
+				v = Utility.ApplySeparateDeadZone( x, y, lowerDeadZone, upperDeadZone );
+			}
 
 			DPad.Raw = true;
 			DPad.UpdateWithAxes( v.x, v.y, updateTick, deltaTime );
@@ -349,30 +463,33 @@ namespace InControl
 
 		public void Commit( ulong updateTick, float deltaTime )
 		{
-			// We need to do some processing to ensure all the various objects
-			// holding directional values are calculated optimally with circular 
-			// deadzones and then set properly everywhere.
-			ProcessLeftStick( updateTick, deltaTime );
-			ProcessRightStick( updateTick, deltaTime );
-			ProcessDPad( updateTick, deltaTime );
+			// We need to do some processing for known controllers to ensure all
+			// the various control aliases holding directional values are calculated
+			// optimally with circular deadzones and then set properly everywhere.
+			if (IsKnown)
+			{
+				ProcessLeftStick( updateTick, deltaTime );
+				ProcessRightStick( updateTick, deltaTime );
+				ProcessDPad( updateTick, deltaTime );
+			}
 
 			// Next, commit all control values.
-			int controlCount = Controls.Length;
-			for (int i = 0; i < controlCount; i++)
+			int controlsCount = Controls.Count;
+			for (int i = 0; i < controlsCount; i++)
 			{
 				var control = Controls[i];
 				if (control != null)
 				{
 					control.Commit();
 
-					if (control.HasChanged)
+					if (control.HasChanged && !control.Passive)
 					{
 						LastChangeTick = updateTick;
 					}
 				}
 			}
 
-			// Calculate the "Command" control for known controllers and commit it.
+			// Calculate the Command control alias for known controllers and commit it.
 			if (IsKnown)
 			{
 				Command.CommitWithState( AnyCommandControlIsPressed(), updateTick, deltaTime );
@@ -380,9 +497,9 @@ namespace InControl
 		}
 
 
-		public bool LastChangedAfter( InputDevice otherDevice )
+		public bool LastChangedAfter( InputDevice device )
 		{
-			return LastChangeTick > otherDevice.LastChangeTick;
+			return device == null || LastChangeTick > device.LastChangeTick;
 		}
 
 
@@ -409,6 +526,28 @@ namespace InControl
 		}
 
 
+		public virtual void SetLightColor( float red, float green, float blue )
+		{
+		}
+
+
+		public void SetLightColor( Color color )
+		{
+			SetLightColor( color.r * color.a, color.g * color.a, color.b * color.a );
+		}
+
+
+		public virtual void SetLightFlash( float flashOnDuration, float flashOffDuration )
+		{
+		}
+
+
+		public void StopLightFlash()
+		{
+			SetLightFlash( 1.0f, 0.0f );
+		}
+
+
 		public virtual bool IsSupportedOnThisPlatform
 		{
 			get { return true; }
@@ -427,11 +566,59 @@ namespace InControl
 		}
 
 
+		[Obsolete( "Use InputDevice.CommandIsPressed instead.", false )]
+		public bool MenuIsPressed
+		{
+			get
+			{
+				return IsKnown && Command.IsPressed;
+			}
+		}
+
+
+		[Obsolete( "Use InputDevice.CommandWasPressed instead.", false )]
 		public bool MenuWasPressed
 		{
 			get
 			{
-				return GetControl( InputControlType.Command ).WasPressed;
+				return IsKnown && Command.WasPressed;
+			}
+		}
+
+
+		[Obsolete( "Use InputDevice.CommandWasReleased instead.", false )]
+		public bool MenuWasReleased
+		{
+			get
+			{
+				return IsKnown && Command.WasReleased;
+			}
+		}
+
+
+		public bool CommandIsPressed
+		{
+			get
+			{
+				return IsKnown && Command.IsPressed;
+			}
+		}
+
+
+		public bool CommandWasPressed
+		{
+			get
+			{
+				return IsKnown && Command.WasPressed;
+			}
+		}
+
+
+		public bool CommandWasReleased
+		{
+			get
+			{
+				return IsKnown && Command.WasReleased;
 			}
 		}
 
@@ -440,8 +627,8 @@ namespace InControl
 		{
 			get
 			{
-				int controlCount = Controls.GetLength( 0 );
-				for (int i = 0; i < controlCount; i++)
+				int controlsCount = Controls.Count;
+				for (int i = 0; i < controlsCount; i++)
 				{
 					var control = Controls[i];
 					if (control != null && control.IsButton && control.IsPressed)
@@ -454,34 +641,62 @@ namespace InControl
 			}
 		}
 
-		public InputControl LeftStickUp { get { return GetControl( InputControlType.LeftStickUp ); } }
-		public InputControl LeftStickDown { get { return GetControl( InputControlType.LeftStickDown ); } }
-		public InputControl LeftStickLeft { get { return GetControl( InputControlType.LeftStickLeft ); } }
-		public InputControl LeftStickRight { get { return GetControl( InputControlType.LeftStickRight ); } }
 
-		public InputControl RightStickUp { get { return GetControl( InputControlType.RightStickUp ); } }
-		public InputControl RightStickDown { get { return GetControl( InputControlType.RightStickDown ); } }
-		public InputControl RightStickLeft { get { return GetControl( InputControlType.RightStickLeft ); } }
-		public InputControl RightStickRight { get { return GetControl( InputControlType.RightStickRight ); } }
+		public bool AnyButtonIsPressed
+		{
+			get
+			{
+				int controlCount = Controls.Count;
+				for (int i = 0; i < controlCount; i++)
+				{
+					var control = Controls[i];
+					if (control != null && control.IsButton && control.IsPressed)
+					{
+						return true;
+					}
+				}
 
-		public InputControl DPadUp { get { return GetControl( InputControlType.DPadUp ); } }
-		public InputControl DPadDown { get { return GetControl( InputControlType.DPadDown ); } }
-		public InputControl DPadLeft { get { return GetControl( InputControlType.DPadLeft ); } }
-		public InputControl DPadRight { get { return GetControl( InputControlType.DPadRight ); } }
+				return false;
+			}
+		}
 
-		public InputControl Action1 { get { return GetControl( InputControlType.Action1 ); } }
-		public InputControl Action2 { get { return GetControl( InputControlType.Action2 ); } }
-		public InputControl Action3 { get { return GetControl( InputControlType.Action3 ); } }
-		public InputControl Action4 { get { return GetControl( InputControlType.Action4 ); } }
 
-		public InputControl LeftTrigger { get { return GetControl( InputControlType.LeftTrigger ); } }
-		public InputControl RightTrigger { get { return GetControl( InputControlType.RightTrigger ); } }
+		public bool AnyButtonWasPressed
+		{
+			get
+			{
+				int controlCount = Controls.Count;
+				for (int i = 0; i < controlCount; i++)
+				{
+					var control = Controls[i];
+					if (control != null && control.IsButton && control.WasPressed)
+					{
+						return true;
+					}
+				}
 
-		public InputControl LeftBumper { get { return GetControl( InputControlType.LeftBumper ); } }
-		public InputControl RightBumper { get { return GetControl( InputControlType.RightBumper ); } }
+				return false;
+			}
+		}
 
-		public InputControl LeftStickButton { get { return GetControl( InputControlType.LeftStickButton ); } }
-		public InputControl RightStickButton { get { return GetControl( InputControlType.RightStickButton ); } }
+
+		public bool AnyButtonWasReleased
+		{
+			get
+			{
+				int controlCount = Controls.Count;
+				for (int i = 0; i < controlCount; i++)
+				{
+					var control = Controls[i];
+					if (control != null && control.IsButton && control.WasReleased)
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
 
 
 		public TwoAxisInputControl Direction
@@ -493,10 +708,204 @@ namespace InControl
 		}
 
 
-		public static implicit operator bool( InputDevice device )
+		#region Cached Control Properties
+
+		InputControl cachedLeftStickUp;
+		InputControl cachedLeftStickDown;
+		InputControl cachedLeftStickLeft;
+		InputControl cachedLeftStickRight;
+		InputControl cachedRightStickUp;
+		InputControl cachedRightStickDown;
+		InputControl cachedRightStickLeft;
+		InputControl cachedRightStickRight;
+		InputControl cachedDPadUp;
+		InputControl cachedDPadDown;
+		InputControl cachedDPadLeft;
+		InputControl cachedDPadRight;
+		InputControl cachedAction1;
+		InputControl cachedAction2;
+		InputControl cachedAction3;
+		InputControl cachedAction4;
+		InputControl cachedLeftTrigger;
+		InputControl cachedRightTrigger;
+		InputControl cachedLeftBumper;
+		InputControl cachedRightBumper;
+		InputControl cachedLeftStickButton;
+		InputControl cachedRightStickButton;
+		InputControl cachedLeftStickX;
+		InputControl cachedLeftStickY;
+		InputControl cachedRightStickX;
+		InputControl cachedRightStickY;
+		InputControl cachedDPadX;
+		InputControl cachedDPadY;
+		InputControl cachedCommand;
+
+
+		public InputControl LeftStickUp { get { return cachedLeftStickUp ?? (cachedLeftStickUp = GetControl( InputControlType.LeftStickUp )); } }
+		public InputControl LeftStickDown { get { return cachedLeftStickDown ?? (cachedLeftStickDown = GetControl( InputControlType.LeftStickDown )); } }
+		public InputControl LeftStickLeft { get { return cachedLeftStickLeft ?? (cachedLeftStickLeft = GetControl( InputControlType.LeftStickLeft )); } }
+		public InputControl LeftStickRight { get { return cachedLeftStickRight ?? (cachedLeftStickRight = GetControl( InputControlType.LeftStickRight )); } }
+		public InputControl RightStickUp { get { return cachedRightStickUp ?? (cachedRightStickUp = GetControl( InputControlType.RightStickUp )); } }
+		public InputControl RightStickDown { get { return cachedRightStickDown ?? (cachedRightStickDown = GetControl( InputControlType.RightStickDown )); } }
+		public InputControl RightStickLeft { get { return cachedRightStickLeft ?? (cachedRightStickLeft = GetControl( InputControlType.RightStickLeft )); } }
+		public InputControl RightStickRight { get { return cachedRightStickRight ?? (cachedRightStickRight = GetControl( InputControlType.RightStickRight )); } }
+		public InputControl DPadUp { get { return cachedDPadUp ?? (cachedDPadUp = GetControl( InputControlType.DPadUp )); } }
+		public InputControl DPadDown { get { return cachedDPadDown ?? (cachedDPadDown = GetControl( InputControlType.DPadDown )); } }
+		public InputControl DPadLeft { get { return cachedDPadLeft ?? (cachedDPadLeft = GetControl( InputControlType.DPadLeft )); } }
+		public InputControl DPadRight { get { return cachedDPadRight ?? (cachedDPadRight = GetControl( InputControlType.DPadRight )); } }
+		public InputControl Action1 { get { return cachedAction1 ?? (cachedAction1 = GetControl( InputControlType.Action1 )); } }
+		public InputControl Action2 { get { return cachedAction2 ?? (cachedAction2 = GetControl( InputControlType.Action2 )); } }
+		public InputControl Action3 { get { return cachedAction3 ?? (cachedAction3 = GetControl( InputControlType.Action3 )); } }
+		public InputControl Action4 { get { return cachedAction4 ?? (cachedAction4 = GetControl( InputControlType.Action4 )); } }
+		public InputControl LeftTrigger { get { return cachedLeftTrigger ?? (cachedLeftTrigger = GetControl( InputControlType.LeftTrigger )); } }
+		public InputControl RightTrigger { get { return cachedRightTrigger ?? (cachedRightTrigger = GetControl( InputControlType.RightTrigger )); } }
+		public InputControl LeftBumper { get { return cachedLeftBumper ?? (cachedLeftBumper = GetControl( InputControlType.LeftBumper )); } }
+		public InputControl RightBumper { get { return cachedRightBumper ?? (cachedRightBumper = GetControl( InputControlType.RightBumper )); } }
+		public InputControl LeftStickButton { get { return cachedLeftStickButton ?? (cachedLeftStickButton = GetControl( InputControlType.LeftStickButton )); } }
+		public InputControl RightStickButton { get { return cachedRightStickButton ?? (cachedRightStickButton = GetControl( InputControlType.RightStickButton )); } }
+		public InputControl LeftStickX { get { return cachedLeftStickX ?? (cachedLeftStickX = GetControl( InputControlType.LeftStickX )); } }
+		public InputControl LeftStickY { get { return cachedLeftStickY ?? (cachedLeftStickY = GetControl( InputControlType.LeftStickY )); } }
+		public InputControl RightStickX { get { return cachedRightStickX ?? (cachedRightStickX = GetControl( InputControlType.RightStickX )); } }
+		public InputControl RightStickY { get { return cachedRightStickY ?? (cachedRightStickY = GetControl( InputControlType.RightStickY )); } }
+		public InputControl DPadX { get { return cachedDPadX ?? (cachedDPadX = GetControl( InputControlType.DPadX )); } }
+		public InputControl DPadY { get { return cachedDPadY ?? (cachedDPadY = GetControl( InputControlType.DPadY )); } }
+		public InputControl Command { get { return cachedCommand ?? (cachedCommand = GetControl( InputControlType.Command )); } }
+
+
+		void ExpireControlCache()
 		{
-			return device != null;
+			cachedLeftStickUp = null;
+			cachedLeftStickDown = null;
+			cachedLeftStickLeft = null;
+			cachedLeftStickRight = null;
+			cachedRightStickUp = null;
+			cachedRightStickDown = null;
+			cachedRightStickLeft = null;
+			cachedRightStickRight = null;
+			cachedDPadUp = null;
+			cachedDPadDown = null;
+			cachedDPadLeft = null;
+			cachedDPadRight = null;
+			cachedAction1 = null;
+			cachedAction2 = null;
+			cachedAction3 = null;
+			cachedAction4 = null;
+			cachedLeftTrigger = null;
+			cachedRightTrigger = null;
+			cachedLeftBumper = null;
+			cachedRightBumper = null;
+			cachedLeftStickButton = null;
+			cachedRightStickButton = null;
+			cachedLeftStickX = null;
+			cachedLeftStickY = null;
+			cachedRightStickX = null;
+			cachedRightStickY = null;
+			cachedDPadX = null;
+			cachedDPadY = null;
+			cachedCommand = null;
 		}
+
+		#endregion
+
+
+		#region Snapshots for Unknown Devices
+
+		internal virtual int NumUnknownAnalogs
+		{
+			get { return 0; }
+		}
+
+
+		internal virtual int NumUnknownButtons
+		{
+			get { return 0; }
+		}
+
+
+		internal virtual bool ReadRawButtonState( int index )
+		{
+			return false;
+		}
+
+
+		internal virtual float ReadRawAnalogValue( int index )
+		{
+			return 0.0f;
+		}
+
+
+		internal void TakeSnapshot()
+		{
+			if (AnalogSnapshot == null)
+			{
+				AnalogSnapshot = new AnalogSnapshotEntry[NumUnknownAnalogs];
+			}
+
+			for (var i = 0; i < NumUnknownAnalogs; i++)
+			{
+				var analogValue = Utility.ApplySnapping( ReadRawAnalogValue( i ), 0.5f );
+				AnalogSnapshot[i].value = analogValue;
+			}
+		}
+
+
+		internal UnknownDeviceControl GetFirstPressedAnalog()
+		{
+			if (AnalogSnapshot != null)
+			{
+				for (var index = 0; index < NumUnknownAnalogs; index++)
+				{
+					var control = InputControlType.Analog0 + index;
+
+					var analogValue = Utility.ApplySnapping( ReadRawAnalogValue( index ), 0.5f );
+					var analogDelta = analogValue - AnalogSnapshot[index].value;
+
+					AnalogSnapshot[index].TrackMinMaxValue( analogValue );
+
+					if (analogDelta > +0.1f)
+					{
+						analogDelta = AnalogSnapshot[index].maxValue - AnalogSnapshot[index].value;
+					}
+
+					if (analogDelta < -0.1f)
+					{
+						analogDelta = AnalogSnapshot[index].minValue - AnalogSnapshot[index].value;
+					}
+
+					if (analogDelta > +1.9f)
+					{
+						return new UnknownDeviceControl( control, InputRangeType.MinusOneToOne );
+					}
+
+					if (analogDelta < -0.9f)
+					{
+						return new UnknownDeviceControl( control, InputRangeType.ZeroToMinusOne );
+					}
+
+					if (analogDelta > +0.9f)
+					{
+						return new UnknownDeviceControl( control, InputRangeType.ZeroToOne );
+					}
+				}
+			}
+
+			return UnknownDeviceControl.None;
+		}
+
+
+		internal UnknownDeviceControl GetFirstPressedButton()
+		{
+			for (var index = 0; index < NumUnknownButtons; index++)
+			{
+				if (ReadRawButtonState( index ))
+				{
+					return new UnknownDeviceControl( InputControlType.Button0 + index, InputRangeType.ZeroToOne );
+				}
+			}
+
+			return UnknownDeviceControl.None;
+		}
+
+		#endregion
 	}
 }
-

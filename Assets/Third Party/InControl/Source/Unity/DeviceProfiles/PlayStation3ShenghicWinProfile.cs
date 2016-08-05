@@ -12,7 +12,7 @@ namespace InControl
 			Name = "PlayStation 3 Controller";
 			Meta = "Shenghic PlayStation 3 Controller on Windows (not MotionInJoy)";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

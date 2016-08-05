@@ -10,22 +10,20 @@ namespace InControl
 	/// </summary>
 	public enum InputControlType : int
 	{
-		None,
+		None = 0,
 
 		// Standardized controls.
 		//
-		LeftStickUp,
+		LeftStickUp = 1,
 		LeftStickDown,
 		LeftStickLeft,
 		LeftStickRight,
-
 		LeftStickButton,
 
 		RightStickUp,
 		RightStickDown,
 		RightStickLeft,
 		RightStickRight,
-
 		RightStickButton,
 
 		DPadUp,
@@ -33,23 +31,27 @@ namespace InControl
 		DPadLeft,
 		DPadRight,
 
-		Action1,
-		Action2,
-		Action3,
-		Action4,
-
 		LeftTrigger,
 		RightTrigger,
 
 		LeftBumper,
 		RightBumper,
 
-		// This standardized control is an alias that maps onto all command buttons.
-		//
-		Command,
+		Action1,
+		Action2,
+		Action3,
+		Action4,
+		Action5,
+		Action6,
+		Action7,
+		Action8,
+		Action9,
+		Action10,
+		Action11,
+		Action12,
 
 		// Command buttons.
-		Back,
+		Back = 100,
 		Start,
 		Select,
 		System,
@@ -61,20 +63,50 @@ namespace InControl
 		View,
 		Power,
 
+		// Steering controls.
+		PedalLeft = 150,
+		PedalRight,
+		PedalMiddle,
+		GearUp,
+		GearDown,
+
+		// Flight Stick controls.
+		Pitch = 200,
+		Roll,
+		Yaw,
+		ThrottleUp,
+		ThrottleDown,
+		ThrottleLeft,
+		ThrottleRight,
+		POVUp,
+		POVDown,
+		POVLeft,
+		POVRight,
+
 		// Unusual controls.
 		//
-		TiltX,
+		TiltX = 250,
 		TiltY,
 		TiltZ,
 		ScrollWheel,
 		TouchPadTap,
+		TouchPadButton,
 		TouchPadXAxis,
 		TouchPadYAxis,
 
+		// Alias controls; can't be explicitly mapped in a profile.
+		//
+		Command = 300,
+		LeftStickX,
+		LeftStickY,
+		RightStickX,
+		RightStickY,
+		DPadX,
+		DPadY,
 
 		// Generic controls (usually assigned to unknown devices).
 		//
-		Analog0,
+		Analog0 = 400,
 		Analog1,
 		Analog2,
 		Analog3,
@@ -95,7 +127,7 @@ namespace InControl
 		Analog18,
 		Analog19,
 
-		Button0,
+		Button0 = 500,
 		Button1,
 		Button2,
 		Button3,

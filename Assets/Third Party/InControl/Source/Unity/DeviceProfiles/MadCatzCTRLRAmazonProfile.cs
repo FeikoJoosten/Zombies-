@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Mad Catz C.T.R.L.R Controller";
 			Meta = "Mad Catz C.T.R.L.R Controller on Amazon Fire TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT"
 			};
 

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "PlayStation 4 Controller";
 			Meta = "PlayStation 4 Controller on PlayStation 4";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"PS4"
 			};
 
@@ -52,6 +52,11 @@ namespace InControl
 					Source = Button5
 				},
 				new InputControlMapping {
+					Handle = "Touchpad",
+					Target = InputControlType.TouchPadTap,
+					Source = Button6
+				},
+				new InputControlMapping {
 					Handle = "Options",
 					Target = InputControlType.Options,
 					Source = Button7
@@ -65,7 +70,32 @@ namespace InControl
 					Handle = "Right Stick Button",
 					Target = InputControlType.RightStickButton,
 					Source = Button9
-				}
+				},
+				new InputControlMapping {
+					Handle = "DPad Up",
+					Target = InputControlType.DPadUp,
+					Source = Button10
+				},
+				new InputControlMapping {
+					Handle = "DPad Right",
+					Target = InputControlType.DPadRight,
+					Source = Button11
+				},
+				new InputControlMapping {
+					Handle = "DPad Down",
+					Target = InputControlType.DPadDown,
+					Source = Button12
+				},
+				new InputControlMapping {
+					Handle = "DPad Left",
+					Target = InputControlType.DPadLeft,
+					Source = Button13
+				},
+				new InputControlMapping {
+					Handle = "TouchPad Button",
+					Target = InputControlType.TouchPadTap,
+					Source = Button6
+				},
 			};
 
 			AnalogMappings = new[] {

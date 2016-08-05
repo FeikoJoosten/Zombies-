@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Green Throttle Atlas Controller";
 			Meta = "Green Throttle Atlas Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android",
 			};
 

@@ -13,6 +13,11 @@ public class PlayerController : OverridableMonoBehaviour
 	[SerializeField]
 	private GameObject playerArmRight;
 
+	public bool IsSprinting
+	{
+		get { return playerActions.sprint.IsPressed; }
+	}
+
 	private PlayerActions playerActions = PlayerActions.CreateWithDefaultBindings();
 
 	public override void UpdateMe()

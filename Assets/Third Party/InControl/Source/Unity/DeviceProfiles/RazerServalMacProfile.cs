@@ -16,7 +16,7 @@ namespace InControl
 			Name = "Razer Serval Controller";
 			Meta = "Razer Serval Controller on Mac";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"OS X"
 			};
 

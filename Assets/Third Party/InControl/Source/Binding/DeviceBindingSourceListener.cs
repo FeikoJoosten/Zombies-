@@ -74,7 +74,7 @@ namespace InControl
 		{
 			if (device.IsKnown)
 			{
-				var controlCount = device.Controls.Length;
+				var controlCount = device.Controls.Count;
 				for (int i = 0; i < controlCount; i++)
 				{
 					var control = device.Controls[i];

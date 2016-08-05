@@ -16,7 +16,7 @@ namespace InControl
                 "Windows 7"
             };
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

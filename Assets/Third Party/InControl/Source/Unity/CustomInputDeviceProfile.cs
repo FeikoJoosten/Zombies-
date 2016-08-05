@@ -11,14 +11,14 @@ namespace InControl
 	/// http://www.gallantgames.com/pages/incontrol-binding-actions-to-controls 
 	/// </summary>
 	[Obsolete( "Custom profiles are deprecated. Use the bindings API instead.", false )]
-	public class CustomInputDeviceProfile : InputDeviceProfile
+	public class CustomInputDeviceProfile : UnityInputDeviceProfileBase
 	{
 		public CustomInputDeviceProfile()
 		{
 			Name = "Custom Device Profile";
 			Meta = "Custom Device Profile";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows",
 				"Mac",
 				"Linux"
@@ -27,15 +27,6 @@ namespace InControl
 			Sensitivity = 1.0f;
 			LowerDeadZone = 0.0f;
 			UpperDeadZone = 1.0f;
-		}
-
-
-		public sealed override bool IsKnown
-		{ 
-			get
-			{
-				return true;
-			}
 		}
 
 
@@ -77,6 +68,13 @@ namespace InControl
 		{
 			return new UnityKeyCodeComboSource( keyCodeList );
 		}
+
+		protected static InputControlSource MouseButton0 = new UnityMouseButtonSource( 0 );
+		protected static InputControlSource MouseButton1 = new UnityMouseButtonSource( 1 );
+		protected static InputControlSource MouseButton2 = new UnityMouseButtonSource( 2 );
+		protected static InputControlSource MouseXAxis = new UnityMouseAxisSource( "x" );
+		protected static InputControlSource MouseYAxis = new UnityMouseAxisSource( "y" );
+		protected static InputControlSource MouseScrollWheel = new UnityMouseAxisSource( "z" );
 
 		#endregion
 	}

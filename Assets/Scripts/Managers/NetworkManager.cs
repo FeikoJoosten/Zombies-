@@ -99,11 +99,15 @@ public class NetworkManager : OverridableMonoBehaviour
 
 		RoomOptions roomOptions = new RoomOptions();
 
-		roomOptions.isVisible = isVisible;
-		roomOptions.isOpen = isOpen;
-		roomOptions.maxPlayers = Convert.ToByte(maxPlayers);
+		roomOptions.IsVisible = isVisible;
+		roomOptions.IsOpen = isOpen;
+		roomOptions.MaxPlayers = Convert.ToByte(maxPlayers);
+		roomOptions.CleanupCacheOnLeave = true;
 
-		PhotonNetwork.CreateRoom(CheckForViableRoomname(roomName), roomOptions, null);
+		roomOptions.CustomRoomPropertiesForLobby = new string[1] { "gameType" };
+		roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable(1) { { "gameType", GameManager.GetInstance().CurrentGameType } };
+
+		PhotonNetwork.CreateRoom(CheckForViableRoomname(roomName), roomOptions, TypedLobby.Default);
 	}
 
 	string CheckForViableRoomname(string nameToValidate)
@@ -144,6 +148,7 @@ public class NetworkManager : OverridableMonoBehaviour
 	public void JoinRoom(string roomToJoin)
 	{
 		PhotonNetwork.JoinRoom(roomToJoin);
+
 	}
 
 	public AsyncOperation StartGame(int levelToLoad)

@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Generic Gamepad";
 			Meta = "Generic Gamepad on BlackBerry";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Blackberry",
 			};
 

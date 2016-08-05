@@ -1,9 +1,8 @@
-Add exhaustion to sprinting								-- 
+Look into issue with wave progress on host leave		-- 
 Add controller support to main menu						-- 
 Add spectate mode if player is dead						-- Need testing
 No endscreen for spectator								-- Need testing
-Add character selection screen							-- 
-Add gamemode selection									-- 
+Add Photon chat api support								-- 
 Add different gamemodes									-- 
 	Team Deathmatch										-- 
 		Add class selection/creation					-- 
@@ -18,6 +17,9 @@ Add different gamemodes									--
 
 
 Add player healthbars									-- DONE
+Add exhaustion to sprinting								-- DONE
+Add character selection screen							-- DONE
+Add gamemode selection									-- DONE
 Tweak animations better									-- DONE
 Player body was able to glitch through the bridge ramp	-- DONE
 Add weapon unlocking System								-- DONE
@@ -50,9 +52,8 @@ Add night map											--
 	Add level selector in room creator					-- 
 	Add level info in inRoomMenu						-- 
 	Add level info in roomSelectorMenu					-- 
-Add chacter selector to inRoomMenu						-- 
 Add credits menu										-- 
-Look into issue with AI performance						-- 
+Look into issue with AI performance						-- DONE
 Add notifications on player leaved/ on player death		--  
 	Also update highscore list							-- 
 Redesign UI to look prettier							-- 
@@ -61,4 +62,3 @@ Redesign UI to look prettier							--
 	audio menu											-- 
 	video menu											-- 
 Add a crosshair for the weapons							-- 
-Change default button for weapon menu					-- 

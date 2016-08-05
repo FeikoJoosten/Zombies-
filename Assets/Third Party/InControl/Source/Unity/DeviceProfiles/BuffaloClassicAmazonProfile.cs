@@ -15,7 +15,7 @@ namespace InControl
 			Name = "Buffalo Class Gamepad";
 			Meta = "Buffalo Class Gamepad on Amazon Fire TV";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Amazon AFT",
 			};
 

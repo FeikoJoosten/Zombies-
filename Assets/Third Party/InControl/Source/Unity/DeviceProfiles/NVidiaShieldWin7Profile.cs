@@ -12,7 +12,7 @@ namespace InControl
 			Name = "NVIDIA Shield Controller";
 			Meta = "NVIDIA Shield Controller on Windows 7";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows 7"
 			};
 

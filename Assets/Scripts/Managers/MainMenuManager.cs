@@ -60,6 +60,8 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private Dropdown gameQualityDropdown;
 	[SerializeField]
+	private Dropdown gameTypeDropdown;
+	[SerializeField]
 	private AudioSource audioSource;
 	[SerializeField]
 	private AudioClip[] audioClips;
@@ -292,8 +294,25 @@ public class MainMenuManager : Photon.MonoBehaviour
 			if (currentPlayersInRoom != PhotonNetwork.room.playerCount)
 			{
 				playerprogresses.Clear();
+				
+				GameManager.GetInstance().CurrentGameType = (GameTypes)PhotonNetwork.room.customProperties["gameType"];
 
-				roomNameText.text = "Room name: " + PhotonNetwork.room.name;
+				string roomName = "Room name: " + PhotonNetwork.room.name + System.Environment.NewLine + "Game mode: ";
+
+				switch (GameManager.GetInstance().CurrentGameType)
+				{
+					case GameTypes.ZombieMode:
+					roomName += "Zombies!";
+					break;
+					case GameTypes.TeamDeathMatch:
+					roomName += "Team Deathmatch";
+					break;
+					case GameTypes.TTT:
+					roomName += "Trouble In Terrorist Town";
+					break;
+				}
+
+				roomNameText.text = roomName;
 				currentPlayersInRoomText.text = PhotonNetwork.room.playerCount.ToString() + "/" + PhotonNetwork.room.maxPlayers.ToString() + " players";
 
 				int counter = 0;
@@ -518,6 +537,19 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	public void CreateMultiplayerRoom()
 	{
+		switch (gameTypeDropdown.value)
+		{
+			case 0:
+			GameManager.GetInstance().CurrentGameType = GameTypes.ZombieMode;
+			break;
+			case 1:
+			GameManager.GetInstance().CurrentGameType = GameTypes.TeamDeathMatch;
+			break;
+			case 2:
+			GameManager.GetInstance().CurrentGameType = GameTypes.TTT;
+			break;
+		}
+
 		GameManager.GetInstance().GetNetworkManager().CreateRoom(true, true, (int)maxPlayerSlider.value);
 		multiplayerStartGameButton.gameObject.SetActive(true);
 	}
@@ -534,6 +566,23 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 			RoomSelector room = Instantiate(roomSelectorPrefab);
 			room.RoomName = rooms[i].name;
+
+			if (rooms[i].customProperties.ContainsKey("gameType") == true)
+			{
+				switch ((GameTypes)rooms[i].customProperties["gameType"])
+				{
+					case GameTypes.ZombieMode:
+					room.GameType = "Zombies!";
+					break;
+					case GameTypes.TeamDeathMatch:
+					room.GameType = "Team Deathmatch";
+					break;
+					case GameTypes.TTT:
+					room.GameType = "Trouble In Terrorist Town";
+					break;
+				}
+			}
+
 			room.CurrentPlayerCount = rooms[i].playerCount.ToString();
 			room.MaxPlayerCount = rooms[i].maxPlayers.ToString();
 			room.transform.SetParent(roomSelectorParent.transform);
@@ -564,6 +613,9 @@ public class MainMenuManager : Photon.MonoBehaviour
 	{
 		if (PhotonNetwork.inRoom == true)
 		{
+			ClearRoomList();
+			currentPlayersInRoom = 0;
+			roomNameText.text = "";
 			GameManager.GetInstance().GetNetworkManager().LeaveRoom();
 		}
 	}

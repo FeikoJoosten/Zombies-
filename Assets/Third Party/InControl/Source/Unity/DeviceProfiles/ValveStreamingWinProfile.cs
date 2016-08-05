@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Valve Streaming Gamepad";
 			Meta = "Valve Streaming Gamepad on Windows";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Windows"
 			};
 

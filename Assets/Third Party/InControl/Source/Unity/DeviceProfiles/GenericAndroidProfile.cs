@@ -12,7 +12,7 @@ namespace InControl
 			Name = "Generic Controller";
 			Meta = "Generic Controller on Android";
 
-			SupportedPlatforms = new[] {
+			IncludePlatforms = new[] {
 				"Android",
 			};
 
