@@ -93,6 +93,7 @@
     <Compile Include="Assets\PhotonChatApi\IChatClientListener.cs" />
     <Compile Include="Assets\Scripts\AI\Zombie.cs" />
     <Compile Include="Assets\Scripts\Enums\GameTypes.cs" />
+    <Compile Include="Assets\Scripts\Enums\PlayerBodyType.cs" />
     <Compile Include="Assets\Scripts\Main Menu\CharacterSelector.cs" />
     <Compile Include="Assets\Scripts\Main Menu\ControllChanger.cs" />
     <Compile Include="Assets\Scripts\Main Menu\LoadingBar.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Assets\Scripts\Pickups\Healthpack pickup\HealthpackPickupSpawner.cs" />
     <Compile Include="Assets\Scripts\Player\Player.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerActions.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerBody.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerController.cs" />
     <Compile Include="Assets\Scripts\Player\Spectator.cs" />
     <Compile Include="Assets\Scripts\Player\SpectatorController.cs" />
@@ -125,6 +127,7 @@
     <Compile Include="Assets\Scripts\Weapon\FireWeapon.cs" />
     <Compile Include="Assets\Scripts\Weapon\Grenade.cs" />
     <Compile Include="Assets\Scripts\Weapon\ThrowableWeapon.cs" />
+    <Compile Include="Assets\Scripts\Weapon\ThrowableWeaponModel.cs" />
     <Compile Include="Assets\Scripts\Weapon\Weapon.cs" />
     <Compile Include="Assets\Scripts\Weapon\WeaponMenu.cs" />
     <Compile Include="Assets\Scripts\Weapon\WeaponSlot.cs" />

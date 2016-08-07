@@ -11,6 +11,7 @@ public class PlayerActions : PlayerActionSet
 	public PlayerAction left;
 	public PlayerAction right;
 	public PlayerAction shoot;
+	public PlayerAction throwWeaponAway;
 	public PlayerAction reloadWeapon;
 	public PlayerAction rotateUp;
 	public PlayerAction rotateDown;
@@ -43,6 +44,7 @@ public class PlayerActions : PlayerActionSet
 		rotateLeft = CreatePlayerAction("Look left");
 		rotateRight = CreatePlayerAction("Look right");
 		shoot = CreatePlayerAction("Fire weapon");
+		throwWeaponAway = CreatePlayerAction("Drop weapon");
 		reloadWeapon = CreatePlayerAction("Reload weapon");
 		toggleWeaponMenu = CreatePlayerAction("Open weapon switcher");
 		toggleHighscoreMenu = CreatePlayerAction("Open highscore list");
@@ -96,6 +98,9 @@ public class PlayerActions : PlayerActionSet
 
 		playerActions.shoot.AddDefaultBinding(Mouse.LeftButton);
 		playerActions.shoot.AddDefaultBinding(InputControlType.RightBumper);
+
+		playerActions.throwWeaponAway.AddDefaultBinding(Key.Q);
+		playerActions.throwWeaponAway.AddDefaultBinding(InputControlType.RightStickButton);
 
 		playerActions.reloadWeapon.AddDefaultBinding(Key.R);
 		playerActions.reloadWeapon.AddDefaultBinding(InputControlType.Action3);//Square on PS, X on Xbox controller

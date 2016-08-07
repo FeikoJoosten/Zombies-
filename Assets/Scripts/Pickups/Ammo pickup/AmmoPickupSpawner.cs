@@ -11,6 +11,8 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 	private LayerMask spawnMask;
 	[SerializeField]
 	private LayerMask nonSpawnMask;
+	[SerializeField]
+	private int TTTWeaponSpawnCount = 50;
 
 	private List<Weapon> enabledWeapons = new List<Weapon>();
 	private Player[] players;
@@ -36,10 +38,21 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 
 				if (currentSpawnTime <= 0)
 				{
-					SpawnAmmoPack();
+					SpawnAmmoPack(true);
 					currentSpawnTime = spawnTime;
 				}
+
+				for(int i = TTTWeaponSpawnCount; i >= 0; i--)
+				{
+					SpawnAmmoPack(false);
+					TTTWeaponSpawnCount--;
+				}
 			} 
+			else
+			{
+				players = new Player[GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count];
+				GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values.CopyTo(players, 0);
+			}
 		}
 		else
 		{
@@ -62,32 +75,32 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 		}
 	}
 
-	void SpawnAmmoPack()
+	int CalculateEnabledWeaponsCount()
 	{
 		enabledWeapons.Clear();
 		Player player = players[0];
 		int playerEnabledWeaponsCount = 0;
 
-		for(int i = 0; i < player.AllWeapons.Length; i++)
+		for (int i = 0; i < player.AllWeapons.Length; i++)
 		{
-			if(player.AllWeapons[i].IsAllowedToUse == true)
+			if (player.AllWeapons[i].IsAllowedToUse == true)
 			{
 				playerEnabledWeaponsCount++;
 			}
 		}
 
-		for(int i = 0; i < players.Length; i++)
+		for (int i = 0; i < players.Length; i++)
 		{
 			int temp = 0;
-			for(int j = 0; j < players[i].AllWeapons.Length; j++)
+			for (int j = 0; j < players[i].AllWeapons.Length; j++)
 			{
-				if(players[i].AllWeapons[j].IsAllowedToUse == true)
+				if (players[i].AllWeapons[j].IsAllowedToUse == true)
 				{
 					temp++;
 				}
 			}
 
-			if(temp > playerEnabledWeaponsCount)
+			if (temp > playerEnabledWeaponsCount)
 			{
 				player = players[i];
 			}
@@ -104,16 +117,33 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 			}
 		}
 
-		AmmoPickup prefab = ammoPrefabs[Random.Range(0, enabledWeapons.Count - 1)];
+		return enabledWeapons.Count;
+	}
+
+	void SpawnAmmoPack(bool shouldShowLineRenderer)
+	{
+		AmmoPickup prefab;
+
+		if (GameManager.GetInstance().CurrentGameType == GameTypes.ZombieMode)
+		{
+			CalculateEnabledWeaponsCount();
+			prefab = ammoPrefabs[Random.Range(0, enabledWeapons.Count - 1)];
+		}
+		else
+		{
+			prefab = ammoPrefabs[Random.Range(0, ammoPrefabs.Length - 1)];
+		}
+
 		if (prefab != null)
 		{
 			if (PhotonNetwork.offlineMode == true)
 			{
-				Instantiate(prefab, GetASpawnPosition(), prefab.transform.rotation);
+				AmmoPickup pickup = (AmmoPickup)Instantiate(prefab, GetASpawnPosition(), prefab.transform.rotation);
+				pickup.ShouldShowLineRenderer = shouldShowLineRenderer;
 			}
 			else
 			{
-				PhotonNetwork.InstantiateSceneObject(prefab.name, GetASpawnPosition(), prefab.transform.rotation, 0, null);
+				PhotonNetwork.InstantiateSceneObject(prefab.name, GetASpawnPosition(), prefab.transform.rotation, 0, null).GetComponent<AmmoPickup>().ShouldShowLineRenderer = shouldShowLineRenderer;
 			}
 		}
 	}
@@ -147,5 +177,10 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 		{
 			return GetASpawnPosition();
 		}
+	}
+
+	public void SpawnAmmoPickupOnLocation(int currentWeaponNumber, Vector3 spawnPosition)
+	{
+		PhotonNetwork.InstantiateSceneObject(ammoPrefabs[currentWeaponNumber].name, spawnPosition, ammoPrefabs[currentWeaponNumber].transform.rotation, 0, null).GetComponent<AmmoPickup>().ShouldShowLineRenderer = true;
 	}
 }

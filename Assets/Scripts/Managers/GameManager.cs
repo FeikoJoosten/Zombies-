@@ -38,7 +38,7 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		return instance;
 	}
-	
+
 	protected override void Awake()
 	{
 		base.Awake();
@@ -50,7 +50,7 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		GameManager[] gameManagers = FindObjectsOfType<GameManager>();
 
-		if(gameManagers.Length > 1)
+		if (gameManagers.Length > 1)
 		{
 			Destroy(gameObject);
 		}
@@ -65,25 +65,28 @@ public class GameManager : OverridableMonoBehaviour
 
 	public override void UpdateMe()
 	{
-		if (PhotonNetwork.offlineMode == false)
+		if (currentGameType == GameTypes.ZombieMode)
 		{
-			if (inGame == true && PhotonNetwork.isMasterClient == true)
+			if (PhotonNetwork.offlineMode == false)
 			{
-				if (GetAIManager().AllRemainingZombies.Count == 0)
+				if (inGame == true && PhotonNetwork.isMasterClient == true)
 				{
-					aIManager.NextWave();
-				}
-			} 
-		}
-		else
-		{
-			if (inGame == true)
-			{
-				if (GetAIManager().AllRemainingZombies.Count == 0)
-				{
-					aIManager.NextWave();
+					if (GetAIManager().AllRemainingZombies.Count == 0)
+					{
+						aIManager.NextWave();
+					}
 				}
 			}
+			else
+			{
+				if (inGame == true)
+				{
+					if (GetAIManager().AllRemainingZombies.Count == 0)
+					{
+						aIManager.NextWave();
+					}
+				}
+			} 
 		}
 	}
 
@@ -99,7 +102,7 @@ public class GameManager : OverridableMonoBehaviour
 				}
 				else
 				{
-					if(FindObjectOfType<AIManager>() != null)
+					if (FindObjectOfType<AIManager>() != null)
 					{
 						aIManager = FindObjectOfType<AIManager>();
 					}
@@ -129,15 +132,15 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		if (audioManager == null)
 		{
-			if(PhotonNetwork.inRoom == false)
+			if (PhotonNetwork.inRoom == false)
 			{
 				audioManager = Instantiate(audioManagerPrefab);
 			}
 			else
 			{
-				if(PhotonNetwork.offlineMode == false)
+				if (PhotonNetwork.offlineMode == false)
 				{
-					if(PhotonNetwork.isMasterClient == false)
+					if (PhotonNetwork.isMasterClient == false)
 					{
 						audioManager = FindObjectOfType<AudioManager>();
 					}

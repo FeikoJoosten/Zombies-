@@ -27,6 +27,7 @@ GameObject:
   - 4: {fileID: 401332}
   - 114: {fileID: 11495070}
   - 65: {fileID: 6568014}
+  - 65: {fileID: 6519068}
   - 54: {fileID: 5477306}
   - 114: {fileID: 11408546}
   m_Layer: 10
@@ -62,6 +63,7 @@ Transform:
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071067}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 89.980194, y: 0, z: 0}
   m_Children:
   - {fileID: 442502}
   - {fileID: 443262}
@@ -76,6 +78,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 401332}
   m_RootOrder: 0
@@ -88,6 +91,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 401332}
   m_RootOrder: 1
@@ -173,6 +177,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!65 &6519068
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 145772}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.0175, y: 0.05, z: 0.0175}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &6568014
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -225,6 +241,9 @@ MonoBehaviour:
   movementSpeed: 1000
   rig: {fileID: 5477306}
   destroyTime: 10
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

@@ -275,6 +275,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 	public void QuitGame()
 	{
 		UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+		PhotonNetwork.Disconnect();
 	}
 
 	public void SaveAudioSettings()

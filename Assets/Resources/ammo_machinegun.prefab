@@ -44,6 +44,7 @@ GameObject:
   - 4: {fileID: 409590}
   - 114: {fileID: 11493274}
   - 65: {fileID: 6545576}
+  - 65: {fileID: 6560140}
   - 54: {fileID: 5456134}
   - 114: {fileID: 11423630}
   m_Layer: 10
@@ -62,6 +63,7 @@ Transform:
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071067}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 89.980194, y: 0, z: 0}
   m_Children:
   - {fileID: 495186}
   - {fileID: 429306}
@@ -76,6 +78,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 409590}
   m_RootOrder: 1
@@ -88,6 +91,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 409590}
   m_RootOrder: 0
@@ -185,6 +189,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.025, y: 0.075, z: 0.025}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &6560140
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 135830}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.025, y: 0.075, z: 0.025}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &11423630
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -225,6 +241,9 @@ MonoBehaviour:
   movementSpeed: 1000
   rig: {fileID: 5456134}
   destroyTime: 10
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

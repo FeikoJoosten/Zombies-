@@ -53,13 +53,16 @@ public class AIManager : OverridableMonoBehaviour
 			Destroy(gameObject);
 		}
 
-		zombiePrefab.StartingHealth = 100;
-
-		if (PhotonNetwork.isMasterClient == true)
+		if (GameManager.GetInstance().CurrentGameType == GameTypes.ZombieMode)
 		{
-			if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == PhotonNetwork.playerList.Length)
+			zombiePrefab.StartingHealth = 100;
+
+			if (PhotonNetwork.isMasterClient == true)
 			{
-				NextWave();
+				if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == PhotonNetwork.playerList.Length)
+				{
+					NextWave();
+				}
 			}
 		}
 	}
@@ -73,6 +76,11 @@ public class AIManager : OverridableMonoBehaviour
 
 		foreach (var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
 		{
+			if(player.Value == null)
+			{
+				continue;
+			}
+
 			if (player.Value.enabled == false)
 			{
 				GameManager.GetInstance().GetNetworkManager().FindPlayers();
@@ -80,9 +88,12 @@ public class AIManager : OverridableMonoBehaviour
 			}
 		}
 
-		if (allRemainingZombies.Count > 0)
+		if (GameManager.GetInstance().CurrentGameType == GameTypes.ZombieMode)
 		{
-			AssignTargetForAI();
+			if (allRemainingZombies.Count > 0)
+			{
+				AssignTargetForAI();
+			}
 		}
 	}
 

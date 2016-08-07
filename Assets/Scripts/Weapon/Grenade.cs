@@ -23,6 +23,8 @@ public class Grenade : OverridableMonoBehaviour
 
 	private bool isExploded = false;
 	private bool doOnce = false;
+	private bool touchedObject;
+
 	private int ownerID;
 
 	public float Damage
@@ -32,6 +34,11 @@ public class Grenade : OverridableMonoBehaviour
 	public bool IsExploded
 	{
 		get { return isExploded; }
+	}
+	public bool TouchedObject
+	{
+		get { return touchedObject; }
+		set { touchedObject = value; }
 	}
 	public int OwnerID
 	{

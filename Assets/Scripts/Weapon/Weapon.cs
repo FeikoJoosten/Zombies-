@@ -119,6 +119,12 @@ public class Weapon : MonoBehaviour
 		}
 	}
 
+	public void ClearAmmoPile()
+	{
+		currentAmmunitionInMagLeft = 0;
+		currentTotalAmmunitionLeft = 0;
+	}
+
 	public IEnumerator WaitBeforeFire()
 	{
 		isWaitTimerFinished = false;

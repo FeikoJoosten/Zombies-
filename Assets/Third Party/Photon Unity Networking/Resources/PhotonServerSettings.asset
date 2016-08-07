@@ -45,4 +45,6 @@ MonoBehaviour:
   - SwitchWeapon
   - UpdateMovement
   - UpdateRotation
+  - ThrowWeapon
+  - RemoveHealthFromPlayerBody
   DisableAutoOpenWizard: 1

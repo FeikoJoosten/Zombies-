@@ -14,27 +14,45 @@ public class AmmoPickup : OverridableMonoBehaviour
 	[SerializeField]
 	private TrailRenderer trail;
 	[SerializeField]
+	private ParticleSystem particles;
+	[SerializeField]
 	private Vector3 trailEndPosition;
 
 	private Vector3 trailStartPosition;
 	private float currentMovementSpeed;
 	private float currentMovementPercentage;
 	private bool gaveAmmo = false;
+	private bool shouldShowLineRenderer = true;
+
+	public bool ShouldShowLineRenderer
+	{
+		get { return shouldShowLineRenderer; }
+		set { shouldShowLineRenderer = value; }
+	}
 
 	void Start()
 	{
 		trailStartPosition = trail.transform.localPosition;
+
+		if (shouldShowLineRenderer == false)
+		{
+			trail.enabled = false;
+			particles.Stop(true);
+		}
 	}
 
 	public override void UpdateMe()
 	{
-		transform.Rotate(transform.up * rotationSpeed * Time.deltaTime);
-		trail.transform.localPosition = Vector3.Lerp(trailStartPosition, trailStartPosition + trailEndPosition, currentMovementPercentage);
-
-		if(currentMovementSpeed < trailMovementSpeed)
+		if (shouldShowLineRenderer == true)
 		{
-			currentMovementSpeed += Time.deltaTime;
-			currentMovementPercentage = currentMovementSpeed / trailMovementSpeed;
+			transform.Rotate(transform.up * rotationSpeed * Time.deltaTime);
+			trail.transform.localPosition = Vector3.Lerp(trailStartPosition, trailStartPosition + trailEndPosition, currentMovementPercentage);
+
+			if (currentMovementSpeed < trailMovementSpeed)
+			{
+				currentMovementSpeed += Time.deltaTime;
+				currentMovementPercentage = currentMovementSpeed / trailMovementSpeed;
+			}
 		}
 	}
 
@@ -49,16 +67,40 @@ public class AmmoPickup : OverridableMonoBehaviour
 			}
 			else
 			{
-				if(gaveAmmo == false)
+				if (gaveAmmo == false)
 				{
 					if (player.CurrentWeapon != null)
 					{
-						player.GetWeaponInformation(weaponToReload).AddAmmoToAmmoPile(amountToReload); 
+						if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+						{
+							player.PickupWeapon(weaponToReload);
+						}
+						player.GetWeaponInformation(weaponToReload).AddAmmoToAmmoPile(amountToReload);
 					}
 					gaveAmmo = true;
 
-					UpdateManager.RemoveSpecificItemAndDestroyIt(this);
+					if (PhotonNetwork.isMasterClient == true)
+					{
+						UpdateManager.RemoveSpecificItemAndDestroyIt(this); 
+					}
 				}
+			}
+		}
+	}
+
+	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		if (stream.isWriting == true && PhotonNetwork.isMasterClient == true)
+		{
+			stream.SendNext(shouldShowLineRenderer);
+		}
+		else
+		{
+			shouldShowLineRenderer = (bool)stream.ReceiveNext();
+			if (shouldShowLineRenderer == false)
+			{
+				trail.enabled = false;
+				particles.Stop(true);
 			}
 		}
 	}

@@ -11,8 +11,17 @@ public class Bullet : OverridableMonoBehaviour
 	private Rigidbody rig;
 	[SerializeField]
 	private float destroyTime = 10;
+	[SerializeField]
+	private LayerMask playerLayerMask;
 
 	private int ownerID;
+	private bool touchedObject;
+
+	public bool TouchedObject
+	{
+		get { return touchedObject; }
+		set { touchedObject = value; }
+	}
 
 	public int OwnerID
 	{
@@ -27,7 +36,7 @@ public class Bullet : OverridableMonoBehaviour
 
 	public override void UpdateMe()
 	{
-		if(PhotonNetwork.isMasterClient == false)
+		if (PhotonNetwork.isMasterClient == false)
 		{
 			return;
 		}
@@ -54,6 +63,18 @@ public class Bullet : OverridableMonoBehaviour
 
 	void OnTriggerEnter(Collider other)
 	{
+		if (GameManager.GetInstance().CurrentGameType != GameTypes.ZombieMode)
+		{
+			if (other != null)
+			{
+				if (other.gameObject.layer == playerLayerMask)
+				{
+					Debug.Log("returning");
+					return;
+				}
+			}
+		}
+
 		if (other != null)
 		{
 			Destroy(gameObject);

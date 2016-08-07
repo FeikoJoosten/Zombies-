@@ -47,6 +47,11 @@ public class PlayerController : OverridableMonoBehaviour
 			}
 		}
 
+		if(playerActions.throwWeaponAway.WasReleased)
+		{
+			player.ThrowWeaponAway();
+		}
+
 		if (playerActions.reloadWeapon.WasPressed)
 		{
 			player.ReloadWeapon();

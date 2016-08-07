@@ -23,6 +23,8 @@ public class Player : OverridableMonoBehaviour
 	[SerializeField]
 	private float maxYRotation;
 	[SerializeField]
+	private float weaponDropSpeed = 20;
+	[SerializeField]
 	private Weapon currentWeapon;
 	[SerializeField]
 	private Weapon[] allWeapons;
@@ -60,6 +62,8 @@ public class Player : OverridableMonoBehaviour
 	private GameObject[] nonRendarableBodyParts;
 	[SerializeField]
 	private GameObject[] allBodyParts;
+	[SerializeField]
+	private ThrowableWeaponModel[] weaponModels;
 
 	private float currentHealth;
 	private float currentWeaponMenuTimer;
@@ -75,6 +79,8 @@ public class Player : OverridableMonoBehaviour
 	private bool hasLoadedSettings = false;
 	private Rigidbody rig;
 	private Vector3 receivedPosition;
+	private Vector3 headRotation;
+	private Weapon currentCarriedWeapon;
 
 	public float StartingHealth
 	{
@@ -177,13 +183,15 @@ public class Player : OverridableMonoBehaviour
 		Cursor.lockState = CursorLockMode.Locked;
 		gameObject.name = PhotonNetwork.player.name + (PhotonNetwork.offlineMode == false ? (PhotonNetwork.isMasterClient == true ? " (Host)" : "") : "");
 
-		//for (int i = 0; i < allWeapons.Length; i++)
-		//{
-		//	allWeapons[i].IsAllowedToUse = true;
-		//	allWeapons[i].AssignStartingAmmo();
-		//}
-		allWeapons[0].IsAllowedToUse = true;
-		allWeapons[0].AssignStartingAmmo();
+		for (int i = 0; i < allWeapons.Length; i++)
+		{
+			allWeapons[i].IsAllowedToUse = true;
+			allWeapons[i].AssignStartingAmmo();
+		}
+		//allWeapons[0].IsAllowedToUse = true;
+		//allWeapons[0].AssignStartingAmmo();
+
+		currentCarriedWeapon = allWeapons[1];
 
 		if (PhotonNetwork.offlineMode == false)
 		{
@@ -276,13 +284,13 @@ public class Player : OverridableMonoBehaviour
 					{
 						if (currentSprintEndurance + sprintEnduranceRaisingSpeed * Time.deltaTime < sprintEndurance)
 						{
-							currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime; 
+							currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
 						}
 						else
 						{
 							currentSprintEndurance = sprintEndurance;
 						}
-					} 
+					}
 				}
 			}
 			else
@@ -341,22 +349,23 @@ public class Player : OverridableMonoBehaviour
 			{
 				if (value.x != 0 || value.y != 0)
 				{
-					if (currentSprintEndurance < 0)
+					if (currentSprintEndurance <= 0)
 					{
 						rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
+
 					}
 					else
 					{
 						if (currentSprintEndurance - sprintEnduranceLoweringSpeed * Time.deltaTime > 0)
 						{
-							currentSprintEndurance -= sprintEnduranceLoweringSpeed * Time.deltaTime; 
+							currentSprintEndurance -= sprintEnduranceLoweringSpeed * Time.deltaTime;
 						}
 						else
 						{
 							currentSprintEndurance = 0;
 						}
 						rig.MovePosition(transform.position + (movement.normalized * sprintSpeed * Time.deltaTime));
-					} 
+					}
 				}
 
 			}
@@ -374,7 +383,7 @@ public class Player : OverridableMonoBehaviour
 		transform.Rotate(playerRotation * rotationSpeed);
 
 		playerCameras[0].gameObject.transform.Rotate(value.x * rotationSpeed, 0, 0);
-		Vector3 headRotation = playerCameras[0].gameObject.transform.rotation.eulerAngles;
+		headRotation = playerCameras[0].gameObject.transform.rotation.eulerAngles;
 		Vector3 bodyRotation = transform.rotation.eulerAngles;
 		playerCameras[0].gameObject.transform.rotation = Quaternion.Euler(
 			new Vector3(Mathf.Clamp(headRotation.x > 180 ? headRotation.x - 360 : headRotation.x, -maxYRotation, maxYRotation),
@@ -409,8 +418,11 @@ public class Player : OverridableMonoBehaviour
 			isReloading = false;
 		}
 
-		currentWeapon.IsWaitTimerFinished = true;
-		currentWeapon.gameObject.SetActive(false);
+		if (currentWeapon != null)
+		{
+			currentWeapon.IsWaitTimerFinished = true;
+			currentWeapon.gameObject.SetActive(false);
+		}
 		currentWeapon = allWeapons[nextWeapon];
 		currentWeapon.gameObject.SetActive(true);
 		UpdateWeaponUIInfo();
@@ -445,7 +457,7 @@ public class Player : OverridableMonoBehaviour
 
 		if (PhotonNetwork.offlineMode == false)
 		{
-			photonView.RPC("SwitchWeapon", PhotonTargets.Others, weaponMenu.ReturnCurrentSelectedWeapon()); 
+			photonView.RPC("SwitchWeapon", PhotonTargets.Others, weaponMenu.ReturnCurrentSelectedWeapon());
 		}
 
 		weaponMenu.ToggleActiveState();
@@ -478,6 +490,55 @@ public class Player : OverridableMonoBehaviour
 	{
 		weaponMenu.MoveWeaponSelectorToTheLeft();
 		currentWeaponMenuTimer = 0;
+	}
+
+	int GetSelectedWeapon()
+	{
+		int selectedWeapon = 0;
+		for (int i = 0; i < allWeapons.Length; i++)
+		{
+			if (currentCarriedWeapon == allWeapons[i])
+			{
+				selectedWeapon = i;
+			}
+		}
+
+		return selectedWeapon;
+	}
+
+	public void PickupWeapon(int pickedUpWeapon)
+	{
+		if (currentCarriedWeapon == null)
+		{
+			allWeapons[pickedUpWeapon].IsAllowedToUse = true;
+			allWeapons[pickedUpWeapon].AssignStartingAmmo();
+			SelectSpecificWeapon(pickedUpWeapon);
+		}
+	}
+
+	public void ThrowWeaponAway()
+	{
+		if (currentCarriedWeapon == null || GameManager.GetInstance().CurrentGameType != GameTypes.TTT)
+		{
+			return;
+		}
+
+		currentCarriedWeapon.IsAllowedToUse = false;
+		currentCarriedWeapon.ClearAmmoPile();
+
+		photonView.RPC("ThrowWeapon", PhotonTargets.All);
+
+		currentCarriedWeapon = null;
+
+		SelectSpecificWeapon(0);
+	}
+
+	[PunRPC]
+	void ThrowWeapon()
+	{
+		ThrowableWeaponModel oldWeapon = (ThrowableWeaponModel)Instantiate(weaponModels[GetSelectedWeapon()], currentWeapon.transform.position, weaponModels[GetSelectedWeapon()].transform.rotation);
+		oldWeapon.GetComponent<Rigidbody>().AddForce((transform.forward + headRotation.normalized).normalized * weaponDropSpeed);
+		oldWeapon.WeaponNumber = GetSelectedWeapon();
 	}
 
 	public Weapon GetWeaponInformation(int weaponToSelect)
@@ -636,6 +697,31 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
+	[PunRPC]
+	public void RemoveHealthFromPlayerBody(float healthToRemove, PlayerBodyType bodyTypeThatReceivedDamage)
+	{
+		if (currentHealth - healthToRemove > 0)
+		{
+			currentHealth -= healthToRemove;
+
+			if (inGameHealthBar.gameObject.activeInHierarchy == false)
+			{
+				inGameHealthBar.gameObject.SetActive(true);
+			}
+
+			inGameHealthBar.UpdateHealthBar(currentHealth);
+
+			UIHealthBar.UpdateHealthBar(currentHealth);
+
+		}
+		else
+		{
+			inGameHealthBar.gameObject.SetActive(false);
+			UIHealthBar.UpdateHealthBar(0);
+			Die();
+		}
+	}
+
 	void Die()
 	{
 		playerController.enabled = false;
@@ -654,11 +740,11 @@ public class Player : OverridableMonoBehaviour
 		if (PhotonNetwork.offlineMode == false)
 		{
 			GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Remove(photonView.viewID);
-			if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count > 1)
+			if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count > 0)
 			{
 				if (photonView.isMine == true)
 				{
-					CreateSpectatorObject(); 
+					CreateSpectatorObject();
 				}
 			}
 			else

@@ -3,15 +3,28 @@ Add controller support to main menu						--
 Add spectate mode if player is dead						-- Need testing
 No endscreen for spectator								-- Need testing
 Add Photon chat api support								-- 
-Add different gamemodes									-- 
+Add Sniper zoom											-- 
+Add different gamemodes									-- Working on
 	Team Deathmatch										-- 
 		Add class selection/creation					-- 
 		Add spawnpoints setup							-- 
 		Add more than 4 player support					-- 
 			Highscore list								-- 
 			Room creation								-- 
-	Trouble In Terrorist Town							-- 
-		Add weapon/ammo generation						-- 
+		Team swapping									-- 
+		Team colors??									-- 
+	Trouble In Terrorist Town							-- Working on
+		Add weapon/ammo generation						-- DONE
+		Allow picking up/throwing away weapons			-- DONE
+		Add bullet damage against players				-- DONE
+		Update UI to show team status					-- 
+			Add info for terrorists - locations			-- 
+		Add karma										-- 
+			Show it on highscore list					-- 
+		Add more than 4 player support					-- 
+			Highscore list								-- 
+			Room creation								-- 
+		Add Traitor/Detective menu						-- 
 	?
 
 

@@ -25,7 +25,7 @@ public class NetworkManager : OverridableMonoBehaviour
 
 	public override void UpdateMe()
 	{
-		if(SceneManager.GetActiveScene().buildIndex == 1)
+		if(GameManager.GetInstance().InGame == true)
 		{
 			if(PhotonNetwork.offlineMode == false)
 			{

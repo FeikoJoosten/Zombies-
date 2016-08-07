@@ -531,7 +531,6 @@ public class MainMenuManager : Photon.MonoBehaviour
 		if (PhotonNetwork.connected)
 		{
 			PhotonNetwork.Disconnect();
-			PhotonNetwork.offlineMode = true;
 		}
 	}
 

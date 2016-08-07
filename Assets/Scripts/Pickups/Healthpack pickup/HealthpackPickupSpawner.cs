@@ -17,7 +17,7 @@ public class HealthpackPickupSpawner : OverridableMonoBehaviour
 
 	void Start()
 	{
-		if(PhotonNetwork.player != PhotonNetwork.masterClient)
+		if(PhotonNetwork.player != PhotonNetwork.masterClient || GameManager.GetInstance().CurrentGameType != GameTypes.ZombieMode)
 		{
 			enabled = false;
 		}
