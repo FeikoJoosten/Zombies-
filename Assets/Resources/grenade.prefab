@@ -309,6 +309,7 @@ MonoBehaviour:
   rig: {fileID: 5428836}
   audioSource: {fileID: 8242674}
   audioClip: {fileID: 8300000, guid: 1136b7c250bd27b498682d2089a135df, type: 3}
+  grenadeType: 5
 --- !u!135 &13578320
 SphereCollider:
   m_ObjectHideFlags: 1

@@ -156,6 +156,7 @@ MonoBehaviour:
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 0
+  bulletType: 3
 --- !u!114 &11430910
 MonoBehaviour:
   m_ObjectHideFlags: 1

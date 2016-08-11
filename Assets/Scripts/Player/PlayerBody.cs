@@ -35,7 +35,7 @@ public class PlayerBody : MonoBehaviour
 				}
 				if (player != null)
 				{
-					player.RemoveHealthFromPlayerBody(bullet.Damage, bodyType);
+					player.RemoveHealthFromPlayerBody(bullet.Damage, bodyType, bullet.BulletType);
 				}
 				bullet.TouchedObject = true;
 			}
@@ -63,7 +63,7 @@ public class PlayerBody : MonoBehaviour
 					}
 					if (player != null)
 					{
-						player.RemoveHealthFromPlayerBody(grenade.Damage, bodyType);
+						player.RemoveHealthFromPlayerBody(grenade.Damage, bodyType, grenade.GrenadeType);
 					}
 				}
 				grenade.TouchedObject = true;

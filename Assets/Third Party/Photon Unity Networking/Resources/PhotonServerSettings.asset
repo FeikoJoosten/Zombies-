@@ -47,4 +47,6 @@ MonoBehaviour:
   - UpdateRotation
   - ThrowWeapon
   - RemoveHealthFromPlayerBody
+  - UpdateTeamStatus
+  - AddNumberToKarmaCountForPlayer
   DisableAutoOpenWizard: 1

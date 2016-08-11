@@ -17,14 +17,30 @@ Add different gamemodes									-- Working on
 		Add weapon/ammo generation						-- DONE
 		Allow picking up/throwing away weapons			-- DONE
 		Add bullet damage against players				-- DONE
-		Update UI to show team status					-- 
-			Add info for terrorists - locations			-- 
+		Update UI to show team status					-- Working on
+			Add info for terrorists - locations			-- Need testing
+			Update highscore list						-- Working on
+				Add detective information				-- Need testing
+				Add terrorist information				-- Need testing
+				Add Confirmed Dead information			-- //Add functionality for when to change to this team
+				Add MIA information						-- //Add functionality for when to change to this team
+				Add team tabs							-- Need testing
 		Add karma										-- 
-			Show it on highscore list					-- 
+			Show it on highscore list					-- DONE
+			Add calculations							-- 
 		Add more than 4 player support					-- 
-			Highscore list								-- 
+			Highscore list								-- DONE
 			Room creation								-- 
-		Add Traitor/Detective menu						-- 
+			In room menu								-- 
+		Add Death information							-- 
+			Shot through * body part					-- 
+			Killed by * weapon							-- 
+			Update highscore menu						-- 
+		Add game rounds									-- 
+			Traitor victory								-- 
+			Innocent victory							-- 
+		Add Traitor/Detective menu						-- //Queued for 2nd version
+		Victory screen									-- //Queued for 2nd version
 	?
 
 

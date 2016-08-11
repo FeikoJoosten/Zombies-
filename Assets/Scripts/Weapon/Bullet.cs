@@ -13,6 +13,8 @@ public class Bullet : OverridableMonoBehaviour
 	private float destroyTime = 10;
 	[SerializeField]
 	private LayerMask playerLayerMask;
+	[SerializeField]
+	private WeaponType bulletType;
 
 	private int ownerID;
 	private bool touchedObject;
@@ -22,16 +24,18 @@ public class Bullet : OverridableMonoBehaviour
 		get { return touchedObject; }
 		set { touchedObject = value; }
 	}
-
 	public int OwnerID
 	{
 		get { return ownerID; }
 		set { ownerID = value; }
 	}
-
 	public float Damage
 	{
 		get { return damage; }
+	}
+	public WeaponType BulletType
+	{
+		get { return bulletType; }
 	}
 
 	public override void UpdateMe()

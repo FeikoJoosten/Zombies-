@@ -12,6 +12,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using SupportClassPun = ExitGames.Client.Photon.SupportClass;
+using UnityEngine.SceneManagement;
 
 
 /// <summary>
@@ -49,6 +50,7 @@ internal class PhotonHandler : Photon.MonoBehaviour
 
         this.updateInterval = 1000 / PhotonNetwork.sendRate;
         this.updateIntervalOnSerialize = 1000 / PhotonNetwork.sendRateOnSerialize;
+		SceneManager.sceneLoaded += OnLevelLoaded;
 
         PhotonHandler.StartFallbackSendAckThread();
     }
@@ -151,7 +153,7 @@ internal class PhotonHandler : Photon.MonoBehaviour
     }
 
     /// <summary>Called by Unity after a new level was loaded.</summary>
-    protected void OnLevelWasLoaded(int level)
+    protected void OnLevelLoaded(Scene scene, LoadSceneMode mode)
     {
         PhotonNetwork.networkingPeer.NewSceneLoaded();
         PhotonNetwork.networkingPeer.SetLevelInPropsIfSynced(SceneManagerHelper.ActiveSceneName);

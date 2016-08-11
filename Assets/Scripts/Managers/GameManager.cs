@@ -11,18 +11,28 @@ public class GameManager : OverridableMonoBehaviour
 	private AudioManager audioManagerPrefab;
 	[SerializeField]
 	private Texture[] allPlayerSkins;
+	[SerializeField]
+	private int tTTWarmupTime;
 
 	private static GameManager instance;
 	private AIManager aIManager;
 	private NetworkManager networkManager;
 	private AudioManager audioManager;
 	private bool inGame;
+	private bool tTTWarmingUp = true;
 	private GameTypes currentGameType;
+	private float terroristSpawnRate;
+	private float detectiveSpawnRate;
 
 	public bool InGame
 	{
 		get { return inGame; }
 		set { inGame = value; }
+	}
+	public bool TTTWarmingUp
+	{
+		get { return tTTWarmingUp; }
+		set { tTTWarmingUp = value; }
 	}
 	public Texture[] AllPlayerSkins
 	{
@@ -32,6 +42,20 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		get { return currentGameType; }
 		set { currentGameType = value; }
+	}
+	public float TerroristSpawnRate
+	{
+		get { return terroristSpawnRate; }
+		set { terroristSpawnRate = value; }
+	}
+	public float DetectiveSpawnRate
+	{
+		get { return detectiveSpawnRate; }
+		set { detectiveSpawnRate = value; }
+	}
+	public int TTTWarmupTime
+	{
+		get { return tTTWarmupTime; }
 	}
 
 	public static GameManager GetInstance()

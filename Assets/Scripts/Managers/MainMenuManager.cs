@@ -20,11 +20,11 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private Text[] inRoomPlayerNames;
 	[SerializeField]
-	private GameObject FindCreateMenu;
+	private GameObject findCreateMenu;
 	[SerializeField]
-	private Button FindGameButton;
+	private Button findGameButton;
 	[SerializeField]
-	private Button CreateGameButton;
+	private Button createGameButton;
 	[SerializeField]
 	private Text connectionStateText;
 	[SerializeField]
@@ -56,6 +56,8 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private RectTransform screenResolutionPrefab;
 	[SerializeField]
+	private RectTransform gameSettingsMenu;
+	[SerializeField]
 	private Toggle useFullscreenToggle;
 	[SerializeField]
 	private Dropdown gameQualityDropdown;
@@ -68,11 +70,19 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private Slider SFXVolumeSlider;
 	[SerializeField]
-	private Slider MusicVolumeSlider;
+	private Slider musicVolumeSlider;
+	[SerializeField]
+	private Slider traitorPercentageSlider;
+	[SerializeField]
+	private Slider detectivePercentageSlider;
 	[SerializeField]
 	private Text SFXVolumeText;
 	[SerializeField]
-	private Text MusicVolumeText;
+	private Text musicVolumeText;
+	[SerializeField]
+	private Text traitorPercentageText;
+	[SerializeField]
+	private Text detectivePercentageText;
 
 	private int currentPlayersInRoom;
 	private int skippedResolutions;
@@ -91,9 +101,9 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 		GameManager.GetInstance().GetAudioManager().AddMusicAudioSource(audioSource);
 		SFXVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedSFXVolume * 100;
-		MusicVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedMusicVolume * 100;
+		musicVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedMusicVolume * 100;
 		SFXVolumeText.text = SFXVolumeSlider.value.ToString();
-		MusicVolumeText.text = MusicVolumeSlider.value.ToString();
+		musicVolumeText.text = musicVolumeSlider.value.ToString();
 
 		#endregion
 
@@ -271,19 +281,19 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 		#region In Find/Create menu
 
-		if (FindCreateMenu.gameObject.activeInHierarchy == true)
+		if (findCreateMenu.gameObject.activeInHierarchy == true)
 		{
 			connectionStateText.text = Enum.GetName(typeof(ConnectionState), PhotonNetwork.connectionState);
 
 			if (PhotonNetwork.connectionState == ConnectionState.Connected)
 			{
-				FindGameButton.interactable = true;
-				CreateGameButton.interactable = true;
+				findGameButton.interactable = true;
+				createGameButton.interactable = true;
 			}
 			else
 			{
-				FindGameButton.interactable = false;
-				CreateGameButton.interactable = false;
+				findGameButton.interactable = false;
+				createGameButton.interactable = false;
 			}
 		}
 		#endregion
@@ -489,13 +499,13 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	public void SaveAudioSettings()
 	{
-		GameManager.GetInstance().GetAudioManager().UpdateAudioVolumes(SFXVolumeSlider.normalizedValue, MusicVolumeSlider.normalizedValue);
+		GameManager.GetInstance().GetAudioManager().UpdateAudioVolumes(SFXVolumeSlider.normalizedValue, musicVolumeSlider.normalizedValue);
 	}
 
 	public void GetAudioSettings()
 	{
 		SFXVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedSFXVolume * 100;
-		MusicVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedMusicVolume * 100;
+		musicVolumeSlider.value = GameManager.GetInstance().GetAudioManager().SavedMusicVolume * 100;
 	}
 
 	public void UpdateSFXVolumeTextLabel()
@@ -505,7 +515,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	public void UpdateMusicVolumeTextLabel()
 	{
-		MusicVolumeText.text = MusicVolumeSlider.value.ToString();
+		musicVolumeText.text = musicVolumeSlider.value.ToString();
 	}
 
 	public void JoinMasterServer()
@@ -546,6 +556,8 @@ public class MainMenuManager : Photon.MonoBehaviour
 			break;
 			case 2:
 			GameManager.GetInstance().CurrentGameType = GameTypes.TTT;
+			GameManager.GetInstance().TerroristSpawnRate = traitorPercentageSlider.value;
+			GameManager.GetInstance().DetectiveSpawnRate = detectivePercentageSlider.value;
 			break;
 		}
 
@@ -616,6 +628,75 @@ public class MainMenuManager : Photon.MonoBehaviour
 			currentPlayersInRoom = 0;
 			roomNameText.text = "";
 			GameManager.GetInstance().GetNetworkManager().LeaveRoom();
+		}
+	}
+
+	public void UpdateRoomCreationSettingsMenu()
+	{
+		if(gameTypeDropdown.value == 0)			//Zombies!
+		{
+			if (gameSettingsMenu.gameObject.activeInHierarchy == true)
+			{
+				gameSettingsMenu.gameObject.SetActive(false);
+			}
+		}
+		else if (gameTypeDropdown.value == 1)	//Team Deathmatch
+		{
+			if (gameSettingsMenu.gameObject.activeInHierarchy == true)
+			{
+				gameSettingsMenu.gameObject.SetActive(false); 
+			}
+		}
+		else if(gameTypeDropdown.value == 2)	//Trouble in Terrorist Town
+		{
+			if (gameSettingsMenu.gameObject.activeInHierarchy == false)
+			{
+				gameSettingsMenu.gameObject.SetActive(true);
+			}
+
+			if(traitorPercentageSlider.value == 0)
+			{
+				traitorPercentageText.text = "0";
+			}
+			else if(traitorPercentageSlider.value == 1)
+			{
+				traitorPercentageText.text = "1";
+			}
+			else
+			{
+				traitorPercentageText.text = traitorPercentageSlider.value.ToString("n3"); 
+			}
+
+			if (detectivePercentageSlider.value == 0)
+			{
+				detectivePercentageText.text = "0";
+			}
+			else if (detectivePercentageSlider.value == 1)
+			{
+				detectivePercentageText.text = "1";
+			}
+			else
+			{
+				detectivePercentageText.text = detectivePercentageSlider.value.ToString("n3");
+			}
+		}
+	}
+
+	public void ResetRoomCreationSettingsMenu()
+	{
+		if(gameTypeDropdown.value == 0)			//Zombies!
+		{
+			return;
+		}
+		else if(gameTypeDropdown.value == 1)	//Team Deathmatch
+		{
+			return;
+		}
+		else if(gameTypeDropdown.value == 2)	//Trouble in Terrorist Town
+		{
+			traitorPercentageSlider.value = 0.250F;
+			detectivePercentageSlider.value = 0.125F;
+			return;
 		}
 	}
 

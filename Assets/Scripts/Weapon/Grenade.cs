@@ -20,6 +20,8 @@ public class Grenade : OverridableMonoBehaviour
 	private AudioSource audioSource;
 	[SerializeField]
 	private AudioClip audioClip;
+	[SerializeField]
+	private WeaponType grenadeType;
 
 	private bool isExploded = false;
 	private bool doOnce = false;
@@ -48,6 +50,10 @@ public class Grenade : OverridableMonoBehaviour
 	public Rigidbody Rig
 	{
 		get { return rig; }
+	}
+	public WeaponType GrenadeType
+	{
+		get { return grenadeType; }
 	}
 
 	void Start()

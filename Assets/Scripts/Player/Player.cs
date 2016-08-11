@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Steamworks;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Player : OverridableMonoBehaviour
 {
@@ -63,6 +64,8 @@ public class Player : OverridableMonoBehaviour
 	[SerializeField]
 	private GameObject[] allBodyParts;
 	[SerializeField]
+	private GameObject minimapDot;
+	[SerializeField]
 	private ThrowableWeaponModel[] weaponModels;
 
 	private float currentHealth;
@@ -81,6 +84,9 @@ public class Player : OverridableMonoBehaviour
 	private Vector3 receivedPosition;
 	private Vector3 headRotation;
 	private Weapon currentCarriedWeapon;
+	private PlayerBodyType lastHitBodypart;
+	private WeaponType lastDamageReceivedByWeapon;
+	private TTTTeams currentTTTTeam;
 
 	public float StartingHealth
 	{
@@ -117,6 +123,14 @@ public class Player : OverridableMonoBehaviour
 	public bool HasPauseMenuOpen
 	{
 		get { return pauseMenuManager.gameObject.activeInHierarchy; }
+	}
+	public TTTTeams CurrentTTTTeam
+	{
+		get { return currentTTTTeam; }
+	}
+	public GameObject MinimapDot
+	{
+		get { return minimapDot; }
 	}
 
 	void Start()
@@ -183,15 +197,13 @@ public class Player : OverridableMonoBehaviour
 		Cursor.lockState = CursorLockMode.Locked;
 		gameObject.name = PhotonNetwork.player.name + (PhotonNetwork.offlineMode == false ? (PhotonNetwork.isMasterClient == true ? " (Host)" : "") : "");
 
-		for (int i = 0; i < allWeapons.Length; i++)
-		{
-			allWeapons[i].IsAllowedToUse = true;
-			allWeapons[i].AssignStartingAmmo();
-		}
-		//allWeapons[0].IsAllowedToUse = true;
-		//allWeapons[0].AssignStartingAmmo();
-
-		currentCarriedWeapon = allWeapons[1];
+		//for (int i = 0; i < allWeapons.Length; i++)
+		//{
+		//	allWeapons[i].IsAllowedToUse = true;
+		//	allWeapons[i].AssignStartingAmmo();
+		//}
+		allWeapons[0].IsAllowedToUse = true;
+		allWeapons[0].AssignStartingAmmo();
 
 		if (PhotonNetwork.offlineMode == false)
 		{
@@ -426,6 +438,17 @@ public class Player : OverridableMonoBehaviour
 		currentWeapon = allWeapons[nextWeapon];
 		currentWeapon.gameObject.SetActive(true);
 		UpdateWeaponUIInfo();
+	}
+
+	[PunRPC]
+	void UpdateTeamStatus(TTTTeams assignedTeam)
+	{
+		if(PhotonNetwork.isMasterClient == false)
+		{
+			GameManager.GetInstance().TTTWarmingUp = false;
+		}
+
+		currentTTTTeam = assignedTeam;
 	}
 
 	public void ToggleHighscoreMenu()
@@ -698,8 +721,11 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	public void RemoveHealthFromPlayerBody(float healthToRemove, PlayerBodyType bodyTypeThatReceivedDamage)
+	public void RemoveHealthFromPlayerBody(float healthToRemove, PlayerBodyType bodyTypeThatReceivedDamage, WeaponType weaponTypeThatGaveDamage)
 	{
+		lastHitBodypart = bodyTypeThatReceivedDamage;
+		lastDamageReceivedByWeapon = weaponTypeThatGaveDamage;
+
 		if (currentHealth - healthToRemove > 0)
 		{
 			currentHealth -= healthToRemove;
@@ -720,6 +746,11 @@ public class Player : OverridableMonoBehaviour
 			UIHealthBar.UpdateHealthBar(0);
 			Die();
 		}
+	}
+
+	public KeyValuePair<PlayerBodyType, WeaponType> GetDeathInformation()
+	{
+		return new KeyValuePair<PlayerBodyType, WeaponType>(lastHitBodypart, lastDamageReceivedByWeapon);
 	}
 
 	void Die()
@@ -828,6 +859,11 @@ public class Player : OverridableMonoBehaviour
 			UpdateWeaponUIInfo();
 			isReloading = false;
 		}
+	}
+
+	public void SetupTTTTeamColors()
+	{
+		highScoreList.SetupTTTTeamColors();
 	}
 
 	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

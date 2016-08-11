@@ -33,6 +33,14 @@ public class NetworkManager : OverridableMonoBehaviour
 				{
 					FindPlayers();
 				}
+
+				if(PhotonNetwork.isMasterClient == true)
+				{
+					if (allRemainingPlayers.Count == PhotonNetwork.playerList.Length)
+					{
+						StartCoroutine(StartTTTCountdown());
+					}
+				}
 			}
 			else
 			{
@@ -128,7 +136,7 @@ public class NetworkManager : OverridableMonoBehaviour
 		}
 		else
 		{
-			return CheckForViableRoomname(nameToValidate + " 1");
+			return CheckForViableRoomname(nameToValidate + " " + counter);
 		}
 	}
 
@@ -177,5 +185,68 @@ public class NetworkManager : OverridableMonoBehaviour
 	public void LeaveLobby()
 	{
 		PhotonNetwork.LeaveLobby();
+	}
+
+	IEnumerator StartTTTCountdown()
+	{
+		yield return GameManager.GetInstance().InGame = true;
+
+		yield return new WaitForSeconds(GameManager.GetInstance().TTTWarmupTime);
+		GameManager.GetInstance().TTTWarmingUp = false;
+		
+		if(PhotonNetwork.isMasterClient == true)
+		{
+			AssignTeams();
+		}
+	}
+
+	void AssignTeams()
+	{
+		int numberOfTraitors = Mathf.FloorToInt(PhotonNetwork.playerList.Length * GameManager.GetInstance().TerroristSpawnRate);
+		int numberOfDetectives = Mathf.FloorToInt(PhotonNetwork.playerList.Length * GameManager.GetInstance().DetectiveSpawnRate);
+		List<Player> allPlayers = new List<Player>(PhotonNetwork.playerList.Length);
+
+		foreach(KeyValuePair<int, Player> player in allRemainingPlayers)
+		{
+			allPlayers.Add(player.Value);
+		}
+
+		for(int i = 0; i < numberOfTraitors; i++)
+		{
+			Player selectedPlayer = allPlayers[UnityEngine.Random.Range(0, allPlayers.Count)];
+			selectedPlayer.photonView.RPC("UpdateTeamStatus", PhotonTargets.All, TTTTeams.Traitor);
+			allPlayers.Remove(selectedPlayer);			
+		}
+
+		for (int i = 0; i < numberOfDetectives; i++)
+		{
+			Player selectedPlayer = allPlayers[UnityEngine.Random.Range(0, allPlayers.Count)];
+			selectedPlayer.photonView.RPC("UpdateTeamStatus", PhotonTargets.All, TTTTeams.Detective);
+			allPlayers.Remove(selectedPlayer);
+		}
+
+		for (int i = 0; i < allPlayers.Count; i++)
+		{
+			Player selectedPlayer = allPlayers[UnityEngine.Random.Range(0, allPlayers.Count)];
+			selectedPlayer.photonView.RPC("UpdateTeamStatus", PhotonTargets.All, TTTTeams.Innocent);
+			allPlayers.Remove(selectedPlayer);
+		}
+
+		foreach (KeyValuePair<int, Player> player in allRemainingPlayers)
+		{
+			player.Value.SetupTTTTeamColors();
+
+			if (ownClient.photonView.viewID != player.Key)
+			{
+				if (ownClient.CurrentTTTTeam == TTTTeams.Traitor && player.Value.CurrentTTTTeam == TTTTeams.Traitor)
+				{
+					player.Value.MinimapDot.SetActive(true);
+				}
+				else
+				{
+					player.Value.MinimapDot.SetActive(false);
+				}
+			} 
+		}
 	}
 }

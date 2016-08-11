@@ -42,10 +42,13 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 					currentSpawnTime = spawnTime;
 				}
 
-				for(int i = TTTWeaponSpawnCount; i >= 0; i--)
+				if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
 				{
-					SpawnAmmoPack(false);
-					TTTWeaponSpawnCount--;
+					for (int i = TTTWeaponSpawnCount; i >= 0; i--)
+					{
+						SpawnAmmoPack(false);
+						TTTWeaponSpawnCount--;
+					} 
 				}
 			} 
 			else
