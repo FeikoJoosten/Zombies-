@@ -22,6 +22,7 @@ public class PlayerActions : PlayerActionSet
 	public PlayerAction nextWeapon;
 	public PlayerAction previousWeapon;
 	public PlayerAction pauseButton;
+	public PlayerAction searchBody;
 	public PlayerAction selectWeapon1;
 	public PlayerAction selectWeapon2;
 	public PlayerAction selectWeapon3;
@@ -51,6 +52,7 @@ public class PlayerActions : PlayerActionSet
 		nextWeapon = CreatePlayerAction("Next weapon");
 		previousWeapon = CreatePlayerAction("Previous weapon");
 		pauseButton = CreatePlayerAction("Pause button");
+		searchBody = CreatePlayerAction("Search body");
 		selectWeapon1 = CreatePlayerAction("Select weapon 1");
 		selectWeapon2 = CreatePlayerAction("Select weapon 2");
 		selectWeapon3 = CreatePlayerAction("Select weapon 3");
@@ -119,6 +121,9 @@ public class PlayerActions : PlayerActionSet
 
 		playerActions.pauseButton.AddDefaultBinding(Key.Escape);
 		playerActions.pauseButton.AddDefaultBinding(InputControlType.Start);
+
+		playerActions.searchBody.AddDefaultBinding(Key.F);
+		playerActions.pauseButton.AddDefaultBinding(InputControlType.Action2); //Circle on PS, B on Xbox controller
 
 		playerActions.selectWeapon1.AddDefaultBinding(Key.Key1);
 		playerActions.selectWeapon2.AddDefaultBinding(Key.Key2);

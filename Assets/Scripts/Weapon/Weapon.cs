@@ -23,6 +23,8 @@ public class Weapon : MonoBehaviour
 	private Transform spawnLocation;
 	[SerializeField]
 	private Player player;
+	[SerializeField]
+	private WeaponType weapon;
 
 	private bool isAllowedToUse;
 	private bool isWaitTimerFinished = true;
@@ -80,6 +82,10 @@ public class Weapon : MonoBehaviour
 	public Player Player
 	{
 		get { return player; }
+	}
+	public WeaponType WeaponType
+	{
+		get { return weapon; }
 	}
 	
 	public void AssignStartingAmmo()

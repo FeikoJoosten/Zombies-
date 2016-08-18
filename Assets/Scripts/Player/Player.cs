@@ -48,11 +48,15 @@ public class Player : OverridableMonoBehaviour
 	[SerializeField]
 	private RectTransform endscreenUI;
 	[SerializeField]
+	private DeathInformation deathInformationUI;
+	[SerializeField]
 	private Camera[] playerCameras;
 	[SerializeField]
 	private Rigidbody[] ragdollRigibodys;
 	[SerializeField]
 	private Collider[] colliders;
+	[SerializeField]
+	private Collider deathInformationCollider;
 	[SerializeField]
 	private PlayerController playerController;
 	[SerializeField]
@@ -67,6 +71,8 @@ public class Player : OverridableMonoBehaviour
 	private GameObject minimapDot;
 	[SerializeField]
 	private ThrowableWeaponModel[] weaponModels;
+	[SerializeField]
+	private UnityEngine.UI.Text searchBodyText;
 
 	private float currentHealth;
 	private float currentWeaponMenuTimer;
@@ -80,6 +86,7 @@ public class Player : OverridableMonoBehaviour
 	private bool isReloading;
 	private bool isDead = false;
 	private bool hasLoadedSettings = false;
+	private bool isAllowedToLookAtDeathInformation;
 	private Rigidbody rig;
 	private Vector3 receivedPosition;
 	private Vector3 headRotation;
@@ -87,6 +94,7 @@ public class Player : OverridableMonoBehaviour
 	private PlayerBodyType lastHitBodypart;
 	private WeaponType lastDamageReceivedByWeapon;
 	private TTTTeams currentTTTTeam;
+	private DeathInformationCollider lastDeathInformationColliderFound;
 
 	public float StartingHealth
 	{
@@ -123,6 +131,10 @@ public class Player : OverridableMonoBehaviour
 	public bool HasPauseMenuOpen
 	{
 		get { return pauseMenuManager.gameObject.activeInHierarchy; }
+	}
+	public bool IsAllowedToLookAtDeathInformation
+	{
+		get { return isAllowedToLookAtDeathInformation; }
 	}
 	public TTTTeams CurrentTTTTeam
 	{
@@ -443,7 +455,7 @@ public class Player : OverridableMonoBehaviour
 	[PunRPC]
 	void UpdateTeamStatus(TTTTeams assignedTeam)
 	{
-		if(PhotonNetwork.isMasterClient == false)
+		if (PhotonNetwork.isMasterClient == false)
 		{
 			GameManager.GetInstance().TTTWarmingUp = false;
 		}
@@ -531,10 +543,9 @@ public class Player : OverridableMonoBehaviour
 
 	public void PickupWeapon(int pickedUpWeapon)
 	{
-		if (currentCarriedWeapon == null)
+		if (currentCarriedWeapon == null && currentCarriedWeapon != GetWeaponInformation(pickedUpWeapon))
 		{
 			allWeapons[pickedUpWeapon].IsAllowedToUse = true;
-			allWeapons[pickedUpWeapon].AssignStartingAmmo();
 			SelectSpecificWeapon(pickedUpWeapon);
 		}
 	}
@@ -592,6 +603,7 @@ public class Player : OverridableMonoBehaviour
 		{
 			currentWeapon.gameObject.SetActive(true);
 			ingameUI.gameObject.SetActive(true);
+			pauseMenuManager.ResetPauseMenuManager();
 			pauseMenuManager.gameObject.SetActive(false);
 
 			Cursor.lockState = CursorLockMode.Locked;
@@ -618,6 +630,7 @@ public class Player : OverridableMonoBehaviour
 	void OnTriggerStay(Collider other)
 	{
 		Zombie zombie = other.GetComponent<Zombie>();
+		DeathInformationCollider deathInformation = other.GetComponent<DeathInformationCollider>();
 
 		if (zombie != null)
 		{
@@ -633,6 +646,26 @@ public class Player : OverridableMonoBehaviour
 					RemoveHealth(zombie.Damage);
 				}
 			}
+		}
+
+		if(deathInformation != null)
+		{
+			if(deathInformation.gameObject != deathInformationCollider.gameObject)
+			{
+				isAllowedToLookAtDeathInformation = true;
+
+				if(lastDeathInformationColliderFound != deathInformation)
+				{
+					lastDeathInformationColliderFound = deathInformation;
+				}
+
+				searchBodyText.text = "Press the search body button to search the body";
+			}
+		}
+		else
+		{
+			isAllowedToLookAtDeathInformation = false;
+			searchBodyText.text = "";
 		}
 	}
 
@@ -757,6 +790,12 @@ public class Player : OverridableMonoBehaviour
 	{
 		playerController.enabled = false;
 		ani.enabled = false;
+		deathInformationCollider.gameObject.SetActive(true);
+
+		if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+		{
+			photonView.RPC("ReceiveDeathInformation", PhotonTargets.All, photonView.viewID);
+		}
 
 		for (int i = 0; i < ragdollRigibodys.Length; i++)
 		{
@@ -790,6 +829,50 @@ public class Player : OverridableMonoBehaviour
 
 		isDead = true;
 		enabled = false;
+	}
+
+	[PunRPC]
+	void ReceiveDeathInformation(int playerID)
+	{
+		highScoreList.ChangePlayersTeamTabOnDeath(playerID, currentTTTTeam);
+	}
+
+	[PunRPC]
+	void ConfirmDeathForPlayer(int playerID)
+	{
+		highScoreList.ChangePlayersTeamTabOnDeathConfirmation(playerID);
+	}
+
+	public void OpenDeathInformationMenu()
+	{
+		deathInformationUI.CreateDeathInformation(lastDeathInformationColliderFound.Player.currentTTTTeam, lastDeathInformationColliderFound.Player.lastDamageReceivedByWeapon, lastDeathInformationColliderFound.Player.lastHitBodypart);
+
+		highScoreList.ChangePlayersTeamTabOnDeathConfirmation(photonView.viewID);
+
+		ToggleDeathInformationUI();
+	}
+
+	void ToggleDeathInformationUI()
+	{
+		if (ingameUI.gameObject.activeInHierarchy == true)
+		{
+			currentWeapon.gameObject.SetActive(false);
+			highScoreList.UIParent.gameObject.SetActive(false);
+			ingameUI.gameObject.SetActive(false);
+			deathInformationUI.gameObject.SetActive(true);
+
+			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
+		}
+		else
+		{
+			currentWeapon.gameObject.SetActive(true);
+			ingameUI.gameObject.SetActive(true);
+			deathInformationUI.gameObject.SetActive(false);
+
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+		}
 	}
 
 	void CreateSpectatorObject()

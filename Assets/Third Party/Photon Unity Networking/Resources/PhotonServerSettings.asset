@@ -49,4 +49,6 @@ MonoBehaviour:
   - RemoveHealthFromPlayerBody
   - UpdateTeamStatus
   - AddNumberToKarmaCountForPlayer
+  - ConfirmDeathForPlayer
+  - ReceiveDeathInformation
   DisableAutoOpenWizard: 1

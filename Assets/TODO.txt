@@ -17,25 +17,28 @@ Add different gamemodes									-- Working on
 		Add weapon/ammo generation						-- DONE
 		Allow picking up/throwing away weapons			-- DONE
 		Add bullet damage against players				-- DONE
-		Update UI to show team status					-- Working on
-			Add info for terrorists - locations			-- Need testing
-			Update highscore list						-- Working on
-				Add detective information				-- Need testing
-				Add terrorist information				-- Need testing
-				Add Confirmed Dead information			-- //Add functionality for when to change to this team
-				Add MIA information						-- //Add functionality for when to change to this team
-				Add team tabs							-- Need testing
+		Update UI to show team status					-- DONE
+			Add info for terrorists - locations			-- DONE
+			Update highscore list						-- Need testing
+				Add detective information				-- DONE
+				Add terrorist information				-- DONE
+				Add Confirmed Dead information			-- Need testing
+				Add MIA information						-- DONE
+				Add team tabs							-- DONE
 		Add karma										-- 
 			Show it on highscore list					-- DONE
 			Add calculations							-- 
-		Add more than 4 player support					-- 
+		Add more than 4 player support					-- DONE
 			Highscore list								-- DONE
-			Room creation								-- 
-			In room menu								-- 
-		Add Death information							-- 
-			Shot through * body part					-- 
-			Killed by * weapon							-- 
-			Update highscore menu						-- 
+			Room creation								-- DONE
+			In room menu								-- DONE
+			level loading menu							-- DONE
+		Add Death information							-- Need testing
+			When is player allowed to open this menu	-- Need testing
+			Innocent/Traitor							-- Need testing
+			Shot through * body part					-- Need testing
+			Killed by * weapon							-- Need testing
+			Update highscore menu						-- Need testing
 		Add game rounds									-- 
 			Traitor victory								-- 
 			Innocent victory							-- 
@@ -46,6 +49,8 @@ Add different gamemodes									-- Working on
 
 
 Add player healthbars									-- DONE
+Fix issue with the pause menu not opening correctly		-- DONE
+Fix issue with highscorelist not working correctly		-- DONE
 Add exhaustion to sprinting								-- DONE
 Add character selection screen							-- DONE
 Add gamemode selection									-- DONE

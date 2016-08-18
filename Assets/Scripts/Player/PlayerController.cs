@@ -17,6 +17,10 @@ public class PlayerController : OverridableMonoBehaviour
 	{
 		get { return playerActions.sprint.IsPressed; }
 	}
+	public PlayerAction SearchBody
+	{
+		get { return playerActions.searchBody; }
+	}
 
 	private PlayerActions playerActions = PlayerActions.CreateWithDefaultBindings();
 
@@ -81,6 +85,14 @@ public class PlayerController : OverridableMonoBehaviour
 		if (playerActions.previousWeapon.WasPressed && player.IsWeaponMenuActive == true)
 		{
 			player.SelectPreviousWeapon();
+		}
+
+		if(playerActions.searchBody.WasPressed)
+		{
+			if(player.IsAllowedToLookAtDeathInformation == true)
+			{
+				player.OpenDeathInformationMenu();
+			}
 		}
 
 		if (playerActions.selectWeapon1.WasPressed)

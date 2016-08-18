@@ -19,6 +19,8 @@ public class HighscoreList : Photon.MonoBehaviour
 	[SerializeField]
 	private RectTransform confirmedDeadTab;
 	[SerializeField]
+	private ScrollRect scrollRect;
+	[SerializeField]
 	private Text karmaTitleText;
 
 	public GameObject UIParent
@@ -46,7 +48,7 @@ public class HighscoreList : Photon.MonoBehaviour
 
 	public void SetupTTTTeamColors()
 	{
-		foreach(KeyValuePair<int, Player> player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
+		foreach (KeyValuePair<int, Player> player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
 		{
 			Player ownClient = GameManager.GetInstance().GetNetworkManager().OwnClient;
 
@@ -58,26 +60,34 @@ public class HighscoreList : Photon.MonoBehaviour
 			{
 				continue;
 			}
-			else if(player.Value.CurrentTTTTeam == TTTTeams.Detective)
+			else if (player.Value.CurrentTTTTeam == TTTTeams.Detective)
 			{
 				playerScores[player.Key].ChangeBackgroundColor(Color.blue);
 			}
 		}
 	}
 
-	public void ChangePlayersTeamTab(int viewID, TTTTeamStatus status)
+	public void ChangePlayersTeamTabOnDeath(int viewID, TTTTeams ownPlayersTeamStatus)
 	{
-		switch(status)
+		if (ownPlayersTeamStatus == TTTTeams.Traitor)
 		{
-			case TTTTeamStatus.Terrorist:
-			playerScores[viewID].transform.SetParent(terroristTab.transform);
-			break;
-			case TTTTeamStatus.MissingInAction:
 			playerScores[viewID].transform.SetParent(miaTab.transform);
-			break;
-			case TTTTeamStatus.ConfirmedDead:
-			playerScores[viewID].transform.SetParent(confirmedDeadTab.transform);
-			break;
+			playerScores[viewID].transform.SetAsLastSibling();
+		}
+	}
+
+	public void ChangePlayersTeamTabOnDeathConfirmation(int viewID)
+	{
+		if(playerScores[viewID].transform.parent == confirmedDeadTab.transform)
+		{
+			return;
+		}
+
+		playerScores[viewID].transform.SetParent(confirmedDeadTab.transform);
+
+		if(GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers[viewID].CurrentTTTTeam == TTTTeams.Traitor)
+		{
+			playerScores[viewID].ChangeBackgroundColor(Color.red);
 		}
 
 		playerScores[viewID].transform.SetAsLastSibling();
@@ -87,9 +97,19 @@ public class HighscoreList : Photon.MonoBehaviour
 	{
 		playerScores.Clear();
 
-		if(GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+		if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
 		{
 			karmaTitleText.gameObject.SetActive(true);
+			terroristTab.gameObject.SetActive(true);
+			miaTab.gameObject.SetActive(true);
+			confirmedDeadTab.gameObject.SetActive(true);
+		}
+		else
+		{
+			karmaTitleText.gameObject.SetActive(false);
+			terroristTab.gameObject.SetActive(false);
+			miaTab.gameObject.SetActive(false);
+			confirmedDeadTab.gameObject.SetActive(false);
 		}
 
 		while (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count != PhotonNetwork.playerList.Length)
@@ -97,25 +117,30 @@ public class HighscoreList : Photon.MonoBehaviour
 			yield return null;
 		}
 
-		uIParent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 180 + (60 * PhotonNetwork.playerList.Length));
+		scrollRect.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 180 + (60 * PhotonNetwork.playerList.Length));
 
-		foreach(var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
+		foreach (var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
 		{
 			playerScores.Add(player.Value.photonView.viewID, Instantiate(playerNamePrefab));
-			playerScores[player.Value.photonView.viewID].transform.SetParent(terroristTab.transform);
+
+			if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+			{
+				playerScores[player.Value.photonView.viewID].transform.SetParent(terroristTab.transform);
+			}
+
 			playerScores[player.Value.photonView.viewID].transform.SetAsLastSibling();
 			playerScores[player.Value.photonView.viewID].GetComponent<RectTransform>().anchoredPosition3D = Vector3.zero;
 			playerScores[player.Value.photonView.viewID].transform.rotation = new Quaternion();
 			playerScores[player.Value.photonView.viewID].transform.localScale = Vector3.one;
 			playerScores[player.Value.photonView.viewID].UpdatePlayerName(player.Value.name);
 
-			if(GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+			if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
 			{
 				playerScores[player.Value.photonView.viewID].EnableKarmaText();
+				ResetKarmaCountForPlayer(player.Value.photonView.viewID);
 			}
 
 			ResetKillCountForPlayer(player.Value.photonView.viewID);
-			ResetKarmaCountForPlayer(player.Value.photonView.viewID);
 		}
 
 		UIParent.gameObject.SetActive(false);

@@ -2,6 +2,5 @@
 {
 	Innocent,
 	Detective,
-	Traitor,
-	KIA
+	Traitor
 }

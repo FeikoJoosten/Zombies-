@@ -11,8 +11,6 @@ public class LoadingBar : MonoBehaviour
 	[SerializeField]
 	private Image loadingBar;
 
-	private bool finishedLoading;
-
 	public string OwnerText
 	{
 		set { ownerText.text = value; }
@@ -24,10 +22,5 @@ public class LoadingBar : MonoBehaviour
 	public float LoadingBarProgress
 	{
 		set { loadingBar.fillAmount = value; }
-	}
-	public bool FinishedLoading
-	{
-		get { return finishedLoading; }
-		set { finishedLoading = value; }
 	}
 }

@@ -18,7 +18,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private Text currentPlayersInRoomText;
 	[SerializeField]
-	private Text[] inRoomPlayerNames;
+	private Text inRoomPlayerName;
 	[SerializeField]
 	private GameObject findCreateMenu;
 	[SerializeField]
@@ -48,7 +48,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 	[SerializeField]
 	private Text loadingBarText;
 	[SerializeField]
-	private LoadingBar[] multiplayerLoadingBars;
+	private LoadingBar multiplayerLoadingBar;
 	[SerializeField]
 	private Button multiplayerStartGameButton;
 	[SerializeField]
@@ -94,6 +94,8 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	private Dictionary<Button, Dictionary<InControl.PlayerAction, InControl.BindingSource>> bindingButtons = new Dictionary<Button, Dictionary<InControl.PlayerAction, InControl.BindingSource>>();
 	private Dictionary<int, float> playerprogresses = new Dictionary<int, float>();
+	private List<Text> inRoomPlayerNames = new List<Text>();
+	private List<LoadingBar> multiplayerLoadingBars = new List<LoadingBar>();
 
 	void Start()
 	{
@@ -190,6 +192,9 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 		RedrawControllsMenu();
 		#endregion
+
+		inRoomPlayerNames.Add(inRoomPlayerName);
+		multiplayerLoadingBars.Add(multiplayerLoadingBar);
 	}
 
 	private void InputManager_OnDeviceAttached(InControl.InputDevice obj)
@@ -251,6 +256,19 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 				for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
 				{
+					if(multiplayerLoadingBars.Count < PhotonNetwork.room.playerCount)
+					{
+						LoadingBar newMultiplayerLoadingBar = Instantiate(multiplayerLoadingBar);
+						newMultiplayerLoadingBar.gameObject.transform.SetParent(multiplayerLoadingBars[0].transform.parent);
+						
+						multiplayerLoadingBars.Add(newMultiplayerLoadingBar);
+					}
+
+					if(multiplayerLoadingBars[i].transform.localScale != Vector3.one)
+					{
+						multiplayerLoadingBars[i].transform.localScale = Vector3.one;
+					}
+
 					multiplayerLoadingBars[i].OwnerText = PhotonNetwork.playerList[i].name;
 					multiplayerLoadingBars[i].LoadingBarProgress = playerprogresses[PhotonNetwork.playerList[i].ID] + 0.1F;
 					multiplayerLoadingBars[i].ProgressText = "Loading: " + (Mathf.RoundToInt(playerprogresses[PhotonNetwork.playerList[i].ID] * 100) + 10) + "%";
@@ -328,6 +346,15 @@ public class MainMenuManager : Photon.MonoBehaviour
 				int counter = 0;
 				for (int i = 0; i < PhotonNetwork.room.playerCount; i++)
 				{
+					if(inRoomPlayerNames.Count < PhotonNetwork.room.playerCount)
+					{
+						Text newPlayerNameHolder = Instantiate(inRoomPlayerName);
+						newPlayerNameHolder.transform.localScale = Vector3.one;
+						newPlayerNameHolder.gameObject.transform.SetParent(inRoomPlayerNames[0].transform.parent);
+						
+						inRoomPlayerNames.Add(newPlayerNameHolder);
+					}
+
 					if (PhotonNetwork.playerList[i] == PhotonNetwork.masterClient)
 					{
 						inRoomPlayerNames[i].text = PhotonNetwork.playerList[i].name + " (Host)";
@@ -339,7 +366,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 					counter++;
 				}
 
-				for (int i = counter; i < inRoomPlayerNames.Length; i++)
+				for (int i = counter; i < inRoomPlayerNames.Count; i++)
 				{
 					inRoomPlayerNames[i].text = "";
 				}
@@ -471,11 +498,6 @@ public class MainMenuManager : Photon.MonoBehaviour
 		isLoadingScene = true;
 		asyncOperation = GameManager.GetInstance().GetNetworkManager().StartGame(levelToLoad);
 		asyncOperation.allowSceneActivation = false;
-
-		for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
-		{
-			multiplayerLoadingBars[i].gameObject.SetActive(true);
-		}
 	}
 
 	[PunRPC]
@@ -639,12 +661,22 @@ public class MainMenuManager : Photon.MonoBehaviour
 			{
 				gameSettingsMenu.gameObject.SetActive(false);
 			}
+
+			if (maxPlayerSlider.maxValue != 4)
+			{
+				maxPlayerSlider.maxValue = 4;
+			}
 		}
 		else if (gameTypeDropdown.value == 1)	//Team Deathmatch
 		{
 			if (gameSettingsMenu.gameObject.activeInHierarchy == true)
 			{
-				gameSettingsMenu.gameObject.SetActive(false); 
+				gameSettingsMenu.gameObject.SetActive(false);
+			}
+
+			if (maxPlayerSlider.maxValue != 8)
+			{
+				maxPlayerSlider.maxValue = 8;
 			}
 		}
 		else if(gameTypeDropdown.value == 2)	//Trouble in Terrorist Town
@@ -652,6 +684,11 @@ public class MainMenuManager : Photon.MonoBehaviour
 			if (gameSettingsMenu.gameObject.activeInHierarchy == false)
 			{
 				gameSettingsMenu.gameObject.SetActive(true);
+			}
+
+			if(maxPlayerSlider.maxValue != 12)
+			{
+				maxPlayerSlider.maxValue = 12;
 			}
 
 			if(traitorPercentageSlider.value == 0)

@@ -14,6 +14,18 @@ public class PauseMenuManager : OverridableMonoBehaviour
 	[SerializeField]
 	private RectTransform screenResolutionPrefab;
 	[SerializeField]
+	private RectTransform mainMenu;
+	[SerializeField]
+	private RectTransform optionsMenu;
+	[SerializeField]
+	private RectTransform videoMenu;
+	[SerializeField]
+	private RectTransform exitMenu;
+	[SerializeField]
+	private RectTransform audioMenu;
+	[SerializeField]
+	private RectTransform controlsMenu;
+	[SerializeField]
 	private Toggle useFullscreenToggle;
 	[SerializeField]
 	private Dropdown gameQualityDropdown;
@@ -400,6 +412,19 @@ public class PauseMenuManager : OverridableMonoBehaviour
 				screenResolutionDropdown.value = screenResolutionDropdown.options.Count;
 				screenResolutionDropdown.captionText.text = Screen.resolutions[screenResolutionDropdown.options.Count + skippedResolutions].width + " X " + Screen.resolutions[screenResolutionDropdown.options.Count + skippedResolutions].height;
 			}
+		}
+	}
+
+	public void ResetPauseMenuManager()
+	{
+		if (mainMenu.gameObject.activeInHierarchy == false)
+		{
+			mainMenu.gameObject.SetActive(true);
+			optionsMenu.gameObject.SetActive(false);
+			videoMenu.gameObject.SetActive(false);
+			exitMenu.gameObject.SetActive(false);
+			audioMenu.gameObject.SetActive(false);
+			controlsMenu.gameObject.SetActive(false);
 		}
 	}
 }
