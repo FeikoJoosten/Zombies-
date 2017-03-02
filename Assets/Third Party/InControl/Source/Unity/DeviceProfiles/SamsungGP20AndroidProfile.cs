@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "Samgsung Game Pad EI-GP20";
 			Meta = "Samgsung Game Pad EI-GP20 on Android";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"ANDROID"

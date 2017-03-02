@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -12,8 +9,12 @@ namespace InControl
 			Name = "Apple MFi Controller";
 			Meta = "Apple MFi Controller on iOS";
 
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.AppleMFi;
+
 			IncludePlatforms = new[] {
-				"iPhone"
+				"iPhone",
+				"iPad"
 			};
 
 			LastResortRegex = ""; // Match anything.

@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -9,8 +6,8 @@ namespace InControl
 	{
 		public Xbox360WinProfile()
 		{
-			Name = "XBox 360 Controller";
-			Meta = "XBox 360 Controller on Windows";
+			Name = "Xbox 360 Controller";
+			Meta = "Xbox 360 Controller on Windows";
 
 			IncludePlatforms = new[] {
 				"Windows"
@@ -136,13 +133,17 @@ namespace InControl
 				new InputControlMapping {
 					Handle = "Left Trigger",
 					Target = InputControlType.LeftTrigger,
-					Source = Analog8
+					Source = Analog( 8 ),
+					SourceRange = InputRange.ZeroToOne,
+					TargetRange = InputRange.ZeroToOne,
 				},
 				new InputControlMapping {
 					Handle = "Right Trigger",
 					Target = InputControlType.RightTrigger,
-					Source = Analog9
-				}
+					Source = Analog( 9 ),
+					SourceRange = InputRange.ZeroToOne,
+					TargetRange = InputRange.ZeroToOne,
+				},
 			};
 		}
 	}

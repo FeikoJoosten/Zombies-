@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	public class XInputWindowsNativeProfile : NativeInputDeviceProfile
 	{
@@ -10,6 +7,9 @@ namespace InControl.NativeProfile
 		{
 			Name = "XInput Controller";
 			Meta = "XInput Controller on Windows";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.XboxOne;
 
 			IncludePlatforms = new[] {
 				"Windows"

@@ -1,8 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -13,6 +8,8 @@ namespace InControl
 		{
 			Name = "Moga Pro";
 			Meta = "Moga Pro on Android";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Android"

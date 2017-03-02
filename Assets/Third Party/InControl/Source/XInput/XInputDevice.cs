@@ -1,13 +1,9 @@
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using XInputDotNetPure;
-
-
 namespace InControl
 {
+	using XInputDotNetPure;
+
+
 	public class XInputDevice : InputDevice
 	{
 		const float LowerDeadZone = 0.2f;
@@ -28,6 +24,9 @@ namespace InControl
 			SortOrder = deviceIndex;
 
 			Meta = "XInput Device #" + deviceIndex;
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.XboxOne;
 
 			AddControl( InputControlType.LeftStickLeft, "Left Stick Left", LowerDeadZone, UpperDeadZone );
 			AddControl( InputControlType.LeftStickRight, "Left Stick Right", LowerDeadZone, UpperDeadZone );

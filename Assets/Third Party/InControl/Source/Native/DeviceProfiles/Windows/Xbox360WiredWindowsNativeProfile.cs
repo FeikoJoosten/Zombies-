@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class Xbox360WiredWindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,9 @@ namespace InControl.NativeProfile
 			Name = "Xbox 360 Wired Controller";
 			Meta = "Xbox 360 Wired Controller on Windows";
 			// Link = "http://www.amazon.com/Microsoft-Wired-Controller-Windows-Console/dp/B004QRKWLA";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"Windows"

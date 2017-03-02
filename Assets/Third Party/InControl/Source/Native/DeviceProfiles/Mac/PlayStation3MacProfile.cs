@@ -1,8 +1,5 @@
 ﻿namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	public class PlayStation3MacProfile : NativeInputDeviceProfile
 	{
@@ -10,6 +7,9 @@
 		{
 			Name = "PlayStation 3 Controller";
 			Meta = "PlayStation 3 Controller on Mac";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation3;
 
 			IncludePlatforms = new[] {
 				"OS X"

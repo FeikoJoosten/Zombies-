@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class AirFloPS3WindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,9 @@ namespace InControl.NativeProfile
 			Name = "Air Flo PS3 Controller";
 			Meta = "Air Flo PS3 Controller on Windows";
 			// Link = "http://www.amazon.com/PS3-Wired-Controller-Air-Playstation-3/dp/B005764CWO";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation3;
 
 			IncludePlatforms = new[] {
 				"Windows"

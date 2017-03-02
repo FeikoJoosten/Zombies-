@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class LogitechF310ModeXWindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,9 @@ namespace InControl.NativeProfile
 			Name = "Logitech F310 Mode X Controller";
 			Meta = "Logitech F310 Mode X Controller on Windows";
 			// Link = "http://www.amazon.com/Logitech-940-000110-Gamepad-F310/dp/B003VAHYQY";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"Windows"

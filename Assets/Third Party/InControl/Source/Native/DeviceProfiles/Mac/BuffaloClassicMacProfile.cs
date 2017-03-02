@@ -1,8 +1,5 @@
 ﻿namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	public class BuffaloClassicMacProfile : NativeInputDeviceProfile
 	{
@@ -10,6 +7,8 @@
 		{
 			Name = "iBuffalo Classic Controller";
 			Meta = "iBuffalo Classic Controller on Mac";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"OS X"

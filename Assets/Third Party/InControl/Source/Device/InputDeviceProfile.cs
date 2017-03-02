@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-
 namespace InControl
 {
+	using System;
+	using System.Collections.Generic;
+	using UnityEngine;
+
+
 	public abstract class InputDeviceProfile
 	{
 		[SerializeField]
@@ -25,6 +25,18 @@ namespace InControl
 		[SerializeField]
 		public string[] ExcludePlatforms { get; protected set; }
 
+		[SerializeField]
+		public int MaxSystemBuildNumber { get; protected set; }
+
+		[SerializeField]
+		public int MinSystemBuildNumber { get; protected set; }
+
+		[SerializeField]
+		public InputDeviceClass DeviceClass { get; protected set; }
+
+		[SerializeField]
+		public InputDeviceStyle DeviceStyle { get; protected set; }
+
 		static HashSet<Type> hideList = new HashSet<Type>();
 
 		float sensitivity = 1.0f;
@@ -42,12 +54,18 @@ namespace InControl
 
 			IncludePlatforms = new string[0];
 			ExcludePlatforms = new string[0];
+
+			MinSystemBuildNumber = 0;
+			MaxSystemBuildNumber = 0;
+
+			DeviceClass = InputDeviceClass.Unknown;
+			DeviceStyle = InputDeviceStyle.Unknown;
 		}
 
 
 		[SerializeField]
 		public float Sensitivity
-		{ 
+		{
 			get { return sensitivity; }
 			protected set { sensitivity = Mathf.Clamp01( value ); }
 		}
@@ -55,7 +73,7 @@ namespace InControl
 
 		[SerializeField]
 		public float LowerDeadZone
-		{ 
+		{
 			get { return lowerDeadZone; }
 			protected set { lowerDeadZone = Mathf.Clamp01( value ); }
 		}
@@ -63,7 +81,7 @@ namespace InControl
 
 		[SerializeField]
 		public float UpperDeadZone
-		{ 
+		{
 			get { return upperDeadZone; }
 			protected set { upperDeadZone = Mathf.Clamp01( value ); }
 		}
@@ -88,10 +106,20 @@ namespace InControl
 		{
 			get
 			{
+				var systemBuildNumber = Utility.GetSystemBuildNumber();
+				if (MaxSystemBuildNumber > 0 && systemBuildNumber > MaxSystemBuildNumber)
+				{
+					return false;
+				}
+				if (MinSystemBuildNumber > 0 && systemBuildNumber < MinSystemBuildNumber)
+				{
+					return false;
+				}
+
 				if (ExcludePlatforms != null)
 				{
-					int excludePlatformsCount = ExcludePlatforms.Length;
-					for (int i = 0; i < excludePlatformsCount; i++)
+					var excludePlatformsCount = ExcludePlatforms.Length;
+					for (var i = 0; i < excludePlatformsCount; i++)
 					{
 						if (InputManager.Platform.Contains( ExcludePlatforms[i].ToUpper() ))
 						{
@@ -108,8 +136,8 @@ namespace InControl
 
 				if (IncludePlatforms != null)
 				{
-					int includePlatformsCount = IncludePlatforms.Length;
-					for (int i = 0; i < includePlatformsCount; i++)
+					var includePlatformsCount = IncludePlatforms.Length;
+					for (var i = 0; i < includePlatformsCount; i++)
 					{
 						if (InputManager.Platform.Contains( IncludePlatforms[i].ToUpper() ))
 						{

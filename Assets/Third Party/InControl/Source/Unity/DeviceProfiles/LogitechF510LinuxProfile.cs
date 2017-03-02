@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "Logitech F510 Controller";
 			Meta = "Logitech F510 Controller on Linux";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"Linux"

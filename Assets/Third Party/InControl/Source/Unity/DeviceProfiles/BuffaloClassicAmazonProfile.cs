@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -14,6 +11,8 @@ namespace InControl
 		{
 			Name = "Buffalo Class Gamepad";
 			Meta = "Buffalo Class Gamepad on Amazon Fire TV";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Amazon AFT",

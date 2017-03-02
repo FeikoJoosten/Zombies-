@@ -1,8 +1,5 @@
 ﻿namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	public class Xbox360DriverMacProfile : NativeInputDeviceProfile
 	{
@@ -14,6 +11,9 @@
 		{
 			Name = null;
 			Meta = null;
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"OS X"

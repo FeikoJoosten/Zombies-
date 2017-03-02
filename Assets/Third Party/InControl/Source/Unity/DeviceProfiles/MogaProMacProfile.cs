@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "Moga Pro";
 			Meta = "Moga Pro on Mac";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"OS X",

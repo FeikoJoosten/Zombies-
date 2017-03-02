@@ -1,5 +1,3 @@
-using System;
-
 namespace InControl
 {
 	// @cond nodoc
@@ -12,6 +10,8 @@ namespace InControl
 		{
 			Name = "IPEGA PG-9023";
 			Meta = "IPEGA PG-9023 on Android";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Android"

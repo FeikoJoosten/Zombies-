@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "Saitek AV8R";
 			Meta = "Saitek AV8R on Windows";
+
+			DeviceClass = InputDeviceClass.FlightStick;
 
 			IncludePlatforms = new[] {
 				"Windows",

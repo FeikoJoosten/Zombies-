@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class BuffaloClassicWindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,8 @@ namespace InControl.NativeProfile
 			Name = "iBuffalo Classic Controller";
 			Meta = "iBuffalo Classic Controller on Windows";
 			// Link = "http://www.amazon.com/Buffalo-Classic-USB-Gamepad-PC/dp/B002B9XB0E";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Windows"

@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "NVIDIA Shield Controller";
 			Meta = "NVIDIA Shield Controller on Android";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.NVIDIAShield;
 
 			IncludePlatforms = new[] {
 				"Android"

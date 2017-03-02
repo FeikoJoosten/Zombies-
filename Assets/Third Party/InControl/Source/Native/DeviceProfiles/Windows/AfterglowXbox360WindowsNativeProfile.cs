@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class AfterglowXbox360WindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,9 @@ namespace InControl.NativeProfile
 			Name = "Afterglow Xbox 360 Controller";
 			Meta = "Afterglow Xbox 360 Controller on Windows";
 			// Link = "http://www.amazon.com/Afterglow-Wired-Controller-Xbox-360-Red/dp/B00EZKNT5O";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"Windows"

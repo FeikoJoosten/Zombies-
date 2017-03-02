@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "Apple TV Controller";
 			Meta = "Apple TV Controller on tvOS";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.AppleMFi;
 
 			IncludePlatforms = new[] {
 				"AppleTV"

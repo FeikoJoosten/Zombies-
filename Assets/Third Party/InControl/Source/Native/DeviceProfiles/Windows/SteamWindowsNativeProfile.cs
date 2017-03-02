@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class SteamWindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,9 @@ namespace InControl.NativeProfile
 			Name = "Steam Controller";
 			Meta = "Steam Controller on Windows";
 			// Link = "http://www.amazon.com/Steam-Controller-SteamOS/dp/B016KBVBCS";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Steam;
 
 			IncludePlatforms = new[] {
 				"Windows"

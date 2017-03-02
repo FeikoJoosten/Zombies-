@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "PlayStation 3 Controller";
 			Meta = "Shenghic PlayStation 3 Controller on Windows (not MotionInJoy)";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation3;
 
 			IncludePlatforms = new[] {
 				"Windows"

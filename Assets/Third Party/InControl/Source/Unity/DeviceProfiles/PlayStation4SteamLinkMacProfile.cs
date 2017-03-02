@@ -1,15 +1,16 @@
-using System;
-
 namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
 	public class PlayStation4SteamLinkMacProfile : UnityInputDeviceProfile
 	{
+		// TODO: Seems like this could be any controller, not just PS4?
 		public PlayStation4SteamLinkMacProfile()
 		{
 			Name = "PlayStation 4 Controller via Steam Link";
 			Meta = "PlayStation 4 Controller on Mac via Steam Link";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"OS X"
@@ -18,8 +19,6 @@ namespace InControl
 			JoystickNames = new[] {
 				"Microsoft StreamingGamePad-1"
 			};
-
-			// TouchPad button does not work.
 
 			ButtonMappings = new[] {
 				new InputControlMapping {

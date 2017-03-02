@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class RazerServalWindowsNativeProfile : NativeInputDeviceProfile
@@ -12,6 +9,8 @@ namespace InControl.NativeProfile
 			Name = "Razer Serval Controller";
 			Meta = "Razer Serval Controller on Windows";
 			// Link = "http://www.amazon.com/Razer-Serval-Bluetooth-Gaming-Controller-Android/dp/B00UOYQ5DS";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Windows"

@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "PlayStation 3 Controller";
 			Meta = "PlayStation 3 Controller on Linux";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation3;
 
 			IncludePlatforms = new[] {
 				"Linux"

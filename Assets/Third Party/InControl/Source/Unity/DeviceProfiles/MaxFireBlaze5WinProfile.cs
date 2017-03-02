@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "MaxFire Blaze5";
 			Meta = "MaxFire Blaze5 Controller on Windows";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Windows"

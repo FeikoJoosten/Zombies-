@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "Nexus Player Remote";
 			Meta = "Nexus Player Remote";
+
+			DeviceClass = InputDeviceClass.Remote;
 
 			IncludePlatforms = new[] {
 				"Android"

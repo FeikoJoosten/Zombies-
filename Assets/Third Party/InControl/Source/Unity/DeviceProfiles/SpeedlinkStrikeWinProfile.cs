@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,8 @@ namespace InControl
 		{
 			Name = "Speedlink Strike Controller";
 			Meta = "Speedlink Strike Controller on Windows";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Win"

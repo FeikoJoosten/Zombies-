@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "PlayStation DualShock 2 Controller";
 			Meta = "Compatible with PlayStation 2 Controller to USB adapter.";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation2;
 
 			IncludePlatforms = new[] {
 				"Windows"

@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "PlayStation 4 Controller";
 			Meta = "PlayStation 4 Controller on Amazon Fire TV";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation4;
 
 			IncludePlatforms = new[] {
 				"Amazon AFT"
@@ -63,7 +63,7 @@ namespace InControl
 				},
 				new InputControlMapping {
 					Handle = "TouchPad Button",
-					Target = InputControlType.TouchPadTap,
+					Target = InputControlType.TouchPadButton,
 					Source = Button11
 				},
 				new InputControlMapping {

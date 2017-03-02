@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -13,7 +10,9 @@ namespace InControl
 		public NexusPlayerMacProfile()
 		{
 			Name = "Nexus Player Controller";
-			Meta = "Nexus Player Controller on Android";
+			Meta = "Nexus Player Controller on OS X";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"OS X",

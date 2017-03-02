@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "NVIDIA Shield Controller";
 			Meta = "NVIDIA Shield Controller on Windows 7";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.NVIDIAShield;
 
 			IncludePlatforms = new[] {
 				"Windows 7"
@@ -113,7 +113,7 @@ namespace InControl
 					SourceRange = InputRange.ZeroToMinusOne,
 					TargetRange = InputRange.ZeroToOne,
 				},
-				
+
 				new InputControlMapping {
 					Handle = "Left Trigger",
 					Target = InputControlType.LeftTrigger,

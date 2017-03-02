@@ -1,8 +1,5 @@
 namespace InControl
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class XboxOneWin10Profile : UnityInputDeviceProfile
@@ -13,6 +10,9 @@ namespace InControl
 			Meta = "XBox One Controller on Windows";
 			// Link = ""
 
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.XboxOne;
+
 			IncludePlatforms = new[] {
 				"Windows"
 			};
@@ -22,8 +22,11 @@ namespace InControl
 				"Windows 8"
 			};
 
+			MaxSystemBuildNumber = 14392;
+
 			JoystickNames = new[] {
-				"Controller (Xbox One For Windows)"
+				"Controller (Xbox One For Windows)",
+				"Xbox Bluetooth Gamepad"
 			};
 
 			ButtonMappings = new[] {

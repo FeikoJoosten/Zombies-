@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "Air Flo Wired PS3 Controller";
 			Meta = "Air Flo Wired PS3 Controller on Windows";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation3;
 
 			IncludePlatforms = new[] {
 				"Windows"
@@ -61,7 +61,7 @@ namespace InControl
 					Target = InputControlType.RightTrigger,
 					Source = Button7
 				},
-				new InputControlMapping { 
+				new InputControlMapping {
 					Handle = "Left Stick Button",
 					Target = InputControlType.LeftStickButton,
 					Source = Button10

@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -9,8 +6,11 @@ namespace InControl
 	{
 		public XboxOneMacProfile()
 		{
-			Name = "XBox One Controller";
-			Meta = "XBox One Controller on OSX";
+			Name = "Xbox One Controller";
+			Meta = "Xbox One Controller on OSX";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.XboxOne;
 
 			IncludePlatforms = new[] {
 				"OS X"

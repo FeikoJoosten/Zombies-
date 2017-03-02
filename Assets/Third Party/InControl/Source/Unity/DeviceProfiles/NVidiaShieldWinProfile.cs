@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -12,9 +9,12 @@ namespace InControl
 			Name = "NVIDIA Shield Controller";
 			Meta = "NVIDIA Shield Controller on Windows 8+";
 
-            ExcludePlatforms = new[] {
-                "Windows 7"
-            };
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.NVIDIAShield;
+
+			ExcludePlatforms = new[] {
+				"Windows 7"
+			};
 
 			IncludePlatforms = new[] {
 				"Windows"

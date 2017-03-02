@@ -1,8 +1,5 @@
 namespace InControl.NativeProfile
 {
-	using System;
-
-
 	// @cond nodoc
 	[AutoDiscover]
 	public class XboxOneWindows10NativeProfile : NativeInputDeviceProfile
@@ -13,6 +10,9 @@ namespace InControl.NativeProfile
 			Meta = "Xbox One Controller on Windows";
 			// Link = "http://www.amazon.com/Microsoft-Xbox-Controller-Cable-Windows/dp/B00O65I2VY";
 
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.XboxOne;
+
 			IncludePlatforms = new[] {
 				"Windows"
 			};
@@ -21,6 +21,8 @@ namespace InControl.NativeProfile
 				"Windows 7",
 				"Windows 8"
 			};
+
+			MaxSystemBuildNumber = 14392;
 
 			Matchers = new[] {
 				new NativeInputDeviceMatcher {

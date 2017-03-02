@@ -1,15 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Runtime.InteropServices;
-
-
 namespace InControl
 {
+	using System;
+	using System.Runtime.InteropServices;
+	using UnityEngine;
+	using DeviceHandle = System.UInt32;
+
+
 	public class NativeInputDevice : InputDevice
 	{
-		internal UInt32 Handle { get; private set; }
+		internal DeviceHandle Handle { get; private set; }
 		internal NativeDeviceInfo Info { get; private set; }
 
 		Int16[] buttons;
@@ -24,7 +23,7 @@ namespace InControl
 		}
 
 
-		internal void Initialize( UInt32 deviceHandle, NativeDeviceInfo deviceInfo, NativeInputDeviceProfile deviceProfile )
+		internal void Initialize( DeviceHandle deviceHandle, NativeDeviceInfo deviceInfo, NativeInputDeviceProfile deviceProfile )
 		{
 			Handle = deviceHandle;
 			Info = deviceInfo;
@@ -45,8 +44,11 @@ namespace InControl
 				Name = profile.Name ?? Info.name;
 				Meta = profile.Meta ?? Info.name;
 
+				DeviceClass = profile.DeviceClass;
+				DeviceStyle = profile.DeviceStyle;
+
 				var analogMappingCount = profile.AnalogCount;
-				for (int i = 0; i < analogMappingCount; i++)
+				for (var i = 0; i < analogMappingCount; i++)
 				{
 					var analogMapping = profile.AnalogMappings[i];
 					var analogControl = AddControl( analogMapping.Target, analogMapping.Handle );
@@ -58,7 +60,7 @@ namespace InControl
 				}
 
 				var buttonMappingCount = profile.ButtonCount;
-				for (int i = 0; i < buttonMappingCount; i++)
+				for (var i = 0; i < buttonMappingCount; i++)
 				{
 					var buttonMapping = profile.ButtonMappings[i];
 					var buttonControl = AddControl( buttonMapping.Target, buttonMapping.Handle );
@@ -70,12 +72,12 @@ namespace InControl
 				Name = "Unknown Device";
 				Meta = Info.name;
 
-				for (int i = 0; i < NumUnknownButtons; i++)
+				for (var i = 0; i < NumUnknownButtons; i++)
 				{
 					AddControl( InputControlType.Button0 + i, "Button " + i );
 				}
 
-				for (int i = 0; i < NumUnknownAnalogs; i++)
+				for (var i = 0; i < NumUnknownAnalogs; i++)
 				{
 					AddControl( InputControlType.Analog0 + i, "Analog " + i, 0.2f, 0.9f );
 				}
@@ -85,7 +87,7 @@ namespace InControl
 		}
 
 
-		internal void Initialize( UInt32 deviceHandle, NativeDeviceInfo deviceInfo )
+		internal void Initialize( DeviceHandle deviceHandle, NativeDeviceInfo deviceInfo )
 		{
 			Initialize( deviceHandle, deviceInfo, this.profile );
 		}
@@ -103,14 +105,14 @@ namespace InControl
 			if (Native.GetDeviceState( Handle, out data ))
 			{
 				Marshal.Copy( data, buttons, 0, buttons.Length );
-				data = new IntPtr( data.ToInt64() + (buttons.Length * sizeof(Int16)) );
+				data = new IntPtr( data.ToInt64() + (buttons.Length * sizeof( Int16 )) );
 				Marshal.Copy( data, analogs, 0, analogs.Length );
 			}
 
 			if (IsKnown)
 			{
 				var analogMappingCount = profile.AnalogCount;
-				for (int i = 0; i < analogMappingCount; i++)
+				for (var i = 0; i < analogMappingCount; i++)
 				{
 					var analogMapping = profile.AnalogMappings[i];
 					var analogValue = analogMapping.Source.GetValue( this );
@@ -126,7 +128,7 @@ namespace InControl
 				}
 
 				var buttonMappingCount = profile.ButtonCount;
-				for (int i = 0; i < buttonMappingCount; i++)
+				for (var i = 0; i < buttonMappingCount; i++)
 				{
 					var buttonMapping = profile.ButtonMappings[i];
 					var buttonState = buttonMapping.Source.GetState( this );
@@ -135,12 +137,12 @@ namespace InControl
 			}
 			else
 			{
-				for (int i = 0; i < Info.numButtons; i++)
+				for (var i = 0; i < Info.numButtons; i++)
 				{
 					UpdateWithState( InputControlType.Button0 + i, ReadRawButtonState( i ), updateTick, deltaTime );
 				}
 
-				for (int i = 0; i < Info.numAnalogs; i++)
+				for (var i = 0; i < Info.numAnalogs; i++)
 				{
 					UpdateWithValue( InputControlType.Analog0 + i, ReadRawAnalogValue( i ), updateTick, deltaTime );
 				}
@@ -225,8 +227,8 @@ namespace InControl
 		public override bool IsSupportedOnThisPlatform
 		{
 			get
-			{ 
-				return profile == null || profile.IsSupportedOnThisPlatform; 
+			{
+				return profile == null || profile.IsSupportedOnThisPlatform;
 			}
 		}
 
@@ -234,7 +236,7 @@ namespace InControl
 		public override bool IsKnown
 		{
 			get
-			{ 
+			{
 				return profile != null;
 			}
 		}

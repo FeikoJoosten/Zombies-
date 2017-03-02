@@ -1,6 +1,3 @@
-using System;
-
-
 namespace InControl
 {
 	// @cond nodoc
@@ -12,6 +9,9 @@ namespace InControl
 		{
 			Name = "PlayStation 4 Controller";
 			Meta = "PlayStation 4 Controller on Android";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.PlayStation4;
 
 			IncludePlatforms = new[] {
 				"Android"

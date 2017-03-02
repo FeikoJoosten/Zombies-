@@ -1,13 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using UnityEngine;
-
-
-namespace InControl
+﻿namespace InControl
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Collections.ObjectModel;
+	using System.IO;
+	using UnityEngine;
+
+
 	/// <summary>
 	/// This class represents a single action that may have multiple controls bound to it.
 	/// A bound control is represented by a subclass of BindingSource. For example,
@@ -35,22 +34,38 @@ namespace InControl
 		/// <summary>
 		/// Configures how this action listens for new bindings.
 		/// When <c>null</c> (default) the owner's <see cref="PlayerActionSet.ListenOptions"/> will be used.
-		/// <seealso cref="PlayerAction.ListenForBinding()"/>
+		/// <seealso cref="ListenForBinding()"/>
 		/// </summary>
 		public BindingListenOptions ListenOptions = null;
 
 		/// <summary>
-		/// The binding source type that provided input to this action.
+		/// The binding source type that last provided input to this action set.
 		/// </summary>
 		public BindingSourceType LastInputType = BindingSourceType.None;
 
-		List<BindingSource> defaultBindings = new List<BindingSource>();
-		List<BindingSource> regularBindings = new List<BindingSource>();
-		List<BindingSource> visibleBindings = new List<BindingSource>();
+		/// <summary>
+		/// Occurs when the binding source type that last provided input to this action set changes.
+		/// </summary>
+		public event Action<BindingSourceType> OnLastInputTypeChanged;
+
+		/// <summary>
+		/// Updated when <see cref="LastInputType"/> changes.
+		/// </summary>
+		public ulong LastInputTypeChangedTick;
+
+		/// <summary>
+		/// This property can be used to store whatever arbitrary game data you want on this action.
+		/// </summary>
+		public object UserData { get; set; }
+
+		List<BindingSource> defaultBindings = new List<BindingSource> ();
+		List<BindingSource> regularBindings = new List<BindingSource> ();
+		List<BindingSource> visibleBindings = new List<BindingSource> ();
 
 		readonly ReadOnlyCollection<BindingSource> bindings;
+		readonly ReadOnlyCollection<BindingSource> unfilteredBindings;
 
-		readonly static BindingSourceListener[] bindingSourceListeners = new BindingSourceListener[] {
+		readonly static BindingSourceListener [] bindingSourceListeners = new BindingSourceListener [] {
 			new DeviceBindingSourceListener(),
 			new UnknownDeviceBindingSourceListener(),
 			new KeyBindingSourceListener(),
@@ -63,13 +78,14 @@ namespace InControl
 		/// </summary>
 		/// <param name="name">A unique identifier for this action within the context of its owning action set.</param>
 		/// <param name="owner">The action set to contain (own) this action.</param>
-		public PlayerAction( string name, PlayerActionSet owner )
+		public PlayerAction (string name, PlayerActionSet owner)
 		{
 			Raw = true;
 			Name = name;
 			Owner = owner;
-			bindings = new ReadOnlyCollection<BindingSource>( visibleBindings );
-			owner.AddPlayerAction( this );
+			bindings = new ReadOnlyCollection<BindingSource> (visibleBindings);
+			unfilteredBindings = new ReadOnlyCollection<BindingSource> (regularBindings);
+			owner.AddPlayerAction (this);
 		}
 
 
@@ -77,32 +93,27 @@ namespace InControl
 		/// Adds a default binding for the action. This will also add it to the regular bindings.
 		/// </summary>
 		/// <param name="binding">The BindingSource to add.</param>
-		public void AddDefaultBinding( BindingSource binding )
+		public void AddDefaultBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return;
 			}
 
-			if (binding.BoundTo != null)
-			{
-				throw new InControlException( "Binding source is already bound to action " + binding.BoundTo.Name );
+			if (binding.BoundTo != null) {
+				throw new InControlException ("Binding source is already bound to action " + binding.BoundTo.Name);
 			}
 
-			if (!defaultBindings.Contains( binding ))
-			{
-				defaultBindings.Add( binding );
+			if (!defaultBindings.Contains (binding)) {
+				defaultBindings.Add (binding);
 				binding.BoundTo = this;
 			}
 
-			if (!regularBindings.Contains( binding ))
-			{
-				regularBindings.Add( binding );
+			if (!regularBindings.Contains (binding)) {
+				regularBindings.Add (binding);
 				binding.BoundTo = this;
 
-				if (binding.IsValid)
-				{
-					visibleBindings.Add( binding );
+				if (binding.IsValid) {
+					visibleBindings.Add (binding);
 				}
 			}
 		}
@@ -112,9 +123,9 @@ namespace InControl
 		/// A convenience method for adding a KeyBindingSource to the default bindings.
 		/// </summary>
 		/// <param name="keys">A list of one or more keys making up a KeyCombo for the binding source.</param>
-		public void AddDefaultBinding( params Key[] keys )
+		public void AddDefaultBinding (params Key [] keys)
 		{
-			AddDefaultBinding( new KeyBindingSource( keys ) );
+			AddDefaultBinding (new KeyBindingSource (keys));
 		}
 
 
@@ -122,9 +133,9 @@ namespace InControl
 		/// A convenience method for adding a MouseBindingSource to the default bindings.
 		/// </summary>
 		/// <param name="control">The Mouse control to add.</param>
-		public void AddDefaultBinding( Mouse control )
+		public void AddDefaultBinding (Mouse control)
 		{
-			AddDefaultBinding( new MouseBindingSource( control ) );
+			AddDefaultBinding (new MouseBindingSource (control));
 		}
 
 
@@ -132,9 +143,9 @@ namespace InControl
 		/// A convenience method for adding a DeviceBindingSource to the default bindings.
 		/// </summary>
 		/// <param name="control">The InputControlType to add.</param>
-		public void AddDefaultBinding( InputControlType control )
+		public void AddDefaultBinding (InputControlType control)
 		{
-			AddDefaultBinding( new DeviceBindingSource( control ) );
+			AddDefaultBinding (new DeviceBindingSource (control));
 		}
 
 
@@ -144,30 +155,26 @@ namespace InControl
 		/// </summary>
 		/// <returns><c>true</c>, if binding was added, <c>false</c> otherwise.</returns>
 		/// <param name="binding">The BindingSource to add.</param>
-		public bool AddBinding( BindingSource binding )
+		public bool AddBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return false;
 			}
 
-			if (binding.BoundTo != null)
-			{
-				Debug.LogWarning( "Binding source is already bound to action " + binding.BoundTo.Name );
+			if (binding.BoundTo != null) {
+				Debug.LogWarning ("Binding source is already bound to action " + binding.BoundTo.Name);
 				return false;
 			}
 
-			if (regularBindings.Contains( binding ))
-			{
+			if (regularBindings.Contains (binding)) {
 				return false;
 			}
 
-			regularBindings.Add( binding );
+			regularBindings.Add (binding);
 			binding.BoundTo = this;
 
-			if (binding.IsValid)
-			{
-				visibleBindings.Add( binding );
+			if (binding.IsValid) {
+				visibleBindings.Add (binding);
 			}
 
 			return true;
@@ -182,41 +189,35 @@ namespace InControl
 		/// <returns><c>true</c>, if binding was inserted, <c>false</c> otherwise.</returns>
 		/// <param name="binding">The index at which to insert.</param>
 		/// <param name="binding">The BindingSource to insert.</param>
-		public bool InsertBindingAt( int index, BindingSource binding )
+		public bool InsertBindingAt (int index, BindingSource binding)
 		{
-			if (index < 0 || index > visibleBindings.Count)
-			{
-				throw new InControlException( "Index is out of range for bindings on this action." );
+			if (index < 0 || index > visibleBindings.Count) {
+				throw new InControlException ("Index is out of range for bindings on this action.");
 			}
 
-			if (index == visibleBindings.Count)
-			{
-				return AddBinding( binding );
+			if (index == visibleBindings.Count) {
+				return AddBinding (binding);
 			}
 
-			if (binding == null)
-			{
+			if (binding == null) {
 				return false;
 			}
 
-			if (binding.BoundTo != null)
-			{
-				Debug.LogWarning( "Binding source is already bound to action " + binding.BoundTo.Name );
+			if (binding.BoundTo != null) {
+				Debug.LogWarning ("Binding source is already bound to action " + binding.BoundTo.Name);
 				return false;
 			}
 
-			if (regularBindings.Contains( binding ))
-			{
+			if (regularBindings.Contains (binding)) {
 				return false;
 			}
 
-			var regularIndex = (index == 0) ? 0 : regularBindings.IndexOf( visibleBindings[index] );
-			regularBindings.Insert( regularIndex, binding );
+			var regularIndex = (index == 0) ? 0 : regularBindings.IndexOf (visibleBindings [index]);
+			regularBindings.Insert (regularIndex, binding);
 			binding.BoundTo = this;
 
-			if (binding.IsValid)
-			{
-				visibleBindings.Insert( index, binding );
+			if (binding.IsValid) {
+				visibleBindings.Insert (index, binding);
 			}
 
 			return true;
@@ -231,50 +232,44 @@ namespace InControl
 		/// <returns><c>true</c>, if binding was added, <c>false</c> otherwise.</returns>
 		/// <param name="findBinding">The BindingSource to replace.</param>
 		/// <param name="withBinding">The BindingSource to replace it with.</param>
-		public bool ReplaceBinding( BindingSource findBinding, BindingSource withBinding )
+		public bool ReplaceBinding (BindingSource findBinding, BindingSource withBinding)
 		{
-			if (findBinding == null || withBinding == null)
-			{
+			if (findBinding == null || withBinding == null) {
 				return false;
 			}
 
-			if (withBinding.BoundTo != null)
-			{
-				Debug.LogWarning( "Binding source is already bound to action " + withBinding.BoundTo.Name );
+			if (withBinding.BoundTo != null) {
+				Debug.LogWarning ("Binding source is already bound to action " + withBinding.BoundTo.Name);
 				return false;
 			}
 
-			var index = regularBindings.IndexOf( findBinding );
-			if (index < 0)
-			{
-				Debug.LogWarning( "Binding source to replace is not present in this action." );
+			var index = regularBindings.IndexOf (findBinding);
+			if (index < 0) {
+				Debug.LogWarning ("Binding source to replace is not present in this action.");
 				return false;
 			}
 
 			findBinding.BoundTo = null;
-			regularBindings[index] = withBinding;
+			regularBindings [index] = withBinding;
 			withBinding.BoundTo = this;
 
-			index = visibleBindings.IndexOf( findBinding );
-			if (index >= 0)
-			{
-				visibleBindings[index] = withBinding;
+			index = visibleBindings.IndexOf (findBinding);
+			if (index >= 0) {
+				visibleBindings [index] = withBinding;
 			}
 
 			return true;
 		}
 
 
-		internal bool HasBinding( BindingSource binding )
+		public bool HasBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return false;
 			}
 
-			var foundBinding = FindBinding( binding );
-			if (foundBinding == null)
-			{
+			var foundBinding = FindBinding (binding);
+			if (foundBinding == null) {
 				return false;
 			}
 
@@ -282,53 +277,46 @@ namespace InControl
 		}
 
 
-		internal BindingSource FindBinding( BindingSource binding )
+		internal BindingSource FindBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return null;
 			}
 
-			var index = regularBindings.IndexOf( binding );
-			if (index >= 0)
-			{
-				return regularBindings[index];
+			var index = regularBindings.IndexOf (binding);
+			if (index >= 0) {
+				return regularBindings [index];
 			}
 
 			return null;
 		}
 
 
-		internal void FindAndRemoveBinding( BindingSource binding )
+		internal void FindAndRemoveBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return;
 			}
 
-			var bindingIndex = regularBindings.IndexOf( binding );
-			if (bindingIndex >= 0)
-			{
-				var foundBinding = regularBindings[bindingIndex];
-				if (foundBinding.BoundTo == this)
-				{
+			var bindingIndex = regularBindings.IndexOf (binding);
+			if (bindingIndex >= 0) {
+				var foundBinding = regularBindings [bindingIndex];
+				if (foundBinding.BoundTo == this) {
 					foundBinding.BoundTo = null;
-					regularBindings.RemoveAt( bindingIndex );
-					UpdateVisibleBindings();
+					regularBindings.RemoveAt (bindingIndex);
+					UpdateVisibleBindings ();
 				}
 			}
 		}
 
 
-		internal int CountBindingsOfType( BindingSourceType bindingSourceType )
+		internal int CountBindingsOfType (BindingSourceType bindingSourceType)
 		{
-			int count = 0;
+			var count = 0;
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var binding = regularBindings[i];
-				if (binding.BoundTo == this && binding.BindingSourceType == bindingSourceType)
-				{
+			for (var i = 0; i < bindingCount; i++) {
+				var binding = regularBindings [i];
+				if (binding.BoundTo == this && binding.BindingSourceType == bindingSourceType) {
 					count += 1;
 				}
 			}
@@ -336,29 +324,25 @@ namespace InControl
 		}
 
 
-		internal void RemoveFirstBindingOfType( BindingSourceType bindingSourceType )
+		internal void RemoveFirstBindingOfType (BindingSourceType bindingSourceType)
 		{
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var binding = regularBindings[i];
-				if (binding.BoundTo == this && binding.BindingSourceType == bindingSourceType)
-				{
+			for (var i = 0; i < bindingCount; i++) {
+				var binding = regularBindings [i];
+				if (binding.BoundTo == this && binding.BindingSourceType == bindingSourceType) {
 					binding.BoundTo = null;
-					regularBindings.RemoveAt( i );
+					regularBindings.RemoveAt (i);
 					return;
 				}
 			}
 		}
 
 
-		internal int IndexOfFirstInvalidBinding()
+		internal int IndexOfFirstInvalidBinding ()
 		{
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				if (!regularBindings[i].IsValid)
-				{
+			for (var i = 0; i < bindingCount; i++) {
+				if (!regularBindings [i].IsValid) {
 					return i;
 				}
 			}
@@ -373,16 +357,14 @@ namespace InControl
 		/// to allow for safe removal during iteration over the Bindings collection.
 		/// </summary>
 		/// <param name="binding">The BindingSource to remove.</param>
-		public void RemoveBinding( BindingSource binding )
+		public void RemoveBinding (BindingSource binding)
 		{
-			if (binding == null)
-			{
+			if (binding == null) {
 				return;
 			}
 
-			if (binding.BoundTo != this)
-			{
-				throw new InControlException( "Cannot remove a binding source not bound to this action." );
+			if (binding.BoundTo != this) {
+				throw new InControlException ("Cannot remove a binding source not bound to this action.");
 			}
 
 			binding.BoundTo = null;
@@ -395,51 +377,47 @@ namespace InControl
 		/// to allow for safe removal during iteration over the Bindings collection.
 		/// </summary>
 		/// <param name="index">The index of the BindingSource in the Bindings collection to remove.</param>
-		public void RemoveBindingAt( int index )
+		public void RemoveBindingAt (int index)
 		{
-			if (index < 0 || index >= regularBindings.Count)
-			{
-				throw new InControlException( "Index is out of range for bindings on this action." );
+			if (index < 0 || index >= regularBindings.Count) {
+				throw new InControlException ("Index is out of range for bindings on this action.");
 			}
 
-			regularBindings[index].BoundTo = null;
+			regularBindings [index].BoundTo = null;
 		}
 
 
 		/// <summary>
 		/// Clears the bindings for this action.
 		/// </summary>
-		public void ClearBindings()
+		public void ClearBindings ()
 		{
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				regularBindings[i].BoundTo = null;
+			for (var i = 0; i < bindingCount; i++) {
+				regularBindings [i].BoundTo = null;
 			}
-			regularBindings.Clear();
-			visibleBindings.Clear();
+			regularBindings.Clear ();
+			visibleBindings.Clear ();
 		}
 
 
 		/// <summary>
 		/// Resets the bindings to the default bindings.
 		/// </summary>
-		public void ResetBindings()
+		public void ResetBindings ()
 		{
-			ClearBindings();
+			ClearBindings ();
 
-			regularBindings.AddRange( defaultBindings );
+			regularBindings.AddRange (defaultBindings);
 
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var binding = regularBindings[i];
+			for (var i = 0; i < bindingCount; i++) {
+				var binding = regularBindings [i];
 
 				binding.BoundTo = this;
 
-				if (binding.IsValid)
-				{
-					visibleBindings.Add( binding );
+				if (binding.IsValid) {
+					visibleBindings.Add (binding);
 				}
 			}
 		}
@@ -450,9 +428,9 @@ namespace InControl
 		/// Which types of BindingSource are detected depends on the value of ListenOptions and DefaultListenOptions.
 		/// Once one is found, it will be added to the regular bindings for the action and listening will stop.
 		/// </summary>
-		public void ListenForBinding()
+		public void ListenForBinding ()
 		{
-			ListenForBindingReplacing( null );
+			ListenForBindingReplacing (null);
 		}
 
 
@@ -462,7 +440,7 @@ namespace InControl
 		/// Which types of BindingSource are detected depends on the value of ListenOptions and DefaultListenOptions.
 		/// Once one is found, it will be added to the regular bindings for the action and listening will stop.
 		/// </summary>
-		public void ListenForBindingReplacing( BindingSource binding )
+		public void ListenForBindingReplacing (BindingSource binding)
 		{
 			var listenOptions = ListenOptions ?? Owner.ListenOptions;
 			listenOptions.ReplaceBinding = binding;
@@ -470,9 +448,8 @@ namespace InControl
 			Owner.listenWithAction = this;
 
 			var bindingSourceListenerCount = bindingSourceListeners.Length;
-			for (int i = 0; i < bindingSourceListenerCount; i++)
-			{
-				bindingSourceListeners[i].Reset();
+			for (var i = 0; i < bindingSourceListenerCount; i++) {
+				bindingSourceListeners [i].Reset ();
 			}
 		}
 
@@ -480,10 +457,9 @@ namespace InControl
 		/// <summary>
 		/// Stop listening for new user defined bindings.
 		/// </summary>
-		public void StopListeningForBinding()
+		public void StopListeningForBinding ()
 		{
-			if (IsListeningForBinding)
-			{
+			if (IsListeningForBinding) {
 				Owner.listenWithAction = null;
 			}
 		}
@@ -492,265 +468,311 @@ namespace InControl
 		/// <summary>
 		/// Gets a value indicating whether this action is listening for new user defined bindings.
 		/// </summary>
-		public bool IsListeningForBinding
-		{
-			get
-			{
+		public bool IsListeningForBinding {
+			get {
 				return Owner.listenWithAction == this;
 			}
 		}
 
 
 		/// <summary>
-		/// Gets the current bindings for this action as a readonly collection.
+		/// Gets the valid (in context of the current device) bindings for this action as a readonly collection.
+		/// What this means is, if your current active controller is an Xbox One controller and you have InputControlType.Options
+		/// bound, it will not be included. This is generally the bindings you should display unless you are doing something custom.
 		/// </summary>
-		public ReadOnlyCollection<BindingSource> Bindings
-		{
-			get
-			{
+		public ReadOnlyCollection<BindingSource> Bindings {
+			get {
 				return bindings;
 			}
 		}
 
 
-		void RemoveOrphanedBindings()
+		/// <summary>
+		/// Gets ALL bindings for this action (including ones that don't make sense for the current device) as a readonly collection.
+		/// Use of this collection is not recommended unless you really need unfettered access to all the bindings on an action.
+		/// </summary>
+		public ReadOnlyCollection<BindingSource> UnfilteredBindings {
+			get {
+				return unfilteredBindings;
+			}
+		}
+
+
+		void RemoveOrphanedBindings ()
 		{
 			var bindingCount = regularBindings.Count;
-			for (int i = bindingCount - 1; i >= 0; i--)
-			{
-				if (regularBindings[i].BoundTo != this)
-				{
-					regularBindings.RemoveAt( i );
+			for (var i = bindingCount - 1; i >= 0; i--) {
+				if (regularBindings [i].BoundTo != this) {
+					regularBindings.RemoveAt (i);
 				}
 			}
 		}
 
 
-		internal void Update( ulong updateTick, float deltaTime, InputDevice device )
+		internal void Update (ulong updateTick, float deltaTime, InputDevice device)
 		{
 			Device = device;
-			UpdateBindings( updateTick, deltaTime );
-			DetectBindings();
+			UpdateBindings (updateTick, deltaTime);
+			DetectBindings ();
 		}
 
 
-		void UpdateBindings( ulong updateTick, float deltaTime )
+		void UpdateBindings (ulong updateTick, float deltaTime)
 		{
-			var bindingCount = regularBindings.Count;
-			for (int i = bindingCount - 1; i >= 0; i--)
-			{
-				var binding = regularBindings[i];
+			var lastInputType = LastInputType;
+			var lastInputTypeChangedTick = LastInputTypeChangedTick;
+			var lastUpdateTick = UpdateTick;
 
-				if (binding.BoundTo != this)
-				{
-					regularBindings.RemoveAt( i );
-					visibleBindings.Remove( binding );
-				}
-				else
-				{
-					var value = binding.GetValue( Device );
-					if (UpdateWithValue( value, updateTick, deltaTime ))
-					{
-						LastInputType = binding.BindingSourceType;
+			var bindingCount = regularBindings.Count;
+			for (var i = bindingCount - 1; i >= 0; i--) {
+				var binding = regularBindings [i];
+
+				if (binding.BoundTo != this) {
+					regularBindings.RemoveAt (i);
+					visibleBindings.Remove (binding);
+				} else {
+					var value = binding.GetValue (Device);
+					if (UpdateWithValue (value, updateTick, deltaTime)) {
+						lastInputType = binding.BindingSourceType;
+						lastInputTypeChangedTick = updateTick;
 					}
 				}
 			}
 
-			Commit();
+			Commit ();
 
 			Enabled = Owner.Enabled;
+
+			if (lastInputTypeChangedTick > LastInputTypeChangedTick) {
+				if (lastInputType != BindingSourceType.MouseBindingSource ||
+					Utility.Abs (LastValue - Value) >= MouseBindingSource.JitterThreshold) {
+					var triggerEvent = lastInputType != LastInputType;
+
+					LastInputType = lastInputType;
+					LastInputTypeChangedTick = lastInputTypeChangedTick;
+
+					if (OnLastInputTypeChanged != null && triggerEvent) {
+						OnLastInputTypeChanged.Invoke (lastInputType);
+					}
+				}
+			}
+
+			if (UpdateTick > lastUpdateTick) {
+				activeDevice = LastInputTypeIsDevice ? Device : null;
+			}
 		}
 
 
-		void DetectBindings()
+		void DetectBindings ()
 		{
-			if (IsListeningForBinding)
-			{
+			if (IsListeningForBinding) {
 				BindingSource binding = null;
 				var listenOptions = ListenOptions ?? Owner.ListenOptions;
 
 				var bindingSourceListenerCount = bindingSourceListeners.Length;
-				for (int i = 0; i < bindingSourceListenerCount; i++)
-				{
-					binding = bindingSourceListeners[i].Listen( listenOptions, device );
-					if (binding != null)
-					{
+				for (var i = 0; i < bindingSourceListenerCount; i++) {
+					binding = bindingSourceListeners [i].Listen (listenOptions, device);
+					if (binding != null) {
 						break;
 					}
 				}
 
-				if (binding == null)
-				{
+				if (binding == null) {
 					// No binding found.
 					return;
 				}
 
 				var onBindingFound = listenOptions.OnBindingFound;
-				if (onBindingFound != null && !onBindingFound( this, binding ))
-				{
+				if (onBindingFound != null && !onBindingFound (this, binding)) {
 					// Binding rejected by user.
 					return;
 				}
 
-				if (HasBinding( binding ))
-				{
+				if (HasBinding (binding)) {
 					var onBindingRejected = listenOptions.OnBindingRejected;
-					if (onBindingRejected != null)
-					{
-						onBindingRejected( this, binding, BindingSourceRejectionType.DuplicateBindingOnAction );
+					if (onBindingRejected != null) {
+						onBindingRejected (this, binding, BindingSourceRejectionType.DuplicateBindingOnAction);
 					}
 					return;
 				}
 
-				if (listenOptions.UnsetDuplicateBindingsOnSet)
-				{
-					Owner.RemoveBinding( binding );
+				if (listenOptions.UnsetDuplicateBindingsOnSet) {
+					Owner.RemoveBinding (binding);
 				}
 
-				if (!listenOptions.AllowDuplicateBindingsPerSet && Owner.HasBinding( binding ))
-				{
+				if (!listenOptions.AllowDuplicateBindingsPerSet && Owner.HasBinding (binding)) {
 					var onBindingRejected = listenOptions.OnBindingRejected;
-					if (onBindingRejected != null)
-					{
-						onBindingRejected( this, binding, BindingSourceRejectionType.DuplicateBindingOnActionSet );
+					if (onBindingRejected != null) {
+						onBindingRejected (this, binding, BindingSourceRejectionType.DuplicateBindingOnActionSet);
 					}
 					return;
 				}
 
-				StopListeningForBinding();
+				StopListeningForBinding ();
 
-				if (listenOptions.ReplaceBinding == null)
-				{
-					if (listenOptions.MaxAllowedBindingsPerType > 0)
-					{
-						while (CountBindingsOfType( binding.BindingSourceType ) >= listenOptions.MaxAllowedBindingsPerType)
-						{
-							RemoveFirstBindingOfType( binding.BindingSourceType );
+				if (listenOptions.ReplaceBinding == null) {
+					if (listenOptions.MaxAllowedBindingsPerType > 0) {
+						while (CountBindingsOfType (binding.BindingSourceType) >= listenOptions.MaxAllowedBindingsPerType) {
+							RemoveFirstBindingOfType (binding.BindingSourceType);
 						}
-					}
-					else
-					{
-						if (listenOptions.MaxAllowedBindings > 0)
-						{
-							while (regularBindings.Count >= listenOptions.MaxAllowedBindings)
-							{
-								var removeIndex = Mathf.Max( 0, IndexOfFirstInvalidBinding() );
-								regularBindings.RemoveAt( removeIndex );
+					} else {
+						if (listenOptions.MaxAllowedBindings > 0) {
+							while (regularBindings.Count >= listenOptions.MaxAllowedBindings) {
+								var removeIndex = Mathf.Max (0, IndexOfFirstInvalidBinding ());
+								regularBindings.RemoveAt (removeIndex);
 							}
 						}
 					}
 
-					AddBinding( binding );
-				}
-				else
-				{
-					ReplaceBinding( listenOptions.ReplaceBinding, binding );
+					AddBinding (binding);
+				} else {
+					ReplaceBinding (listenOptions.ReplaceBinding, binding);
 				}
 
-				UpdateVisibleBindings();
+				UpdateVisibleBindings ();
 
 				var onBindingAdded = listenOptions.OnBindingAdded;
-				if (onBindingAdded != null)
-				{
-					onBindingAdded( this, binding );
+				if (onBindingAdded != null) {
+					onBindingAdded (this, binding);
 				}
 			}
 		}
 
 
-		void UpdateVisibleBindings()
+		void UpdateVisibleBindings ()
 		{
-			visibleBindings.Clear();
+			visibleBindings.Clear ();
 			var bindingCount = regularBindings.Count;
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var binding = regularBindings[i];
-				if (binding.IsValid)
-				{
-					visibleBindings.Add( binding );
+			for (var i = 0; i < bindingCount; i++) {
+				var binding = regularBindings [i];
+				if (binding.IsValid) {
+					visibleBindings.Add (binding);
 				}
 			}
 		}
 
 
 		InputDevice device;
-		internal InputDevice Device
-		{
-			get
-			{
-				if (device == null)
-				{
+		internal InputDevice Device {
+			get {
+				if (device == null) {
 					device = Owner.Device;
-					UpdateVisibleBindings();
+					UpdateVisibleBindings ();
 				}
 
 				return device;
 			}
 
-			set
-			{
-				if (device != value)
-				{
+			set {
+				if (device != value) {
 					device = value;
-					UpdateVisibleBindings();
+					UpdateVisibleBindings ();
 				}
 			}
 		}
 
 
+		InputDevice activeDevice;
+		/// <summary>
+		/// Gets the currently active device (controller) if present, otherwise returns a null device which does nothing.
+		/// The currently active device is defined as the last device that provided input to this action.
+		/// When LastInputType is not a device (controller), this will return the null device.
+		/// </summary>
+		public InputDevice ActiveDevice {
+			get {
+				return (activeDevice == null) ? InputDevice.Null : activeDevice;
+			}
+		}
 
-		internal void Load( BinaryReader reader )
+
+		bool LastInputTypeIsDevice {
+			get {
+				return LastInputType == BindingSourceType.DeviceBindingSource ||
+					   LastInputType == BindingSourceType.UnknownDeviceBindingSource;
+			}
+		}
+
+
+		[Obsolete ("Please set this property on device controls directly. It does nothing here.")]
+		public new float LowerDeadZone {
+			get {
+				return 0.0f;
+			}
+
+			set {
+#pragma warning disable 0168, 0219
+				var dummy = value;
+#pragma warning restore 0168, 0219
+			}
+		}
+
+
+		[Obsolete ("Please set this property on device controls directly. It does nothing here.")]
+		public new float UpperDeadZone {
+			get {
+				return 0.0f;
+			}
+
+			set {
+#pragma warning disable 0168, 0219
+				var dummy = value;
+#pragma warning restore 0168, 0219
+			}
+		}
+
+
+		internal void Load (BinaryReader reader)
 		{
-			ClearBindings();
+			ClearBindings ();
 
-			var bindingCount = reader.ReadInt32();
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var bindingSourceType = (BindingSourceType) reader.ReadInt32();
+			var bindingCount = reader.ReadInt32 ();
+			for (var i = 0; i < bindingCount; i++) {
+				var bindingSourceType = (BindingSourceType)reader.ReadInt32 ();
 				BindingSource bindingSource;
 
-				switch (bindingSourceType)
-				{
+				switch (bindingSourceType) {
+				case BindingSourceType.None:
+					continue;
+
 				case BindingSourceType.DeviceBindingSource:
-					bindingSource = new DeviceBindingSource();
+					bindingSource = new DeviceBindingSource ();
 					break;
 
 				case BindingSourceType.KeyBindingSource:
-					bindingSource = new KeyBindingSource();
+					bindingSource = new KeyBindingSource ();
 					break;
 
 				case BindingSourceType.MouseBindingSource:
-					bindingSource = new MouseBindingSource();
+					bindingSource = new MouseBindingSource ();
 					break;
 
 				case BindingSourceType.UnknownDeviceBindingSource:
-					bindingSource = new UnknownDeviceBindingSource();
+					bindingSource = new UnknownDeviceBindingSource ();
 					break;
 
 				default:
-					throw new InControlException( "Don't know how to load BindingSourceType: " + bindingSourceType );
+					throw new InControlException ("Don't know how to load BindingSourceType: " + bindingSourceType);
 				}
 
-				bindingSource.Load( reader );
-				AddBinding( bindingSource );
+				bindingSource.Load (reader);
+				AddBinding (bindingSource);
 			}
 		}
 
 
-		internal void Save( BinaryWriter writer )
+		internal void Save (BinaryWriter writer)
 		{
-			RemoveOrphanedBindings();
+			RemoveOrphanedBindings ();
 
-			writer.Write( Name );
+			writer.Write (Name);
 
 			var bindingCount = regularBindings.Count;
-			writer.Write( bindingCount );
+			writer.Write (bindingCount);
 
-			for (int i = 0; i < bindingCount; i++)
-			{
-				var binding = regularBindings[i];
-				writer.Write( (int) binding.BindingSourceType );
-				binding.Save( writer );
+			for (var i = 0; i < bindingCount; i++) {
+				var binding = regularBindings [i];
+				writer.Write ((int)binding.BindingSourceType);
+				binding.Save (writer);
 			}
 		}
 	}

@@ -1,5 +1,3 @@
-using System;
-
 namespace InControl
 {
 	// @cond nodoc
@@ -11,6 +9,8 @@ namespace InControl
 			// Gamecube Controller Adapter for PC USB
 			Name = "GameCube Controller";
 			Meta = "GameCube Controller on Windows";
+
+			DeviceClass = InputDeviceClass.Controller;
 
 			IncludePlatforms = new[] {
 				"Windows"

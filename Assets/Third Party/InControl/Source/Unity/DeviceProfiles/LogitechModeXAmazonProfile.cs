@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace InControl
+﻿namespace InControl
 {
 	// @cond nodoc
 	[AutoDiscover]
@@ -11,6 +8,9 @@ namespace InControl
 		{
 			Name = "Logitech Controller";
 			Meta = "Logitech Controller on Amazon Fire TV (Mode X)";
+
+			DeviceClass = InputDeviceClass.Controller;
+			DeviceStyle = InputDeviceStyle.Xbox360;
 
 			IncludePlatforms = new[] {
 				"Amazon AFT"
