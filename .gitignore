@@ -4,6 +4,11 @@
 /[Bb]uild/
 /[Bb]uilds/
 /Assets/AssetStoreTools*
+/Assets/Plugins/Metro/
+/Assets/Plugins/Uwp/
+/Assets/Plugins/WP8/
+/Assets/Third Party/PhotonChatApi/
+/LocalCache/
 
 # Visual Studio 2015 cache directory
 /.vs/
