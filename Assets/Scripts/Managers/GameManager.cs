@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class GameManager : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private AIManager AIManagerPrefab;
+	private AIManager AIManagerPrefab = null;
 	[SerializeField]
-	private NetworkManager networkManagerPrefab;
+	private NetworkManager networkManagerPrefab = null;
 	[SerializeField]
-	private AudioManager audioManagerPrefab;
+	private AudioManager audioManagerPrefab = null;
 	[SerializeField]
-	private Texture[] allPlayerSkins;
+	private Texture[] allPlayerSkins = null;
 	[SerializeField]
-	private int tTTWarmupTime;
+	private int tTTWarmupTime = 30;
 
 	private static GameManager instance;
 	private AIManager aIManager;
@@ -20,6 +19,7 @@ public class GameManager : OverridableMonoBehaviour
 	private AudioManager audioManager;
 	private bool inGame;
 	private bool tTTWarmingUp = true;
+	private bool tTTCoolingDown;
 	private GameTypes currentGameType;
 	private float terroristSpawnRate;
 	private float detectiveSpawnRate;
@@ -33,6 +33,10 @@ public class GameManager : OverridableMonoBehaviour
 	{
 		get { return tTTWarmingUp; }
 		set { tTTWarmingUp = value; }
+	}
+	public bool TTTCoolingDown
+	{
+		get { return tTTCoolingDown; }
 	}
 	public Texture[] AllPlayerSkins
 	{
@@ -70,7 +74,7 @@ public class GameManager : OverridableMonoBehaviour
 		GetAudioManager().UpdateAudioVolumes(PlayerPrefs.GetFloat("SFXVolume"), PlayerPrefs.GetFloat("MusicVolume"));
 	}
 
-	void Start()
+	private void Start()
 	{
 		GameManager[] gameManagers = FindObjectsOfType<GameManager>();
 
@@ -89,28 +93,35 @@ public class GameManager : OverridableMonoBehaviour
 
 	public override void UpdateMe()
 	{
+		if (inGame == false || (PhotonNetwork.offlineMode == false && PhotonNetwork.isMasterClient == false))
+		{
+			return;
+		}
+
 		if (currentGameType == GameTypes.ZombieMode)
 		{
-			if (PhotonNetwork.offlineMode == false)
+			if (GetAIManager().AllRemainingZombies.Count == 0)
 			{
-				if (inGame == true && PhotonNetwork.isMasterClient == true)
-				{
-					if (GetAIManager().AllRemainingZombies.Count == 0)
-					{
-						aIManager.NextWave();
-					}
-				}
+				aIManager.NextWave();
 			}
-			else
+		}
+		else if (currentGameType == GameTypes.TTT)
+		{
+			if (tTTCoolingDown == true)
 			{
-				if (inGame == true)
-				{
-					if (GetAIManager().AllRemainingZombies.Count == 0)
-					{
-						aIManager.NextWave();
-					}
-				}
-			} 
+				return;
+			}
+
+			if (GetNetworkManager().AllRemainingTraitorPlayers.Count > 0 && GetNetworkManager().AllRemainingInnocentPlayers.Count == 0) //Traitor victory
+			{
+				tTTCoolingDown = true;
+				GetNetworkManager().LaunchTTTVictoryScreen();
+			}
+			else if (GetNetworkManager().AllRemainingTraitorPlayers.Count == 0 && GetNetworkManager().AllRemainingInnocentPlayers.Count > 0) //Innocent victory
+			{
+				tTTCoolingDown = true;
+				GetNetworkManager().LaunchTTTVictoryScreen();
+			}
 		}
 	}
 
@@ -143,43 +154,31 @@ public class GameManager : OverridableMonoBehaviour
 
 	public NetworkManager GetNetworkManager()
 	{
-		if (networkManager == null)
-		{
-			networkManager = Instantiate(networkManagerPrefab);
-			DontDestroyOnLoad(networkManager);
-		}
+		if (networkManager != null) return networkManager;
+
+		networkManager = Instantiate(networkManagerPrefab);
+		DontDestroyOnLoad(networkManager);
 
 		return networkManager;
 	}
 
 	public AudioManager GetAudioManager()
 	{
-		if (audioManager == null)
+		if (audioManager != null) return audioManager;
+
+		if (PhotonNetwork.inRoom == false)
 		{
-			if (PhotonNetwork.inRoom == false)
-			{
-				audioManager = Instantiate(audioManagerPrefab);
-			}
-			else
-			{
-				if (PhotonNetwork.offlineMode == false)
-				{
-					if (PhotonNetwork.isMasterClient == false)
-					{
-						audioManager = FindObjectOfType<AudioManager>();
-					}
-					else
-					{
-						audioManager = PhotonNetwork.InstantiateSceneObject(audioManagerPrefab.name, Vector3.zero, Quaternion.Euler(Vector3.zero), 0, null).GetComponent<AudioManager>();
-					}
-				}
-			}
+			audioManager = Instantiate(audioManagerPrefab);
+		}
+		else
+		{
+			audioManager = PhotonNetwork.isMasterClient == false ? FindObjectOfType<AudioManager>() : PhotonNetwork.InstantiateSceneObject(audioManagerPrefab.name, Vector3.zero, Quaternion.Euler(Vector3.zero), 0, null).GetComponent<AudioManager>();
 		}
 
 		return audioManager;
 	}
 
-	void OnApplicationQuit()
+	private void OnApplicationQuit()
 	{
 		PlayerPrefs.SetFloat("SFXVolume", GetAudioManager().SavedSFXVolume);
 		PlayerPrefs.SetFloat("MusicVolume", GetAudioManager().SavedMusicVolume);

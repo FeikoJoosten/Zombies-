@@ -1,16 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Collections;
 
 public class RebindButton : MonoBehaviour, IPointerClickHandler
 {
 	public InControl.PlayerAction action { get; set; }
 	public InControl.BindingSource binding { get; set; }
 
-	MainMenuManager mainMenuManager;
-	PauseMenuManager pauseMenuManager;
+	private MainMenuManager mainMenuManager;
+	private PauseMenuManager pauseMenuManager;
 
-	void Start()
+	private void Start()
 	{
 		mainMenuManager = FindObjectOfType<MainMenuManager>();
 		pauseMenuManager = FindObjectOfType<PauseMenuManager>();

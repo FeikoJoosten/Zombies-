@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class DeathInformationCollider : MonoBehaviour
 {
 	[SerializeField]
-	private Player player;
+	private Player player = null;
 
 	public Player Player
 	{

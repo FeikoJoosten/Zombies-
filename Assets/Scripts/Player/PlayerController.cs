@@ -1,17 +1,16 @@
 ﻿using UnityEngine;
 using InControl;
-using System.Collections;
 
 public class PlayerController : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private Player player;
+	private Player player = null;
 	[SerializeField]
-	private GameObject playerHead;
+	private GameObject playerHead = null;
 	[SerializeField]
-	private GameObject playerArmLeft;
+	private GameObject playerArmLeft = null;
 	[SerializeField]
-	private GameObject playerArmRight;
+	private GameObject playerArmRight = null;
 
 	public bool IsSprinting
 	{
@@ -128,16 +127,15 @@ public class PlayerController : OverridableMonoBehaviour
 		player.UpdateRotation(playerActions.rotation.Value);
 	}
 
-	void FixedUpdate()
+	private void FixedUpdate()
 	{
-		if (player.HasPauseMenuOpen == false)
-		{
-			if (PhotonNetwork.offlineMode == false)
-			{
-				//player.photonView.RPC("UpdateMovement", PhotonTargets.OthersBuffered, playerActions.move.Value, playerActions.sprint.IsPressed);
-			}
+		if (player.HasPauseMenuOpen != false) return;
 
-			player.UpdateMovement(playerActions.move.Value, playerActions.sprint.IsPressed);
+		if (PhotonNetwork.offlineMode == false)
+		{
+			//player.photonView.RPC("UpdateMovement", PhotonTargets.OthersBuffered, playerActions.move.Value, playerActions.sprint.IsPressed);
 		}
+
+		player.UpdateMovement(playerActions.move.Value, playerActions.sprint.IsPressed);
 	}
 }

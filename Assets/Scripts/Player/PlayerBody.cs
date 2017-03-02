@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class PlayerBody : MonoBehaviour
 {
 	[SerializeField]
-	private Player player;
+	private Player player = null;
 	[SerializeField]
-	private PlayerBodyType bodyType;
+	private PlayerBodyType bodyType = PlayerBodyType.Body;
 
-	void Start()
+	private void Start()
 	{
 		if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
 		{
@@ -16,7 +15,7 @@ public class PlayerBody : MonoBehaviour
 		}
 	}
 
-	void OnTriggerEnter(Collider other)
+	private void OnTriggerEnter(Collider other)
 	{
 		if(PhotonNetwork.isMasterClient == false)
 		{
@@ -25,24 +24,28 @@ public class PlayerBody : MonoBehaviour
 
 		Bullet bullet = other.GetComponent<Bullet>();
 
-		if (bullet != null)
+		if (bullet == null || bullet.TouchedObject != false) return;
+
+		if (PhotonNetwork.offlineMode == false)
 		{
-			if (bullet.TouchedObject == false)
+			PhotonNetwork.RPC(player.photonView, "RemoveHealthFromPlayerBody", PhotonTargets.Others, false, bullet.Damage, bodyType);
+			if(player.CurrentTTTTeam != TTTTeams.Traitor && GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers[bullet.OwnerID].CurrentTTTTeam != TTTTeams.Traitor)
 			{
-				if (PhotonNetwork.offlineMode == false)
-				{
-					PhotonNetwork.RPC(player.photonView, "RemoveHealthFromPlayerBody", PhotonTargets.Others, false, bullet.Damage, bodyType);
-				}
-				if (player != null)
-				{
-					player.RemoveHealthFromPlayerBody(bullet.Damage, bodyType, bullet.BulletType);
-				}
-				bullet.TouchedObject = true;
+				PhotonNetwork.RPC(player.photonView, "RemoveKarmaPoints", PhotonTargets.Others, false, bullet.Damage, player.photonView.viewID);
 			}
 		}
+		if (player != null)
+		{
+			player.RemoveHealthFromPlayerBody(bullet.Damage, bodyType, bullet.BulletType);
+			if (player.CurrentTTTTeam != TTTTeams.Traitor && GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers[bullet.OwnerID].CurrentTTTTeam != TTTTeams.Traitor)
+			{
+				player.RemoveKarmaPoints((int)bullet.Damage, player.photonView.viewID);
+			}
+		}
+		bullet.TouchedObject = true;
 	}
 
-	void OnTriggerStay(Collider other)
+	private void OnTriggerStay(Collider other)
 	{
 		if (PhotonNetwork.isMasterClient == false)
 		{
@@ -51,23 +54,27 @@ public class PlayerBody : MonoBehaviour
 
 		Grenade grenade = other.GetComponent<Grenade>();
 
-		if (grenade != null)
+		if (grenade == null || grenade.TouchedObject != false) return;
+
+		if (grenade.IsExploded == true)
 		{
-			if (grenade.TouchedObject == false)
+			if (PhotonNetwork.offlineMode == false)
 			{
-				if (grenade.IsExploded == true)
+				PhotonNetwork.RPC(player.photonView, "RemoveHealthFromPlayerBody", PhotonTargets.Others, false, grenade.Damage, bodyType);
+				if (player.CurrentTTTTeam != TTTTeams.Traitor && GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers[grenade.OwnerID].CurrentTTTTeam != TTTTeams.Traitor)
 				{
-					if (PhotonNetwork.offlineMode == false)
-					{
-						PhotonNetwork.RPC(player.photonView, "RemoveHealthFromPlayerBody", PhotonTargets.Others, false, grenade.Damage, bodyType);
-					}
-					if (player != null)
-					{
-						player.RemoveHealthFromPlayerBody(grenade.Damage, bodyType, grenade.GrenadeType);
-					}
+					PhotonNetwork.RPC(player.photonView, "RemoveKarmaPoints", PhotonTargets.Others, false, grenade.Damage, player.photonView.viewID);
 				}
-				grenade.TouchedObject = true;
+			}
+			if (player != null)
+			{
+				player.RemoveHealthFromPlayerBody(grenade.Damage, bodyType, grenade.GrenadeType);
+				if (player.CurrentTTTTeam != TTTTeams.Traitor && GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers[grenade.OwnerID].CurrentTTTTeam != TTTTeams.Traitor)
+				{
+					player.RemoveKarmaPoints((int)grenade.Damage, player.photonView.viewID);
+				}
 			}
 		}
+		grenade.TouchedObject = true;
 	}
 }

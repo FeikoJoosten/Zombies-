@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class MinimapDot : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private float destroyTime;
+	private float destroyTime = 0;
 	[SerializeField]
-	private float fadeoutTime;
+	private float fadeoutTime = 0;
 	[SerializeField]
-	private MeshRenderer image;
+	private MeshRenderer image = null;
 
-	private float currentFadeoutTime = 0;
+	private float currentFadeoutTime;
 
-	void Start()
+	private void Start()
 	{
 		currentFadeoutTime = destroyTime;
 	}

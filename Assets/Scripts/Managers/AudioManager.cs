@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class AudioManager : MonoBehaviour
@@ -21,7 +20,7 @@ public class AudioManager : MonoBehaviour
 		set { savedSFXVolume = value; }
 	}
 
-	void Awake()
+	private void Awake()
 	{
 		if (PlayerPrefs.HasKey("SFXVolume") == true && PlayerPrefs.HasKey("MusicVolume") == true)
 		{
@@ -90,7 +89,7 @@ public class AudioManager : MonoBehaviour
 
 	public void UpdateAudioVolumes(float sFXVolume, float musicVolume)
 	{
-		foreach (var sfxaudio in sfxAudio)
+		foreach (AudioSource sfxaudio in sfxAudio)
 		{
 			if (sfxaudio == null)
 			{
@@ -100,7 +99,7 @@ public class AudioManager : MonoBehaviour
 			sfxaudio.volume = sFXVolume;
 		}
 
-		foreach (var musicaudio in musicAudio)
+		foreach (AudioSource musicaudio in musicAudio)
 		{
 			if (musicaudio == null)
 			{
@@ -118,7 +117,7 @@ public class AudioManager : MonoBehaviour
 		PlayerPrefs.Save();
 	}
 
-	void OnApplicationQuit()
+	private void OnApplicationQuit()
 	{
 		PlayerPrefs.SetFloat("SFXVolume", savedSFXVolume);
 		PlayerPrefs.SetFloat("MusicVolume", savedMusicVolume);

@@ -15,13 +15,13 @@ public class ThrowableWeaponModel : MonoBehaviour
 		set { weaponNumber = value; }
 	}
 	// Use this for initialization
-	void Start()
+	private void Start()
 	{
 		ammoSpawner = FindObjectOfType<AmmoPickupSpawner>();
 		StartCoroutine(DestroyWeapon());
 	}
 
-	IEnumerator DestroyWeapon()
+	private IEnumerator DestroyWeapon()
 	{
 		yield return new WaitForSeconds(destroyTime);
 

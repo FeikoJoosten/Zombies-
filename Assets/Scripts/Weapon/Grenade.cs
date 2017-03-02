@@ -1,30 +1,27 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 [RequireComponent(typeof(SphereCollider))]
 public class Grenade : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private GameObject explosionPrefab;
+	private GameObject explosionPrefab = null;
 	[SerializeField]
-	private SphereCollider coll;
+	private SphereCollider coll = null;
 	[SerializeField]
 	private float waitBeforeExplosionTime;
 	[SerializeField]
-	private float damage;
+	private float damage = 0;
 	[SerializeField]
-	private float destroyTime;
+	private float destroyTime = 0;
 	[SerializeField]
-	private Rigidbody rig;
+	private Rigidbody rig = null;
 	[SerializeField]
-	private AudioSource audioSource;
+	private AudioClip audioClip = null;
 	[SerializeField]
-	private AudioClip audioClip;
-	[SerializeField]
-	private WeaponType grenadeType;
+	private WeaponType grenadeType = WeaponType.Grenade;
 
-	private bool isExploded = false;
-	private bool doOnce = false;
+	private bool isExploded;
+	private bool doOnce;
 	private bool touchedObject;
 
 	private int ownerID;
@@ -56,7 +53,7 @@ public class Grenade : OverridableMonoBehaviour
 		get { return grenadeType; }
 	}
 
-	void Start()
+	private void Start()
 	{
 		if (coll.enabled == true)
 		{
@@ -74,10 +71,10 @@ public class Grenade : OverridableMonoBehaviour
 		{
 			if (doOnce == false)
 			{
-				AudioSource audio = Instantiate(new GameObject("Grenade audio").AddComponent<AudioSource>());
-				GameManager.GetInstance().GetAudioManager().AddSFXAudioSource(audio);
-				GameManager.GetInstance().GetAudioManager().PlaySFXSound(audio, audioClip);
-				Destroy(audio.gameObject, audioClip.length);
+				AudioSource Audio = Instantiate(new GameObject("Grenade audio").AddComponent<AudioSource>());
+				GameManager.GetInstance().GetAudioManager().AddSFXAudioSource(Audio);
+				GameManager.GetInstance().GetAudioManager().PlaySFXSound(Audio, audioClip);
+				Destroy(Audio.gameObject, audioClip.length);
 				doOnce = true;
 			}
 

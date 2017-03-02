@@ -7,29 +7,29 @@ using System.Collections.Generic;
 public class AIManager : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private Zombie zombiePrefab;
+	private Zombie zombiePrefab = null;
 	[SerializeField]
-	private LayerMask spawnMask;
+	private LayerMask spawnMask = 0;
 	[SerializeField]
-	private LayerMask nonSpawnMask;
+	private LayerMask nonSpawnMask = 0;
 	[SerializeField]
-	private int baseMaxZombiesOnMap;
+	private int baseMaxZombiesOnMap = 24;
 	[SerializeField]
-	private int amountOfExtraZombiesPerPlayer;
+	private int amountOfExtraZombiesPerPlayer = 6;
 	[SerializeField]
-	private float spawnRateCalculator;
+	private float spawnRateCalculator = 0.15f;
 	[SerializeField]
-	private float spawnTime;
+	private float spawnTime = 5;
 	[SerializeField]
-	private Vector4 spawnArea;
+	private Vector4 spawnArea = new Vector4(-25.8f, -116.8f, 52.2f, 4);
 	[SerializeField]
-	private RectTransform minimapDot;
+	private RectTransform minimapDot = null;
 
 	private Dictionary<int, Zombie> allRemainingZombies = new Dictionary<int, Zombie>();
-	private bool startedSpawning = false;
+	private bool startedSpawning;
 	private float timer = 1;
 	private int currentWave;
-	private int spawnCap = 0;
+	private int spawnCap;
 
 	public Dictionary<int, Zombie> AllRemainingZombies
 	{
@@ -44,7 +44,7 @@ public class AIManager : OverridableMonoBehaviour
 		get { return currentWave; }
 	}
 
-	void Start()
+	private void Start()
 	{
 		AIManager[] aiManagers = FindObjectsOfType<AIManager>();
 
@@ -53,17 +53,19 @@ public class AIManager : OverridableMonoBehaviour
 			Destroy(gameObject);
 		}
 
-		if (GameManager.GetInstance().CurrentGameType == GameTypes.ZombieMode)
+		switch (GameManager.GetInstance().CurrentGameType)
 		{
-			zombiePrefab.StartingHealth = 100;
+			case GameTypes.ZombieMode:
+				zombiePrefab.StartingHealth = 100;
 
-			if (PhotonNetwork.isMasterClient == true)
-			{
-				if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == PhotonNetwork.playerList.Length)
+				if (PhotonNetwork.isMasterClient == true)
 				{
-					NextWave();
+					if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == PhotonNetwork.playerList.Length)
+					{
+						NextWave();
+					}
 				}
-			}
+				break;
 		}
 	}
 
@@ -76,24 +78,25 @@ public class AIManager : OverridableMonoBehaviour
 
 		foreach (var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
 		{
-			if(player.Value == null)
+			if (player.Value == null)
 			{
 				continue;
 			}
 
-			if (player.Value.enabled == false)
-			{
-				GameManager.GetInstance().GetNetworkManager().FindPlayers();
-				break;
-			}
+			if (player.Value.enabled != false) continue;
+
+			GameManager.GetInstance().GetNetworkManager().FindPlayers();
+			break;
 		}
 
-		if (GameManager.GetInstance().CurrentGameType == GameTypes.ZombieMode)
+		switch (GameManager.GetInstance().CurrentGameType)
 		{
-			if (allRemainingZombies.Count > 0)
-			{
-				AssignTargetForAI();
-			}
+			case GameTypes.ZombieMode:
+				if (allRemainingZombies.Count > 0)
+				{
+					AssignTargetForAI();
+				}
+				break;
 		}
 	}
 
@@ -103,7 +106,7 @@ public class AIManager : OverridableMonoBehaviour
 		Instantiate(minimapDot, new Vector3(zombiePosition.x, minimapDot.transform.position.y, zombiePosition.z), minimapDot.transform.rotation);
 	}
 
-	void AssignTargetForAI()
+	private void AssignTargetForAI()
 	{
 		foreach (var zomb in allRemainingZombies)
 		{
@@ -112,47 +115,43 @@ public class AIManager : OverridableMonoBehaviour
 				continue;
 			}
 
-			if (zomb.Value.FinishedSpawning == true)
+			if (zomb.Value.FinishedSpawning == false) return;
+			if (zomb.Value.IsDead == true) return;
+
+			if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == 0)
 			{
-				if (zomb.Value.IsDead == false)
+				return;
+			}
+
+			float distance = Vector3.Distance(zomb.Value.transform.position, GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.First().Value.transform.position);
+			Transform target = GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.First().Value.transform;
+
+			foreach (var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
+			{
+				if (Vector3.Distance(zomb.Value.transform.position, player.Value.transform.position) < distance)
 				{
-					if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == 0)
-					{
-						return;
-					}
-
-					float distance = Vector3.Distance(zomb.Value.transform.position, GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.First().Value.transform.position);
-					Transform target = GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.First().Value.transform;
-
-					foreach (var player in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers)
-					{
-						if (Vector3.Distance(zomb.Value.transform.position, player.Value.transform.position) < distance)
-						{
-							target = player.Value.transform;
-						}
-					}
-
-					if (target.position != zomb.Value.Agent.destination)
-					{
-						NavMeshPath path = new NavMeshPath();
-						NavMesh.CalculatePath(zomb.Value.transform.position, target.position, NavMesh.AllAreas, path);
-
-						if (PhotonNetwork.offlineMode == false)
-						{
-							photonView.RPC("AssignTargetForSpecificAI", PhotonTargets.All, path.corners, zomb.Key);
-						}
-						else
-						{
-							zomb.Value.Agent.SetPath(path);
-						}
-					}
+					target = player.Value.transform;
 				}
+			}
+
+			if (target.position == zomb.Value.Agent.destination) return;
+
+			NavMeshPath path = new NavMeshPath();
+			NavMesh.CalculatePath(zomb.Value.transform.position, target.position, NavMesh.AllAreas, path);
+
+			if (PhotonNetwork.offlineMode == false)
+			{
+				photonView.RPC("AssignTargetForSpecificAI", PhotonTargets.All, path.corners, zomb.Key);
+			}
+			else
+			{
+				zomb.Value.Agent.SetPath(path);
 			}
 		}
 	}
 
 	[PunRPC]
-	void AssignTargetForSpecificAI(Vector3[] path, int AINumber)
+	private void AssignTargetForSpecificAI(Vector3[] path, int AINumber)
 	{
 		if (allRemainingZombies.ContainsKey(AINumber) == false || allRemainingZombies[AINumber] == null)
 		{
@@ -167,25 +166,26 @@ public class AIManager : OverridableMonoBehaviour
 			return;
 		}
 
-		if (path.Length != 0)
+		if (path.Length == 0) return;
+
+		zomb.Agent.CalculatePath(path[path.Length - 1], p);
+
+		FieldInfo a = typeof(NavMeshPath).GetField("m_corners", BindingFlags.Public |
+											 BindingFlags.NonPublic |
+											 BindingFlags.Instance);
+
+		if (a == null) return;
+
+		a.SetValue(p, new Vector3[path.Length], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, System.Globalization.CultureInfo.CurrentCulture);
+
+		for (int i = 0; i < path.Length; i++)
 		{
-			zomb.Agent.CalculatePath(path[path.Length - 1], p);
-
-			FieldInfo a = typeof(NavMeshPath).GetField("m_corners", BindingFlags.Public |
-												 BindingFlags.NonPublic |
-												 BindingFlags.Instance);
-
-			a.SetValue(p, new Vector3[path.Length], BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, System.Globalization.CultureInfo.CurrentCulture);
-
-			for (int i = 0; i < path.Length; i++)
-			{
-				p.corners[i] = path[i];
-			}
-			zomb.Agent.SetPath(p);
+			p.corners[i] = path[i];
 		}
+		zomb.Agent.SetPath(p);
 	}
 
-	void UpdateAIStats()
+	private void UpdateAIStats()
 	{
 		if (currentWave <= 1)
 		{
@@ -205,10 +205,8 @@ public class AIManager : OverridableMonoBehaviour
 		}
 	}
 
-	IEnumerator SpawnWave()
+	private IEnumerator SpawnWave()
 	{
-		int amountToSpawn = 0;
-
 		if (currentWave == 0)
 		{
 			if (spawnCap == 0)
@@ -223,7 +221,7 @@ public class AIManager : OverridableMonoBehaviour
 
 		currentWave++;
 
-		amountToSpawn = Mathf.RoundToInt(spawnCap * (currentWave * spawnRateCalculator));
+		int amountToSpawn = Mathf.RoundToInt(spawnCap * (currentWave * spawnRateCalculator));
 
 		while (amountToSpawn != 0)
 		{
@@ -234,16 +232,9 @@ public class AIManager : OverridableMonoBehaviour
 					timer++;
 					if (Mathf.Round(timer) % spawnTime == 0)
 					{
-						int spawnValue = 0;
-
-						if (amountToSpawn == Mathf.RoundToInt(spawnCap * (currentWave * spawnRateCalculator)))
-						{
-							spawnValue = Mathf.RoundToInt(amountToSpawn / 2);
-						}
-						else
-						{
-							spawnValue = amountToSpawn;
-						}
+						int spawnValue = (amountToSpawn == Mathf.RoundToInt(spawnCap * (currentWave * spawnRateCalculator)))
+							? Mathf.RoundToInt(amountToSpawn * 0.5f)
+							: amountToSpawn;
 
 						amountToSpawn -= spawnValue;
 						StartCoroutine(SpawnZombie(spawnValue));
@@ -259,9 +250,7 @@ public class AIManager : OverridableMonoBehaviour
 					timer++;
 					if (Mathf.Round(timer) % spawnTime == 0)
 					{
-						int spawnValue = 0;
-
-						spawnValue = Mathf.RoundToInt(spawnCap / 2);
+						int spawnValue = Mathf.RoundToInt(spawnCap * 0.5f);
 						amountToSpawn -= spawnValue;
 
 						StartCoroutine(SpawnZombie(spawnValue));
@@ -289,7 +278,7 @@ public class AIManager : OverridableMonoBehaviour
 		startedSpawning = false;
 	}
 
-	IEnumerator SpawnZombie(int amount)
+	private IEnumerator SpawnZombie(int amount)
 	{
 		int currentSpawnValue = 0;
 
@@ -306,14 +295,14 @@ public class AIManager : OverridableMonoBehaviour
 			currentSpawnValue++;
 		}
 
-		yield return currentSpawnValue > amount ? true : false;
+		yield return currentSpawnValue > amount;
 	}
 
-	Vector3 GetASpawnPosition()
+	private Vector3 GetASpawnPosition()
 	{
-		Vector3 rayCastPosition = new Vector3(UnityEngine.Random.Range(spawnArea.x, spawnArea.z), transform.position.y, UnityEngine.Random.Range(spawnArea.y, spawnArea.w));
+		Vector3 rayCastPosition = new Vector3(Random.Range(spawnArea.x, spawnArea.z), transform.position.y, Random.Range(spawnArea.y, spawnArea.w));
 		Ray ray = new Ray(rayCastPosition, Vector3.down);
-		RaycastHit hit = new RaycastHit();
+		RaycastHit hit;
 
 		if (Physics.Raycast(ray, out hit, Mathf.Infinity))
 		{
@@ -367,21 +356,17 @@ public class AIManager : OverridableMonoBehaviour
 		allRemainingZombies.Clear();
 	}
 
-	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	private void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting)
 		{
-			if (PhotonNetwork.player == PhotonNetwork.masterClient)
-			{
-				stream.SendNext(currentWave);
-			}
+			if (!PhotonNetwork.player.Equals(PhotonNetwork.masterClient)) return;
+			stream.SendNext(currentWave);
 		}
 		else
 		{
-			if (PhotonNetwork.player != PhotonNetwork.masterClient)
-			{
-				currentWave = (int)stream.ReceiveNext();
-			}
+			if (PhotonNetwork.player.Equals(PhotonNetwork.masterClient)) return;
+			currentWave = (int)stream.ReceiveNext();
 		}
 	}
 }

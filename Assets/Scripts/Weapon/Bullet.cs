@@ -1,20 +1,19 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Bullet : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private float damage;
+	private float damage = 0;
 	[SerializeField]
-	private float movementSpeed;
+	private float movementSpeed = 0;
 	[SerializeField]
-	private Rigidbody rig;
+	private Rigidbody rig = null;
 	[SerializeField]
 	private float destroyTime = 10;
 	[SerializeField]
-	private LayerMask playerLayerMask;
+	private LayerMask playerLayerMask = 0;
 	[SerializeField]
-	private WeaponType bulletType;
+	private WeaponType bulletType = WeaponType.Pistol;
 
 	private int ownerID;
 	private bool touchedObject;
@@ -54,18 +53,18 @@ public class Bullet : OverridableMonoBehaviour
 		}
 	}
 
-	void Destroy()
+	private void Destroy()
 	{
 		UpdateManager.RemoveSpecificItem(this);
 		Destroy(gameObject);
 	}
 
-	void FixedUpdate()
+	private void FixedUpdate()
 	{
 		rig.velocity = transform.up * movementSpeed * Time.deltaTime;
 	}
 
-	void OnTriggerEnter(Collider other)
+	private void OnTriggerEnter(Collider other)
 	{
 		if (GameManager.GetInstance().CurrentGameType != GameTypes.ZombieMode)
 		{

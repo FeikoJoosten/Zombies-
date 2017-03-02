@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,71 +7,71 @@ public class Player : OverridableMonoBehaviour
 	[SerializeField]
 	private int killsNeededToUnlockNextWeapon = 45;
 	[SerializeField]
-	private float startingHealth;
+	private float startingHealth = 100;
 	[SerializeField]
-	private float movementSpeed;
+	private float movementSpeed = 0;
 	[SerializeField]
-	private float sprintSpeed;
+	private float sprintSpeed = 0;
 	[SerializeField]
-	private float sprintEndurance;
+	private float sprintEndurance = 0;
 	[SerializeField]
-	private float sprintEnduranceLoweringSpeed;
+	private float sprintEnduranceLoweringSpeed = 0;
 	[SerializeField]
-	private float sprintEnduranceRaisingSpeed;
+	private float sprintEnduranceRaisingSpeed = 0;
 	[SerializeField]
-	private float rotationSpeed;
+	private float rotationSpeed = 0;
 	[SerializeField]
-	private float maxYRotation;
+	private float maxYRotation = 0;
 	[SerializeField]
 	private float weaponDropSpeed = 20;
 	[SerializeField]
 	private Weapon currentWeapon;
 	[SerializeField]
-	private Weapon[] allWeapons;
+	private Weapon[] allWeapons = null;
 	[SerializeField]
-	private WeaponMenu weaponMenu;
+	private WeaponMenu weaponMenu = null;
 	[SerializeField]
-	private AmmoInfoUI ammoInfoUI;
+	private AmmoInfoUI ammoInfoUI = null;
 	[SerializeField]
-	private float maxWeaponMenuActiveTime;
+	private float maxWeaponMenuActiveTime = 0;
 	[SerializeField]
-	private Animator ani;
+	private Animator ani = null;
 	[SerializeField]
-	private Healthbar UIHealthBar;
+	private Healthbar UIHealthBar = null;
 	[SerializeField]
-	private Healthbar inGameHealthBar;
+	private Healthbar inGameHealthBar = null;
 	[SerializeField]
-	private HighscoreList highScoreList;
+	private HighscoreList highScoreList = null;
 	[SerializeField]
-	private RectTransform ingameUI;
+	private RectTransform ingameUI = null;
 	[SerializeField]
-	private RectTransform endscreenUI;
+	private RectTransform endscreenUI = null;
 	[SerializeField]
-	private DeathInformation deathInformationUI;
+	private DeathInformation deathInformationUI = null;
 	[SerializeField]
-	private Camera[] playerCameras;
+	private Camera[] playerCameras = null;
 	[SerializeField]
-	private Rigidbody[] ragdollRigibodys;
+	private Rigidbody[] ragdollRigibodys = null;
 	[SerializeField]
-	private Collider[] colliders;
+	private Collider[] colliders = null;
 	[SerializeField]
-	private Collider deathInformationCollider;
+	private Collider deathInformationCollider = null;
 	[SerializeField]
-	private PlayerController playerController;
+	private PlayerController playerController = null;
 	[SerializeField]
-	private Spectator spectatorPrefab;
+	private Spectator spectatorPrefab = null;
 	[SerializeField]
-	private PauseMenuManager pauseMenuManager;
+	private PauseMenuManager pauseMenuManager = null;
 	[SerializeField]
-	private GameObject[] nonRendarableBodyParts;
+	private GameObject[] nonRendarableBodyParts = null;
 	[SerializeField]
-	private GameObject[] allBodyParts;
+	private GameObject[] allBodyParts = null;
 	[SerializeField]
-	private GameObject minimapDot;
+	private GameObject minimapDot = null;
 	[SerializeField]
-	private ThrowableWeaponModel[] weaponModels;
+	private ThrowableWeaponModel[] weaponModels = null;
 	[SerializeField]
-	private UnityEngine.UI.Text searchBodyText;
+	private UnityEngine.UI.Text searchBodyText = null;
 
 	private float currentHealth;
 	private float currentWeaponMenuTimer;
@@ -83,9 +82,10 @@ public class Player : OverridableMonoBehaviour
 	private int sprintingHashID;
 	private int walkingHashID;
 	private int killCount;
+	private int karmaCount = 1000;
 	private bool isReloading;
-	private bool isDead = false;
-	private bool hasLoadedSettings = false;
+	private bool isDead;
+	private bool hasLoadedSettings;
 	private bool isAllowedToLookAtDeathInformation;
 	private Rigidbody rig;
 	private Vector3 receivedPosition;
@@ -109,6 +109,10 @@ public class Player : OverridableMonoBehaviour
 	{
 		get { return killCount; }
 		set { killCount = value; }
+	}
+	public int KarmaCount
+	{
+		get { return karmaCount; }
 	}
 	public Weapon[] AllWeapons
 	{
@@ -144,8 +148,12 @@ public class Player : OverridableMonoBehaviour
 	{
 		get { return minimapDot; }
 	}
+	public Camera[] PlayerCameras
+	{
+		get { return playerCameras; }
+	}
 
-	void Start()
+	private void Start()
 	{
 		GetAnimationHashIDs();
 		currentWeapon = allWeapons[0];
@@ -155,6 +163,11 @@ public class Player : OverridableMonoBehaviour
 		for (int i = 0; i < ragdollRigibodys.Length; i++)
 		{
 			ragdollRigibodys[i].isKinematic = true;
+		}
+
+		if (GameManager.GetInstance().CurrentGameType != GameTypes.TTT)
+		{
+			searchBodyText.gameObject.SetActive(false);
 		}
 
 		if (PhotonNetwork.offlineMode == true)
@@ -171,30 +184,28 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
-	void AssignMPSettings()
+	private void AssignMPSettings()
 	{
-		if (hasLoadedSettings == false)
+		if (hasLoadedSettings != false) return;
+
+		if (photonView.owner.Equals(PhotonNetwork.player))
 		{
-			if (photonView.owner == PhotonNetwork.player)
+			for (int i = 0; i < playerCameras.Length; i++)
 			{
-				for (int i = 0; i < playerCameras.Length; i++)
-				{
-					playerCameras[i].gameObject.SetActive(true);
-				}
-				playerController.enabled = true;
-
-				AssignStartValuesForOwner();
+				playerCameras[i].gameObject.SetActive(true);
 			}
-			else
-			{
-				AssignStartValuesForOthers();
-			}
+			playerController.enabled = true;
 
-			AssignCharacterSkin();
-
-			hasLoadedSettings = true;
-			return;
+			AssignStartValuesForOwner();
 		}
+		else
+		{
+			AssignStartValuesForOthers();
+		}
+
+		AssignCharacterSkin();
+
+		hasLoadedSettings = true;
 	}
 
 	public void AssignStartValuesForOwner()
@@ -207,7 +218,7 @@ public class Player : OverridableMonoBehaviour
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.lockState = CursorLockMode.Locked;
-		gameObject.name = PhotonNetwork.player.name + (PhotonNetwork.offlineMode == false ? (PhotonNetwork.isMasterClient == true ? " (Host)" : "") : "");
+		gameObject.name = PhotonNetwork.player.NickName + (PhotonNetwork.offlineMode == false ? (PhotonNetwork.isMasterClient == true ? " (Host)" : "") : "");
 
 		//for (int i = 0; i < allWeapons.Length; i++)
 		//{
@@ -233,7 +244,7 @@ public class Player : OverridableMonoBehaviour
 
 	public void AssignStartValuesForOthers()
 	{
-		gameObject.name = PhotonPlayer.Find(photonView.OwnerActorNr).name + (PhotonPlayer.Find(photonView.OwnerActorNr).isMasterClient == true ? " (Host)" : "");
+		gameObject.name = PhotonPlayer.Find(photonView.OwnerActorNr).NickName + (PhotonPlayer.Find(photonView.OwnerActorNr).IsMasterClient == true ? " (Host)" : "");
 
 		for (int i = 0; i < playerCameras.Length; i++)
 		{
@@ -243,26 +254,25 @@ public class Player : OverridableMonoBehaviour
 		playerController.enabled = false;
 	}
 
-	void AssignCharacterSkin()
+	private void AssignCharacterSkin()
 	{
-		if (PhotonNetwork.player.customProperties.ContainsKey("playerSkin"))
-		{
-			foreach (Player photonPlayer in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values)
-			{
-				if (photonPlayer.photonView.viewID != photonView.viewID)
-				{
-					continue;
-				}
+		if (!PhotonNetwork.player.CustomProperties.ContainsKey("playerSkin")) return;
 
-				for (int i = 0; i < allBodyParts.Length; i++)
-				{
-					allBodyParts[i].GetComponent<SkinnedMeshRenderer>().material.SetTexture("_MainTex", GameManager.GetInstance().AllPlayerSkins[(int)PhotonPlayer.Find(photonView.ownerId).customProperties["playerSkin"]]);
-				}
+		foreach (Player photonPlayer in GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values)
+		{
+			if (photonPlayer.photonView.viewID != photonView.viewID)
+			{
+				continue;
+			}
+
+			for (int i = 0; i < allBodyParts.Length; i++)
+			{
+				allBodyParts[i].GetComponent<SkinnedMeshRenderer>().material.SetTexture("_MainTex", GameManager.GetInstance().AllPlayerSkins[(int)PhotonPlayer.Find(photonView.ownerId).CustomProperties["playerSkin"]]);
 			}
 		}
 	}
 
-	void GetAnimationHashIDs()
+	private void GetAnimationHashIDs()
 	{
 		sprintingHashID = Animator.StringToHash("Sprinting");
 		walkingHashID = Animator.StringToHash("Walking");
@@ -273,15 +283,11 @@ public class Player : OverridableMonoBehaviour
 	public override void UpdateMe()
 	{
 		if (PhotonNetwork.playerList.Length != GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count)
-		{
 			return;
-		}
-		else
+
+		if (PhotonNetwork.offlineMode == false)
 		{
-			if (PhotonNetwork.offlineMode == false)
-			{
-				AssignMPSettings();
-			}
+			AssignMPSettings();
 		}
 
 		if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == 0 && isDead == true)
@@ -295,26 +301,23 @@ public class Player : OverridableMonoBehaviour
 
 		if (PhotonNetwork.offlineMode == false)
 		{
-			if (photonView.owner == PhotonNetwork.player)
+			if (photonView.owner.Equals(PhotonNetwork.player))
 			{
 				if (weaponMenu.IsEnabled == true)
 				{
 					UpdateWeaponMenuTimeoutTimer();
 				}
 
-				if (playerController.IsSprinting == false)
+				if (playerController.IsSprinting != false) return;
+				if (!(currentSprintEndurance < sprintEndurance)) return;
+
+				if (currentSprintEndurance + sprintEnduranceRaisingSpeed * Time.deltaTime < sprintEndurance)
 				{
-					if (currentSprintEndurance < sprintEndurance)
-					{
-						if (currentSprintEndurance + sprintEnduranceRaisingSpeed * Time.deltaTime < sprintEndurance)
-						{
-							currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
-						}
-						else
-						{
-							currentSprintEndurance = sprintEndurance;
-						}
-					}
+					currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
+				}
+				else
+				{
+					currentSprintEndurance = sprintEndurance;
 				}
 			}
 			else
@@ -329,23 +332,21 @@ public class Player : OverridableMonoBehaviour
 				UpdateWeaponMenuTimeoutTimer();
 			}
 
-			if (playerController.IsSprinting == false)
+			if (playerController.IsSprinting != false) return;
+
+			if (currentSprintEndurance < sprintEndurance)
 			{
-				if (currentSprintEndurance < sprintEndurance)
-				{
-					currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
-				}
+				currentSprintEndurance += sprintEnduranceRaisingSpeed * Time.deltaTime;
 			}
 		}
 	}
 
 	public void FireWeapon()
 	{
-		if (isReloading == false && Time.timeScale != 0)
-		{
-			currentWeapon.Fire();
-			UpdateWeaponUIInfo();
-		}
+		if (isReloading != false || Time.timeScale == 0) return;
+
+		currentWeapon.Fire();
+		UpdateWeaponUIInfo();
 	}
 
 	[PunRPC]
@@ -367,36 +368,33 @@ public class Player : OverridableMonoBehaviour
 
 		Vector3 movement = (rig.transform.forward * value.y) + (rig.transform.right * value.x);
 
-		if (Physics.Raycast(transform.position + new Vector3(0, 0.75F, 0), movement.normalized, 0.25F) == false)
-		{
-			if (isSprinting == true)
-			{
-				if (value.x != 0 || value.y != 0)
-				{
-					if (currentSprintEndurance <= 0)
-					{
-						rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
+		if (Physics.Raycast(transform.position + new Vector3(0, 0.75F, 0), movement.normalized, 0.25F) != false) return;
 
-					}
-					else
-					{
-						if (currentSprintEndurance - sprintEnduranceLoweringSpeed * Time.deltaTime > 0)
-						{
-							currentSprintEndurance -= sprintEnduranceLoweringSpeed * Time.deltaTime;
-						}
-						else
-						{
-							currentSprintEndurance = 0;
-						}
-						rig.MovePosition(transform.position + (movement.normalized * sprintSpeed * Time.deltaTime));
-					}
-				}
+		if (isSprinting == true)
+		{
+			if (value.x == 0 && value.y == 0) return;
+
+			if (currentSprintEndurance <= 0)
+			{
+				rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
 
 			}
 			else
 			{
-				rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
+				if (currentSprintEndurance - sprintEnduranceLoweringSpeed * Time.deltaTime > 0)
+				{
+					currentSprintEndurance -= sprintEnduranceLoweringSpeed * Time.deltaTime;
+				}
+				else
+				{
+					currentSprintEndurance = 0;
+				}
+				rig.MovePosition(transform.position + (movement.normalized * sprintSpeed * Time.deltaTime));
 			}
+		}
+		else
+		{
+			rig.MovePosition(transform.position + (movement.normalized * movementSpeed * Time.deltaTime));
 		}
 	}
 
@@ -419,7 +417,7 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
-	void UpdateWeaponUIInfo()
+	private void UpdateWeaponUIInfo()
 	{
 		if (currentWeapon.HasInfiniteAmmo == false)
 		{
@@ -434,7 +432,7 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void SwitchWeapon(int nextWeapon)
+	private void SwitchWeapon(int nextWeapon)
 	{
 		if (isReloading == true)
 		{
@@ -453,7 +451,7 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void UpdateTeamStatus(TTTTeams assignedTeam)
+	private void UpdateTeamStatus(TTTTeams assignedTeam)
 	{
 		if (PhotonNetwork.isMasterClient == false)
 		{
@@ -527,7 +525,7 @@ public class Player : OverridableMonoBehaviour
 		currentWeaponMenuTimer = 0;
 	}
 
-	int GetSelectedWeapon()
+	private int GetSelectedWeapon()
 	{
 		int selectedWeapon = 0;
 		for (int i = 0; i < allWeapons.Length; i++)
@@ -543,11 +541,10 @@ public class Player : OverridableMonoBehaviour
 
 	public void PickupWeapon(int pickedUpWeapon)
 	{
-		if (currentCarriedWeapon == null && currentCarriedWeapon != GetWeaponInformation(pickedUpWeapon))
-		{
-			allWeapons[pickedUpWeapon].IsAllowedToUse = true;
-			SelectSpecificWeapon(pickedUpWeapon);
-		}
+		if (currentCarriedWeapon != null || currentCarriedWeapon == GetWeaponInformation(pickedUpWeapon)) return;
+
+		allWeapons[pickedUpWeapon].IsAllowedToUse = true;
+		SelectSpecificWeapon(pickedUpWeapon);
 	}
 
 	public void ThrowWeaponAway()
@@ -568,7 +565,7 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void ThrowWeapon()
+	private void ThrowWeapon()
 	{
 		ThrowableWeaponModel oldWeapon = (ThrowableWeaponModel)Instantiate(weaponModels[GetSelectedWeapon()], currentWeapon.transform.position, weaponModels[GetSelectedWeapon()].transform.rotation);
 		oldWeapon.GetComponent<Rigidbody>().AddForce((transform.forward + headRotation.normalized).normalized * weaponDropSpeed);
@@ -593,11 +590,10 @@ public class Player : OverridableMonoBehaviour
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 
-			if (PhotonNetwork.offlineMode == true)
-			{
-				savedTimescale = Time.timeScale;
-				Time.timeScale = 0;
-			}
+			if (PhotonNetwork.offlineMode != true) return;
+
+			savedTimescale = Time.timeScale;
+			Time.timeScale = 0;
 		}
 		else
 		{
@@ -616,18 +612,17 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
-	void UpdateWeaponMenuTimeoutTimer()
+	private void UpdateWeaponMenuTimeoutTimer()
 	{
 		currentWeaponMenuTimer += Time.deltaTime;
 
-		if (currentWeaponMenuTimer > maxWeaponMenuActiveTime)
-		{
-			ToggleWeaponMenu();
-			weaponMenu.ResetWeaponSelector();
-		}
+		if (!(currentWeaponMenuTimer > maxWeaponMenuActiveTime)) return;
+
+		ToggleWeaponMenu();
+		weaponMenu.ResetWeaponSelector();
 	}
 
-	void OnTriggerStay(Collider other)
+	private void OnTriggerStay(Collider other)
 	{
 		Zombie zombie = other.GetComponent<Zombie>();
 		DeathInformationCollider deathInformation = other.GetComponent<DeathInformationCollider>();
@@ -648,19 +643,18 @@ public class Player : OverridableMonoBehaviour
 			}
 		}
 
-		if(deathInformation != null)
+		if (deathInformation != null)
 		{
-			if(deathInformation.gameObject != deathInformationCollider.gameObject)
+			if (deathInformation.gameObject == deathInformationCollider.gameObject) return;
+
+			isAllowedToLookAtDeathInformation = true;
+
+			if (lastDeathInformationColliderFound != deathInformation)
 			{
-				isAllowedToLookAtDeathInformation = true;
-
-				if(lastDeathInformationColliderFound != deathInformation)
-				{
-					lastDeathInformationColliderFound = deathInformation;
-				}
-
-				searchBodyText.text = "Press the search body button to search the body";
+				lastDeathInformationColliderFound = deathInformation;
 			}
+
+			searchBodyText.text = "Press the search body button to search the body";
 		}
 		else
 		{
@@ -691,7 +685,7 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
-	void UnlockNextWeapon()
+	private void UnlockNextWeapon()
 	{
 		int weaponToUnlock = 0;
 
@@ -703,11 +697,10 @@ public class Player : OverridableMonoBehaviour
 			}
 		}
 
-		if (weaponToUnlock < allWeapons.Length)
-		{
-			allWeapons[weaponToUnlock].IsAllowedToUse = true;
-			allWeapons[weaponToUnlock].AssignStartingAmmo();
-		}
+		if (weaponToUnlock >= allWeapons.Length) return;
+
+		allWeapons[weaponToUnlock].IsAllowedToUse = true;
+		allWeapons[weaponToUnlock].AssignStartingAmmo();
 	}
 
 	[PunRPC]
@@ -729,7 +722,7 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void RemoveHealth(float healthToRemove)
+	private void RemoveHealth(float healthToRemove)
 	{
 		if (currentHealth - healthToRemove > 0)
 		{
@@ -781,12 +774,19 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
+	[PunRPC]
+	public void RemoveKarmaPoints(int karmaToRemove, int playerIDToUpdate)
+	{
+		karmaCount -= karmaToRemove;
+		highScoreList.AddNumberToKarmaCountForPlayer(playerIDToUpdate, -karmaToRemove);
+	}
+
 	public KeyValuePair<PlayerBodyType, WeaponType> GetDeathInformation()
 	{
 		return new KeyValuePair<PlayerBodyType, WeaponType>(lastHitBodypart, lastDamageReceivedByWeapon);
 	}
 
-	void Die()
+	private void Die()
 	{
 		playerController.enabled = false;
 		ani.enabled = false;
@@ -794,6 +794,7 @@ public class Player : OverridableMonoBehaviour
 
 		if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
 		{
+			GameManager.GetInstance().GetNetworkManager().RemovePlayerFromTeam(this);
 			photonView.RPC("ReceiveDeathInformation", PhotonTargets.All, photonView.viewID);
 		}
 
@@ -832,13 +833,13 @@ public class Player : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void ReceiveDeathInformation(int playerID)
+	private void ReceiveDeathInformation(int playerID)
 	{
 		highScoreList.ChangePlayersTeamTabOnDeath(playerID, currentTTTTeam);
 	}
 
 	[PunRPC]
-	void ConfirmDeathForPlayer(int playerID)
+	private void ConfirmDeathForPlayer(int playerID)
 	{
 		highScoreList.ChangePlayersTeamTabOnDeathConfirmation(playerID);
 	}
@@ -852,7 +853,7 @@ public class Player : OverridableMonoBehaviour
 		ToggleDeathInformationUI();
 	}
 
-	void ToggleDeathInformationUI()
+	private void ToggleDeathInformationUI()
 	{
 		if (ingameUI.gameObject.activeInHierarchy == true)
 		{
@@ -875,7 +876,7 @@ public class Player : OverridableMonoBehaviour
 		}
 	}
 
-	void CreateSpectatorObject()
+	private void CreateSpectatorObject()
 	{
 		ingameUI.gameObject.SetActive(false);
 		playerCameras[1].gameObject.SetActive(false);
@@ -885,7 +886,7 @@ public class Player : OverridableMonoBehaviour
 		spectator.PlayerCamera = playerCameras[0];
 	}
 
-	void OpenEndscreen()
+	private void OpenEndscreen()
 	{
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
@@ -907,35 +908,30 @@ public class Player : OverridableMonoBehaviour
 
 	public void ReloadWeapon()
 	{
-		if (isReloading == true)
-		{
-			return;
-		}
-		else if (currentWeapon.CurrentAmmunitionInMagLeft == currentWeapon.MaxAmmunitionInMagCount)
+		if (isReloading == true) return;
+
+		if (currentWeapon.CurrentAmmunitionInMagLeft == currentWeapon.MaxAmmunitionInMagCount || currentWeapon.CurrentTotalAmmunitionLeft == 0)
 		{
 			isReloading = false;
 			return;
 		}
-		else if (currentWeapon.CurrentTotalAmmunitionLeft == 0)
-		{
-			isReloading = false;
-			return;
-		}
-		else
-		{
-			isReloading = true;
-			StartCoroutine(ReloadWeaponCoroutine());
-		}
+
+		isReloading = true;
+		StartCoroutine(ReloadWeaponCoroutine());
 	}
 
-	IEnumerator ReloadWeaponCoroutine()
+	private IEnumerator ReloadWeaponCoroutine()
 	{
 		ani.SetBool(reloadHashID, true);
 		isReloading = true;
 
 		yield return new WaitForSeconds(currentWeapon.ReloadTime);
 
-		if (isReloading == true)
+		if (isReloading == false)
+		{
+			StopCoroutine(ReloadWeaponCoroutine());
+		}
+		else
 		{
 			ani.SetBool(reloadHashID, false);
 			currentWeapon.ReloadWeapon();
@@ -949,7 +945,7 @@ public class Player : OverridableMonoBehaviour
 		highScoreList.SetupTTTTeamColors();
 	}
 
-	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	private void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting == true)
 		{

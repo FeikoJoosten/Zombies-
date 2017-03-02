@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class LoadingBar : MonoBehaviour
 {
 	[SerializeField]
-	private Text ownerText;
+	private Text ownerText = null;
 	[SerializeField]
-	private Text progressText;
+	private Text progressText = null;
 	[SerializeField]
-	private Image loadingBar;
+	private Image loadingBar = null;
 
 	public string OwnerText
 	{

@@ -1,27 +1,26 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
 public class HighscoreList : Photon.MonoBehaviour
 {
 	[SerializeField]
-	private PlayerScoreInfo playerNamePrefab;
+	private PlayerScoreInfo playerNamePrefab = null;
 	[SerializeField]
-	private RectTransform prefabParent;
+	private RectTransform prefabParent = null;
 	[SerializeField]
-	private RectTransform uIParent;
+	private RectTransform uIParent = null;
 	[SerializeField]
-	private RectTransform terroristTab;
+	private RectTransform terroristTab = null;
 	[SerializeField]
-	private RectTransform miaTab;
+	private RectTransform miaTab = null;
 	[SerializeField]
-	private RectTransform confirmedDeadTab;
+	private RectTransform confirmedDeadTab = null;
 	[SerializeField]
-	private ScrollRect scrollRect;
+	private ScrollRect scrollRect = null;
 	[SerializeField]
-	private Text karmaTitleText;
+	private Text karmaTitleText = null;
 
 	public GameObject UIParent
 	{
@@ -37,7 +36,7 @@ public class HighscoreList : Photon.MonoBehaviour
 		playerScores[playerID].GetComponent<RectTransform>().anchoredPosition3D = Vector3.zero;
 		playerScores[playerID].transform.rotation = new Quaternion();
 		playerScores[playerID].transform.localScale = Vector3.one;
-		playerScores[playerID].UpdatePlayerName(PhotonNetwork.player.name);
+		playerScores[playerID].UpdatePlayerName(PhotonNetwork.player.NickName);
 		ResetKillCountForPlayer(playerID);
 	}
 
@@ -56,10 +55,6 @@ public class HighscoreList : Photon.MonoBehaviour
 			{
 				playerScores[player.Key].ChangeBackgroundColor(Color.red);
 			}
-			else if ((ownClient.CurrentTTTTeam == TTTTeams.Detective || ownClient.CurrentTTTTeam == TTTTeams.Innocent) && player.Value.CurrentTTTTeam == TTTTeams.Traitor)
-			{
-				continue;
-			}
 			else if (player.Value.CurrentTTTTeam == TTTTeams.Detective)
 			{
 				playerScores[player.Key].ChangeBackgroundColor(Color.blue);
@@ -69,11 +64,10 @@ public class HighscoreList : Photon.MonoBehaviour
 
 	public void ChangePlayersTeamTabOnDeath(int viewID, TTTTeams ownPlayersTeamStatus)
 	{
-		if (ownPlayersTeamStatus == TTTTeams.Traitor)
-		{
-			playerScores[viewID].transform.SetParent(miaTab.transform);
-			playerScores[viewID].transform.SetAsLastSibling();
-		}
+		if (ownPlayersTeamStatus != TTTTeams.Traitor) return;
+
+		playerScores[viewID].transform.SetParent(miaTab.transform);
+		playerScores[viewID].transform.SetAsLastSibling();
 	}
 
 	public void ChangePlayersTeamTabOnDeathConfirmation(int viewID)
@@ -93,7 +87,7 @@ public class HighscoreList : Photon.MonoBehaviour
 		playerScores[viewID].transform.SetAsLastSibling();
 	}
 
-	IEnumerator WaitForPlayers()
+	private IEnumerator WaitForPlayers()
 	{
 		playerScores.Clear();
 
@@ -170,12 +164,12 @@ public class HighscoreList : Photon.MonoBehaviour
 		}
 	}
 
-	void ResetKillCountForPlayer(int playerID)
+	private void ResetKillCountForPlayer(int playerID)
 	{
 		playerScores[playerID].ResetKillCountText();
 	}
 
-	void ResetKarmaCountForPlayer(int playerID)
+	private void ResetKarmaCountForPlayer(int playerID)
 	{
 		playerScores[playerID].ResetKarmaText();
 	}

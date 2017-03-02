@@ -4,13 +4,13 @@ using System.Collections.Generic;
 public class AmmoPickupSpawner : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private AmmoPickup[] ammoPrefabs;
+	private AmmoPickup[] ammoPrefabs = null;
 	[SerializeField]
-	private float spawnTime;
+	private float spawnTime = 0;
 	[SerializeField]
-	private LayerMask spawnMask;
+	private LayerMask spawnMask = 0;
 	[SerializeField]
-	private LayerMask nonSpawnMask;
+	private LayerMask nonSpawnMask = 0;
 	[SerializeField]
 	private int TTTWeaponSpawnCount = 50;
 
@@ -18,9 +18,9 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 	private Player[] players;
 	private float currentSpawnTime;
 
-	void Start()
+	private void Start()
 	{
-		if (PhotonNetwork.player != PhotonNetwork.masterClient)
+		if (!PhotonNetwork.player.Equals(PhotonNetwork.masterClient))
 		{
 			enabled = false;
 		}
@@ -42,13 +42,15 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 					currentSpawnTime = spawnTime;
 				}
 
-				if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+				switch (GameManager.GetInstance().CurrentGameType)
 				{
-					for (int i = TTTWeaponSpawnCount; i >= 0; i--)
-					{
-						SpawnAmmoPack(false);
-						TTTWeaponSpawnCount--;
-					} 
+					case GameTypes.TTT:
+						for (int i = TTTWeaponSpawnCount; i >= 0; i--)
+						{
+							SpawnAmmoPack(false);
+							TTTWeaponSpawnCount--;
+						}
+					break;
 				}
 			} 
 			else
@@ -61,15 +63,12 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 		{
 			if (PhotonNetwork.offlineMode == false)
 			{
-				if (GameManager.GetInstance().GetNetworkManager() != null)
-				{
-					if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers != null)
-					{
-						players = new Player[GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count];
+				if (GameManager.GetInstance().GetNetworkManager() == null) return;
+				if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers == null) return;
 
-						GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values.CopyTo(players, 0);
-					}
-				}
+				players = new Player[GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count];
+
+				GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Values.CopyTo(players, 0);
 			}
 			else
 			{
@@ -78,7 +77,7 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 		}
 	}
 
-	int CalculateEnabledWeaponsCount()
+	private int CalculateEnabledWeaponsCount()
 	{
 		enabledWeapons.Clear();
 		Player player = players[0];
@@ -111,19 +110,18 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 
 		for (int i = 0; i < player.AllWeapons.Length; i++)
 		{
-			if (player.AllWeapons[i].IsAllowedToUse == true)
+			if (player.AllWeapons[i].IsAllowedToUse != true) continue;
+
+			if (player.AllWeapons[i].CurrentTotalAmmunitionLeft + player.AllWeapons[i].CurrentAmmunitionInMagLeft < player.AllWeapons[i].MaxAmmunitionCount)
 			{
-				if (player.AllWeapons[i].CurrentTotalAmmunitionLeft + player.AllWeapons[i].CurrentAmmunitionInMagLeft < player.AllWeapons[i].MaxAmmunitionCount)
-				{
-					enabledWeapons.Add(player.AllWeapons[i]);
-				}
+				enabledWeapons.Add(player.AllWeapons[i]);
 			}
 		}
 
 		return enabledWeapons.Count;
 	}
 
-	void SpawnAmmoPack(bool shouldShowLineRenderer)
+	private void SpawnAmmoPack(bool shouldShowLineRenderer)
 	{
 		AmmoPickup prefab;
 
@@ -137,49 +135,39 @@ public class AmmoPickupSpawner : OverridableMonoBehaviour
 			prefab = ammoPrefabs[Random.Range(0, ammoPrefabs.Length - 1)];
 		}
 
-		if (prefab != null)
+		if (prefab == null) return;
+
+		if (PhotonNetwork.offlineMode == true)
 		{
-			if (PhotonNetwork.offlineMode == true)
-			{
-				AmmoPickup pickup = (AmmoPickup)Instantiate(prefab, GetASpawnPosition(), prefab.transform.rotation);
-				pickup.ShouldShowLineRenderer = shouldShowLineRenderer;
-			}
-			else
-			{
-				PhotonNetwork.InstantiateSceneObject(prefab.name, GetASpawnPosition(), prefab.transform.rotation, 0, null).GetComponent<AmmoPickup>().ShouldShowLineRenderer = shouldShowLineRenderer;
-			}
+			AmmoPickup pickup = (AmmoPickup)Instantiate(prefab, GetASpawnPosition(), prefab.transform.rotation);
+			pickup.ShouldShowLineRenderer = shouldShowLineRenderer;
+		}
+		else
+		{
+			PhotonNetwork.InstantiateSceneObject(prefab.name, GetASpawnPosition(), prefab.transform.rotation, 0, null).GetComponent<AmmoPickup>().ShouldShowLineRenderer = shouldShowLineRenderer;
 		}
 	}
 
-	Vector3 GetASpawnPosition()
+	private Vector3 GetASpawnPosition()
 	{
 		Vector4 spawnArea = GameManager.GetInstance().GetAIManager().SpawnArea;
 		Vector3 rayCastPosition = new Vector3(Random.Range(spawnArea.x, spawnArea.z), transform.position.y, Random.Range(spawnArea.y, spawnArea.w));
 		Ray ray = new Ray(rayCastPosition, Vector3.down);
-		RaycastHit hit = new RaycastHit();
+		RaycastHit hit;
 
-		if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-		{
-			if (nonSpawnMask == (nonSpawnMask | (1 << hit.transform.gameObject.layer)))
-			{
-				return GetASpawnPosition();
-			}
-			else
-			{
-				if (spawnMask == (spawnMask | (1 << hit.transform.gameObject.layer)))
-				{
-					return hit.point;
-				}
-				else
-				{
-					return GetASpawnPosition();
-				}
-			}
-		}
-		else
+		if (!Physics.Raycast(ray, out hit, Mathf.Infinity)) return GetASpawnPosition();
+
+		if (nonSpawnMask == (nonSpawnMask | (1 << hit.transform.gameObject.layer)))
 		{
 			return GetASpawnPosition();
 		}
+
+		if (spawnMask == (spawnMask | (1 << hit.transform.gameObject.layer)))
+		{
+			return hit.point;
+		}
+
+		return GetASpawnPosition();
 	}
 
 	public void SpawnAmmoPickupOnLocation(int currentWeaponNumber, Vector3 spawnPosition)

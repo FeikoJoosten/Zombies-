@@ -4,27 +4,27 @@ using System.Collections;
 public class Weapon : MonoBehaviour
 {
 	[SerializeField]
-	private float reloadTime;
+	private float reloadTime = 0;
 	[SerializeField]
-	private float bulletsPerSecond;
+	private float bulletsPerSecond = 0;
 	[SerializeField]
-	private float waitBeforeFireTime;
+	private float waitBeforeFireTime = 0;
 	[SerializeField]
-	private int maxAmmunitionInMagCount;
+	private int maxAmmunitionInMagCount = 0;
 	[SerializeField]
-	private int maxAmmunitionCount;
+	private int maxAmmunitionCount = 0;
 	[SerializeField]
-	private int startingAmmunitionCount;
+	private int startingAmmunitionCount = 0;
 	[SerializeField]
-	private bool isAllowedToUseAutoFire;
+	private bool isAllowedToUseAutoFire = false;
 	[SerializeField]
-	private bool hasInfiniteAmmo;
+	private bool hasInfiniteAmmo = false;
 	[SerializeField]
-	private Transform spawnLocation;
+	private Transform spawnLocation = null;
 	[SerializeField]
-	private Player player;
+	private Player player = null;
 	[SerializeField]
-	private WeaponType weapon;
+	private WeaponType weapon = WeaponType.Pistol;
 
 	private bool isAllowedToUse;
 	private bool isWaitTimerFinished = true;
@@ -100,6 +100,12 @@ public class Weapon : MonoBehaviour
 
 	public void ReloadWeapon()
 	{
+		if (hasInfiniteAmmo == true)
+		{
+			currentAmmunitionInMagLeft = maxAmmunitionInMagCount;
+			return;
+		}
+
 		int amountToReload = maxAmmunitionInMagCount - currentAmmunitionInMagLeft;
 		if (amountToReload <= currentTotalAmmunitionLeft)
 		{

@@ -4,91 +4,90 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 using System;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 
 public class MainMenuManager : Photon.MonoBehaviour
 {
 	[SerializeField]
-	private Slider maxPlayerSlider;
+	private Slider maxPlayerSlider = null;
 	[SerializeField]
-	private Text maxPlayerSliderText;
+	private Text maxPlayerSliderText = null;
 	[SerializeField]
-	private Text roomNameText;
+	private Text roomNameText = null;
 	[SerializeField]
-	private Text currentPlayersInRoomText;
+	private Text currentPlayersInRoomText = null;
 	[SerializeField]
-	private Text inRoomPlayerName;
+	private Text inRoomPlayerName = null;
 	[SerializeField]
-	private GameObject findCreateMenu;
+	private GameObject findCreateMenu = null;
 	[SerializeField]
-	private Button findGameButton;
+	private Button findGameButton = null;
 	[SerializeField]
-	private Button createGameButton;
+	private Button createGameButton = null;
 	[SerializeField]
-	private Text connectionStateText;
+	private Text connectionStateText = null;
 	[SerializeField]
-	private RectTransform roomSelectorParent;
+	private RectTransform roomSelectorParent = null;
 	[SerializeField]
-	private RoomSelector roomSelectorPrefab;
+	private RoomSelector roomSelectorPrefab = null;
 	[SerializeField]
-	private RectTransform roomSelectorMenu;
+	private RectTransform roomSelectorMenu = null;
 	[SerializeField]
-	private RectTransform inRoomMenu;
+	private RectTransform inRoomMenu = null;
 	[SerializeField]
-	private RectTransform multiPlayerLoadingScreenMenu;
+	private RectTransform multiPlayerLoadingScreenMenu = null;
 	[SerializeField]
-	private RectTransform playerControllsHolder;
+	private RectTransform playerControllsHolder = null;
 	[SerializeField]
-	private ControllChanger playerControllerChangerPrefab;
+	private ControllChanger playerControllerChangerPrefab = null;
+	//[SerializeField]
+	//private Scrollbar controlsMenuSlider = null;
 	[SerializeField]
-	private Scrollbar controlsMenuSlider;
+	private Image loadingBar = null;
 	[SerializeField]
-	private Image loadingBar;
+	private Text loadingBarText = null;
 	[SerializeField]
-	private Text loadingBarText;
+	private LoadingBar multiplayerLoadingBar = null;
 	[SerializeField]
-	private LoadingBar multiplayerLoadingBar;
+	private Button multiplayerStartGameButton = null;
 	[SerializeField]
-	private Button multiplayerStartGameButton;
+	private Dropdown screenResolutionDropdown = null;
+	//[SerializeField]
+	//private RectTransform screenResolutionPrefab = null;
 	[SerializeField]
-	private Dropdown screenResolutionDropdown;
+	private RectTransform gameSettingsMenu = null;
 	[SerializeField]
-	private RectTransform screenResolutionPrefab;
+	private Toggle useFullscreenToggle = null;
 	[SerializeField]
-	private RectTransform gameSettingsMenu;
+	private Dropdown gameQualityDropdown = null;
 	[SerializeField]
-	private Toggle useFullscreenToggle;
+	private Dropdown gameTypeDropdown = null;
 	[SerializeField]
-	private Dropdown gameQualityDropdown;
+	private AudioSource audioSource = null;
 	[SerializeField]
-	private Dropdown gameTypeDropdown;
+	private AudioClip[] audioClips = null;
 	[SerializeField]
-	private AudioSource audioSource;
+	private Slider SFXVolumeSlider = null;
 	[SerializeField]
-	private AudioClip[] audioClips;
+	private Slider musicVolumeSlider = null;
 	[SerializeField]
-	private Slider SFXVolumeSlider;
+	private Slider traitorPercentageSlider = null;
 	[SerializeField]
-	private Slider musicVolumeSlider;
+	private Slider detectivePercentageSlider = null;
 	[SerializeField]
-	private Slider traitorPercentageSlider;
+	private Text SFXVolumeText = null;
 	[SerializeField]
-	private Slider detectivePercentageSlider;
+	private Text musicVolumeText = null;
 	[SerializeField]
-	private Text SFXVolumeText;
+	private Text traitorPercentageText = null;
 	[SerializeField]
-	private Text musicVolumeText;
-	[SerializeField]
-	private Text traitorPercentageText;
-	[SerializeField]
-	private Text detectivePercentageText;
+	private Text detectivePercentageText = null;
 
 	private int currentPlayersInRoom;
 	private int skippedResolutions;
 	private int currentSongPlaying = -1;
 	private float sceneActivationWaitTimer = 3;
-	private bool isLoadingScene = false;
+	private bool isLoadingScene;
 	private AsyncOperation asyncOperation;
 	private PlayerActions playerActions;
 
@@ -97,7 +96,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 	private List<Text> inRoomPlayerNames = new List<Text>();
 	private List<LoadingBar> multiplayerLoadingBars = new List<LoadingBar>();
 
-	void Start()
+	private void Start()
 	{
 		#region Audio setup
 
@@ -123,7 +122,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 			if (PlayerPrefs.HasKey("QualityLevel") && PlayerPrefs.HasKey("IsFullScreen") && PlayerPrefs.HasKey("ScreenResolution"))
 			{
 				QualitySettings.SetQualityLevel(PlayerPrefs.GetInt("QualityLevel"));
-				Screen.SetResolution(Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width, Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height, PlayerPrefs.GetInt("IsFullScreen") == 1 ? true : false);
+				Screen.SetResolution(Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width, Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height, Convert.ToBoolean(PlayerPrefs.GetInt("IsFullScreen")));
 			}
 		}
 		gameQualityDropdown.template.GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50 * QualitySettings.names.Length);
@@ -135,11 +134,10 @@ public class MainMenuManager : Photon.MonoBehaviour
 		{
 			gameQualityDropdown.options.Add(new Dropdown.OptionData() { text = QualitySettings.names[i] });
 
-			if (QualitySettings.GetQualityLevel() == i)
-			{
-				gameQualityDropdown.value = i;
-				gameQualityDropdown.captionText.text = QualitySettings.names[i];
-			}
+			if (QualitySettings.GetQualityLevel() != i) return;
+
+			gameQualityDropdown.value = i;
+			gameQualityDropdown.captionText.text = QualitySettings.names[i];
 		}
 
 		for (int i = 0; i < Screen.resolutions.Length; i++)
@@ -159,24 +157,16 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 			screenResolutionDropdown.options.Add(new Dropdown.OptionData() { text = Screen.resolutions[i].width + " X " + Screen.resolutions[i].height });
 
-			if (Application.platform != RuntimePlatform.WindowsEditor)
+			if (Application.platform == RuntimePlatform.WindowsEditor) return;
+
+			if (Screen.resolutions[i].height == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height && Screen.resolutions[i].width == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width)
 			{
-				if (Screen.resolutions[i].height == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height && Screen.resolutions[i].width == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width)
-				{
-					screenResolutionDropdown.value = i;
-					screenResolutionDropdown.captionText.text = Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width + " X " + Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height;
-				}
+				screenResolutionDropdown.value = i;
+				screenResolutionDropdown.captionText.text = Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width + " X " + Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height;
 			}
 		}
 
-		if (Screen.fullScreen == true)
-		{
-			useFullscreenToggle.isOn = false;
-		}
-		else
-		{
-			useFullscreenToggle.isOn = true;
-		}
+		useFullscreenToggle.isOn = !Screen.fullScreen;
 
 		screenResolutionDropdown.value = screenResolutionDropdown.options.Count - 1;
 		#endregion
@@ -202,7 +192,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 		RedrawControllsMenu();
 	}
 
-	void Update()
+	private void Update()
 	{
 		#region Audio
 
@@ -256,20 +246,20 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 				for (int i = 0; i < PhotonNetwork.playerList.Length; i++)
 				{
-					if(multiplayerLoadingBars.Count < PhotonNetwork.room.playerCount)
+					if (multiplayerLoadingBars.Count < PhotonNetwork.room.PlayerCount)
 					{
 						LoadingBar newMultiplayerLoadingBar = Instantiate(multiplayerLoadingBar);
 						newMultiplayerLoadingBar.gameObject.transform.SetParent(multiplayerLoadingBars[0].transform.parent);
-						
+
 						multiplayerLoadingBars.Add(newMultiplayerLoadingBar);
 					}
 
-					if(multiplayerLoadingBars[i].transform.localScale != Vector3.one)
+					if (multiplayerLoadingBars[i].transform.localScale != Vector3.one)
 					{
 						multiplayerLoadingBars[i].transform.localScale = Vector3.one;
 					}
 
-					multiplayerLoadingBars[i].OwnerText = PhotonNetwork.playerList[i].name;
+					multiplayerLoadingBars[i].OwnerText = PhotonNetwork.playerList[i].NickName;
 					multiplayerLoadingBars[i].LoadingBarProgress = playerprogresses[PhotonNetwork.playerList[i].ID] + 0.1F;
 					multiplayerLoadingBars[i].ProgressText = "Loading: " + (Mathf.RoundToInt(playerprogresses[PhotonNetwork.playerList[i].ID] * 100) + 10) + "%";
 				}
@@ -319,49 +309,49 @@ public class MainMenuManager : Photon.MonoBehaviour
 		#region In room
 		if (PhotonNetwork.inRoom == true)
 		{
-			if (currentPlayersInRoom != PhotonNetwork.room.playerCount)
+			if (currentPlayersInRoom != PhotonNetwork.room.PlayerCount)
 			{
 				playerprogresses.Clear();
-				
-				GameManager.GetInstance().CurrentGameType = (GameTypes)PhotonNetwork.room.customProperties["gameType"];
 
-				string roomName = "Room name: " + PhotonNetwork.room.name + System.Environment.NewLine + "Game mode: ";
+				GameManager.GetInstance().CurrentGameType = (GameTypes)PhotonNetwork.room.CustomProperties["gameType"];
+
+				string roomName = "Room name: " + PhotonNetwork.room.Name + Environment.NewLine + "Game mode: ";
 
 				switch (GameManager.GetInstance().CurrentGameType)
 				{
 					case GameTypes.ZombieMode:
-					roomName += "Zombies!";
-					break;
+						roomName += "Zombies!";
+						break;
 					case GameTypes.TeamDeathMatch:
-					roomName += "Team Deathmatch";
-					break;
+						roomName += "Team Deathmatch";
+						break;
 					case GameTypes.TTT:
-					roomName += "Trouble In Terrorist Town";
-					break;
+						roomName += "Trouble In Terrorist Town";
+						break;
 				}
 
 				roomNameText.text = roomName;
-				currentPlayersInRoomText.text = PhotonNetwork.room.playerCount.ToString() + "/" + PhotonNetwork.room.maxPlayers.ToString() + " players";
+				currentPlayersInRoomText.text = PhotonNetwork.room.PlayerCount + "/" + PhotonNetwork.room.MaxPlayers + " players";
 
 				int counter = 0;
-				for (int i = 0; i < PhotonNetwork.room.playerCount; i++)
+				for (int i = 0; i < PhotonNetwork.room.PlayerCount; i++)
 				{
-					if(inRoomPlayerNames.Count < PhotonNetwork.room.playerCount)
+					if (inRoomPlayerNames.Count < PhotonNetwork.room.PlayerCount)
 					{
 						Text newPlayerNameHolder = Instantiate(inRoomPlayerName);
 						newPlayerNameHolder.transform.localScale = Vector3.one;
 						newPlayerNameHolder.gameObject.transform.SetParent(inRoomPlayerNames[0].transform.parent);
-						
+
 						inRoomPlayerNames.Add(newPlayerNameHolder);
 					}
 
-					if (PhotonNetwork.playerList[i] == PhotonNetwork.masterClient)
+					if (PhotonNetwork.playerList[i].Equals(PhotonNetwork.masterClient))
 					{
-						inRoomPlayerNames[i].text = PhotonNetwork.playerList[i].name + " (Host)";
+						inRoomPlayerNames[i].text = PhotonNetwork.playerList[i].NickName + " (Host)";
 					}
 					else
 					{
-						inRoomPlayerNames[i].text = PhotonNetwork.playerList[i].name;
+						inRoomPlayerNames[i].text = PhotonNetwork.playerList[i].NickName;
 					}
 					counter++;
 				}
@@ -371,14 +361,14 @@ public class MainMenuManager : Photon.MonoBehaviour
 					inRoomPlayerNames[i].text = "";
 				}
 
-				playerprogresses = new Dictionary<int, float>(PhotonNetwork.room.playerCount);
+				playerprogresses = new Dictionary<int, float>(PhotonNetwork.room.PlayerCount);
 
 				foreach (PhotonPlayer player in PhotonNetwork.playerList)
 				{
 					playerprogresses.Add(player.ID, 0);
 				}
 
-				currentPlayersInRoom = PhotonNetwork.room.playerCount;
+				currentPlayersInRoom = PhotonNetwork.room.PlayerCount;
 			}
 		}
 		#endregion
@@ -394,7 +384,6 @@ public class MainMenuManager : Photon.MonoBehaviour
 				if (action.Key.IsListeningForBinding == false)
 				{
 					button.Key.GetComponentInChildren<Text>().text = action.Value.Name;
-					continue;
 				}
 				else
 				{
@@ -418,7 +407,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 		#endregion
 	}
 
-	void RedrawControllsMenu()
+	private void RedrawControllsMenu()
 	{
 		foreach (InControl.PlayerAction action in playerActions.Actions)
 		{
@@ -438,7 +427,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 		for (int i = 0; i < playerActions.Actions.Count; i++)
 		{
-			var action = playerActions.Actions[i];
+			InControl.PlayerAction action = playerActions.Actions[i];
 
 			if (action == playerActions.rotateUp || action == playerActions.rotateDown || action == playerActions.rotateLeft || action == playerActions.rotateRight)
 			{
@@ -454,8 +443,10 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 			for (int j = 0; j < action.Bindings.Count; j++)
 			{
-				var acti = new Dictionary<InControl.PlayerAction, InControl.BindingSource>();
-				acti.Add(action, action.Bindings[j]);
+				var acti = new Dictionary<InControl.PlayerAction, InControl.BindingSource>()
+				{
+					{action, action.Bindings[j]}
+				};
 
 				Button button = Instantiate(changer.ControllBinding);
 				bindingButtons.Add(button, acti);
@@ -473,14 +464,9 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	public void StartSinglePlayer(int levelToLoad)
 	{
-		if (SteamManager.Initialized == true)
-		{
-			PhotonNetwork.player.name = SteamFriends.GetPersonaName();
-		}
-		else
-		{
-			PhotonNetwork.player.name = System.Environment.UserName;
-		}
+		PhotonNetwork.player.NickName = (SteamManager.Initialized == true)
+			? SteamFriends.GetPersonaName()
+			: Environment.UserName;
 
 		PhotonNetwork.offlineMode = true;
 		isLoadingScene = true;
@@ -501,7 +487,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 	}
 
 	[PunRPC]
-	void SendLoadingData(int playerID, float progress)
+	private void SendLoadingData(int playerID, float progress)
 	{
 		if (playerprogresses.ContainsKey(playerID) == true)
 		{
@@ -510,12 +496,12 @@ public class MainMenuManager : Photon.MonoBehaviour
 		}
 	}
 
-	void SetupMultiplayerLoadingBars()
+	private void SetupMultiplayerLoadingBars()
 	{
-		for (int i = 0; i < PhotonNetwork.room.playerCount; i++)
+		for (int i = 0; i < PhotonNetwork.room.PlayerCount; i++)
 		{
 			multiplayerLoadingBars[i].gameObject.SetActive(true);
-			multiplayerLoadingBars[i].OwnerText = PhotonNetwork.playerList[i].name;
+			multiplayerLoadingBars[i].OwnerText = PhotonNetwork.playerList[i].NickName;
 		}
 	}
 
@@ -548,14 +534,9 @@ public class MainMenuManager : Photon.MonoBehaviour
 			PhotonNetwork.ConnectUsingSettings("V1.0");
 		}
 
-		if (SteamManager.Initialized == true)
-		{
-			PhotonNetwork.player.name = SteamFriends.GetPersonaName();
-		}
-		else
-		{
-			PhotonNetwork.player.name = System.Environment.UserName;
-		}
+		PhotonNetwork.player.NickName = (SteamManager.Initialized == true)
+			? SteamFriends.GetPersonaName()
+			: Environment.UserName;
 	}
 
 	public void LeaveMasterServer()
@@ -571,16 +552,16 @@ public class MainMenuManager : Photon.MonoBehaviour
 		switch (gameTypeDropdown.value)
 		{
 			case 0:
-			GameManager.GetInstance().CurrentGameType = GameTypes.ZombieMode;
-			break;
+				GameManager.GetInstance().CurrentGameType = GameTypes.ZombieMode;
+				break;
 			case 1:
-			GameManager.GetInstance().CurrentGameType = GameTypes.TeamDeathMatch;
-			break;
+				GameManager.GetInstance().CurrentGameType = GameTypes.TeamDeathMatch;
+				break;
 			case 2:
-			GameManager.GetInstance().CurrentGameType = GameTypes.TTT;
-			GameManager.GetInstance().TerroristSpawnRate = traitorPercentageSlider.value;
-			GameManager.GetInstance().DetectiveSpawnRate = detectivePercentageSlider.value;
-			break;
+				GameManager.GetInstance().CurrentGameType = GameTypes.TTT;
+				GameManager.GetInstance().TerroristSpawnRate = traitorPercentageSlider.value;
+				GameManager.GetInstance().DetectiveSpawnRate = detectivePercentageSlider.value;
+				break;
 		}
 
 		GameManager.GetInstance().GetNetworkManager().CreateRoom(true, true, (int)maxPlayerSlider.value);
@@ -592,32 +573,32 @@ public class MainMenuManager : Photon.MonoBehaviour
 		RoomInfo[] rooms = PhotonNetwork.GetRoomList();
 		for (int i = 0; i < rooms.Length; i++)
 		{
-			if (rooms[i].playerCount == rooms[i].maxPlayers)
+			if (rooms[i].PlayerCount == rooms[i].MaxPlayers)
 			{
 				continue;
 			}
 
 			RoomSelector room = Instantiate(roomSelectorPrefab);
-			room.RoomName = rooms[i].name;
+			room.RoomName = rooms[i].Name;
 
-			if (rooms[i].customProperties.ContainsKey("gameType") == true)
+			if (rooms[i].CustomProperties.ContainsKey("gameType") == true)
 			{
-				switch ((GameTypes)rooms[i].customProperties["gameType"])
+				switch ((GameTypes)rooms[i].CustomProperties["gameType"])
 				{
 					case GameTypes.ZombieMode:
-					room.GameType = "Zombies!";
-					break;
+						room.GameType = "Zombies!";
+						break;
 					case GameTypes.TeamDeathMatch:
-					room.GameType = "Team Deathmatch";
-					break;
+						room.GameType = "Team Deathmatch";
+						break;
 					case GameTypes.TTT:
-					room.GameType = "Trouble In Terrorist Town";
-					break;
+						room.GameType = "Trouble In Terrorist Town";
+						break;
 				}
 			}
 
-			room.CurrentPlayerCount = rooms[i].playerCount.ToString();
-			room.MaxPlayerCount = rooms[i].maxPlayers.ToString();
+			room.CurrentPlayerCount = rooms[i].PlayerCount.ToString();
+			room.MaxPlayerCount = rooms[i].MaxPlayers.ToString();
 			room.transform.SetParent(roomSelectorParent.transform);
 			room.transform.localScale = Vector3.one;
 			room.GetComponent<Button>().onClick.AddListener(() => JoinRoom(room.RoomName));
@@ -644,118 +625,111 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 	public void LeaveRoom()
 	{
-		if (PhotonNetwork.inRoom == true)
-		{
-			ClearRoomList();
-			currentPlayersInRoom = 0;
-			roomNameText.text = "";
-			GameManager.GetInstance().GetNetworkManager().LeaveRoom();
-		}
+		if (PhotonNetwork.inRoom == false) return;
+
+		ClearRoomList();
+		currentPlayersInRoom = 0;
+		roomNameText.text = "";
+		GameManager.GetInstance().GetNetworkManager().LeaveRoom();
 	}
 
 	public void UpdateRoomCreationSettingsMenu()
 	{
-		if(gameTypeDropdown.value == 0)			//Zombies!
+		switch (gameTypeDropdown.value)
 		{
-			if (gameSettingsMenu.gameObject.activeInHierarchy == true)
-			{
-				gameSettingsMenu.gameObject.SetActive(false);
-			}
+			case 0:
+				if (gameSettingsMenu.gameObject.activeInHierarchy == true)
+				{
+					gameSettingsMenu.gameObject.SetActive(false);
+				}
 
-			if (maxPlayerSlider.maxValue != 4)
-			{
-				maxPlayerSlider.maxValue = 4;
-			}
-		}
-		else if (gameTypeDropdown.value == 1)	//Team Deathmatch
-		{
-			if (gameSettingsMenu.gameObject.activeInHierarchy == true)
-			{
-				gameSettingsMenu.gameObject.SetActive(false);
-			}
+				if (maxPlayerSlider.maxValue != 4)
+				{
+					maxPlayerSlider.maxValue = 4;
+				}
+				break;
+			case 1:
+				if (gameSettingsMenu.gameObject.activeInHierarchy == true)
+				{
+					gameSettingsMenu.gameObject.SetActive(false);
+				}
 
-			if (maxPlayerSlider.maxValue != 8)
-			{
-				maxPlayerSlider.maxValue = 8;
-			}
-		}
-		else if(gameTypeDropdown.value == 2)	//Trouble in Terrorist Town
-		{
-			if (gameSettingsMenu.gameObject.activeInHierarchy == false)
-			{
-				gameSettingsMenu.gameObject.SetActive(true);
-			}
+				if (maxPlayerSlider.maxValue != 8)
+				{
+					maxPlayerSlider.maxValue = 8;
+				}
+				break;
+			case 2:
+				if (gameSettingsMenu.gameObject.activeInHierarchy == false)
+				{
+					gameSettingsMenu.gameObject.SetActive(true);
+				}
 
-			if(maxPlayerSlider.maxValue != 12)
-			{
-				maxPlayerSlider.maxValue = 12;
-			}
+				if (maxPlayerSlider.maxValue != 12)
+				{
+					maxPlayerSlider.maxValue = 12;
+				}
 
-			if(traitorPercentageSlider.value == 0)
-			{
-				traitorPercentageText.text = "0";
-			}
-			else if(traitorPercentageSlider.value == 1)
-			{
-				traitorPercentageText.text = "1";
-			}
-			else
-			{
-				traitorPercentageText.text = traitorPercentageSlider.value.ToString("n3"); 
-			}
+				if (traitorPercentageSlider.value == 0)
+				{
+					traitorPercentageText.text = "0";
+				}
+				else if (traitorPercentageSlider.value == 1)
+				{
+					traitorPercentageText.text = "1";
+				}
+				else
+				{
+					traitorPercentageText.text = traitorPercentageSlider.value.ToString("n3");
+				}
 
-			if (detectivePercentageSlider.value == 0)
-			{
-				detectivePercentageText.text = "0";
-			}
-			else if (detectivePercentageSlider.value == 1)
-			{
-				detectivePercentageText.text = "1";
-			}
-			else
-			{
-				detectivePercentageText.text = detectivePercentageSlider.value.ToString("n3");
-			}
+				if (detectivePercentageSlider.value == 0)
+				{
+					detectivePercentageText.text = "0";
+				}
+				else if (detectivePercentageSlider.value == 1)
+				{
+					detectivePercentageText.text = "1";
+				}
+				else
+				{
+					detectivePercentageText.text = detectivePercentageSlider.value.ToString("n3");
+				}
+				break;
 		}
 	}
 
 	public void ResetRoomCreationSettingsMenu()
 	{
-		if(gameTypeDropdown.value == 0)			//Zombies!
+		switch (gameTypeDropdown.value)
 		{
-			return;
-		}
-		else if(gameTypeDropdown.value == 1)	//Team Deathmatch
-		{
-			return;
-		}
-		else if(gameTypeDropdown.value == 2)	//Trouble in Terrorist Town
-		{
-			traitorPercentageSlider.value = 0.250F;
-			detectivePercentageSlider.value = 0.125F;
-			return;
+			case 0:
+				return;
+			case 1:
+				return;
+			case 2:
+				traitorPercentageSlider.value = 0.250F;
+				detectivePercentageSlider.value = 0.125F;
+				break;
 		}
 	}
 
-	void JoinRoom(string roomName)
+	private void JoinRoom(string roomName)
 	{
 		for (int i = 0; i < PhotonNetwork.GetRoomList().Length; i++)
 		{
-			if (PhotonNetwork.GetRoomList()[i].name == roomName)
-			{
-				if (PhotonNetwork.GetRoomList()[i].visible == false)
-				{
-					RefreshRoomList();
-					return;
-				}
-			}
+			if (PhotonNetwork.GetRoomList()[i].Name != roomName) continue;
+			if (PhotonNetwork.GetRoomList()[i].IsVisible == true) continue;
+
+			RefreshRoomList();
+			return;
 		}
 
 		GameManager.GetInstance().GetNetworkManager().JoinRoom(roomName);
 		multiplayerStartGameButton.gameObject.SetActive(false);
 	}
 
-	void SwitchToInRoom()
+	private void SwitchToInRoom()
 	{
 		inRoomMenu.gameObject.SetActive(true);
 		roomSelectorMenu.gameObject.SetActive(false);
@@ -846,14 +820,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 			isChanged = true;
 		}
 
-		if (useFullscreenToggle.isOn == true)
-		{
-			Screen.fullScreen = false;
-		}
-		else
-		{
-			Screen.fullScreen = true;
-		}
+		Screen.fullScreen = !useFullscreenToggle.isOn;
 
 		if (Screen.resolutions[screenResolutionDropdown.value + skippedResolutions].height != Screen.currentResolution.height || Screen.resolutions[screenResolutionDropdown.value + skippedResolutions].width != Screen.currentResolution.width)
 		{
@@ -861,16 +828,15 @@ public class MainMenuManager : Photon.MonoBehaviour
 			isChanged = true;
 		}
 
-		if (isChanged == true)
-		{
-			PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel());
-			PlayerPrefs.SetInt("ScreenResolution", screenResolutionDropdown.value);
-			PlayerPrefs.SetInt("IsFullScreen", useFullscreenToggle.isOn == true ? 0 : 1);
-			PlayerPrefs.Save();
-		}
+		if (isChanged == false) return;
+
+		PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel());
+		PlayerPrefs.SetInt("ScreenResolution", screenResolutionDropdown.value);
+		PlayerPrefs.SetInt("IsFullScreen", useFullscreenToggle.isOn == true ? 0 : 1);
+		PlayerPrefs.Save();
 	}
 
-	void OnApplicationQuit()
+	private void OnApplicationQuit()
 	{
 		PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel());
 		PlayerPrefs.SetInt("ScreenResolution", screenResolutionDropdown.value);
@@ -890,7 +856,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 		foreach (Dictionary<InControl.PlayerAction, InControl.BindingSource> i in bindingButtons.Values)
 		{
-			foreach (var value in i.Values)
+			foreach (InControl.BindingSource value in i.Values)
 			{
 				if (value != actionAndBinding.Value)
 				{
@@ -899,23 +865,23 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 				options.IncludeModifiersAsFirstClassKeys = true;
 
-				if (value.BindingSourceType == InControl.BindingSourceType.DeviceBindingSource)
+				switch (value.BindingSourceType)
 				{
-					options.IncludeControllers = true;
-					options.IncludeKeys = false;
-					options.IncludeMouseButtons = false;
-				}
-				else if (value.BindingSourceType == InControl.BindingSourceType.KeyBindingSource)
-				{
-					options.IncludeControllers = false;
-					options.IncludeKeys = true;
-					options.IncludeMouseButtons = true;
-				}
-				else
-				{
-					options.IncludeControllers = false;
-					options.IncludeKeys = true;
-					options.IncludeMouseButtons = true;
+					case InControl.BindingSourceType.DeviceBindingSource:
+						options.IncludeControllers = true;
+						options.IncludeKeys = false;
+						options.IncludeMouseButtons = false;
+					break;
+					case InControl.BindingSourceType.KeyBindingSource:
+						options.IncludeControllers = false;
+						options.IncludeKeys = true;
+						options.IncludeMouseButtons = true;
+						break;
+					default:
+						options.IncludeControllers = false;
+						options.IncludeKeys = true;
+						options.IncludeMouseButtons = true;
+					break;
 				}
 
 				actionAndBinding.Key.ListenOptions = options;

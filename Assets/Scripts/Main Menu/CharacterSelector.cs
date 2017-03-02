@@ -1,24 +1,22 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class CharacterSelector : OverridableMonoBehaviour {
 
 	[SerializeField]
-	private GameObject gameModel;
+	private GameObject gameModel = null;
 	[SerializeField]
-	private Material gameModelMaterial;
+	private Material gameModelMaterial = null;
 	[SerializeField]
-	private float rotationSpeed;
+	private float rotationSpeed = 0;
 	[SerializeField]
-	private UnityEngine.UI.Dropdown characterSelector;
+	private UnityEngine.UI.Dropdown characterSelector = null;
 
-	void Start()
+	private void Start()
 	{
-		if(PlayerPrefs.HasKey("SelectedCharacter") == true)
-		{
-			gameModelMaterial.SetTexture("_EmissionMap", GameManager.GetInstance().AllPlayerSkins[PlayerPrefs.GetInt("SelectedCharacter")]);
-			characterSelector.value = PlayerPrefs.GetInt("SelectedCharacter");
-		}
+		if (PlayerPrefs.HasKey("SelectedCharacter") != true) return;
+
+		gameModelMaterial.SetTexture("_EmissionMap", GameManager.GetInstance().AllPlayerSkins[PlayerPrefs.GetInt("SelectedCharacter")]);
+		characterSelector.value = PlayerPrefs.GetInt("SelectedCharacter");
 	}
 
 	public void UpdateCharacterModel()
@@ -26,8 +24,11 @@ public class CharacterSelector : OverridableMonoBehaviour {
 		gameModelMaterial.SetTexture("_EmissionMap", GameManager.GetInstance().AllPlayerSkins[characterSelector.value]);
 		PlayerPrefs.SetInt("SelectedCharacter", characterSelector.value);
 		PlayerPrefs.Save();
-		ExitGames.Client.Photon.Hashtable playerSettings = new ExitGames.Client.Photon.Hashtable();
-		playerSettings.Add("playerSkin", characterSelector.value);
+		ExitGames.Client.Photon.Hashtable playerSettings = new ExitGames.Client.Photon.Hashtable
+		{
+			{"playerSkin", characterSelector.value}
+		};
+
 		PhotonNetwork.SetPlayerCustomProperties(playerSettings);
 	}
 

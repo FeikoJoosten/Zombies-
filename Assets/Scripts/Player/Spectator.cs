@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Spectator : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private float movementSpeed;
+	private float movementSpeed = 0;
 	[SerializeField]
-	private float sprintSpeed;
+	private float sprintSpeed = 0;
 	[SerializeField]
-	private float rotationSpeed;
+	private float rotationSpeed = 0;
 	[SerializeField]
-	private SpectatorController spectatorController;
-	[SerializeField]
-	private RectTransform endScreen;
+	private RectTransform endScreen = null;
 
 	private Camera playerCamera;
 	private Rigidbody rig;
@@ -46,7 +43,7 @@ public class Spectator : OverridableMonoBehaviour
 		set { highScoreList = value; }
 	}
 
-	void Start()
+	private void Start()
 	{
 		rig = GetComponent<Rigidbody>();
 	}

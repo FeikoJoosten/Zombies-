@@ -6,46 +6,44 @@ using System.Collections.Generic;
 public class PauseMenuManager : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private RectTransform playerControllsHolder;
+	private RectTransform playerControllsHolder = null;
 	[SerializeField]
-	private ControllChanger playerControllerChangerPrefab;
+	private ControllChanger playerControllerChangerPrefab = null;
 	[SerializeField]
-	private Dropdown screenResolutionDropdown;
+	private Dropdown screenResolutionDropdown = null;
 	[SerializeField]
-	private RectTransform screenResolutionPrefab;
+	private RectTransform mainMenu = null;
 	[SerializeField]
-	private RectTransform mainMenu;
+	private RectTransform optionsMenu = null;
 	[SerializeField]
-	private RectTransform optionsMenu;
+	private RectTransform videoMenu = null;
 	[SerializeField]
-	private RectTransform videoMenu;
+	private RectTransform exitMenu = null;
 	[SerializeField]
-	private RectTransform exitMenu;
+	private RectTransform audioMenu = null;
 	[SerializeField]
-	private RectTransform audioMenu;
+	private RectTransform controlsMenu = null;
 	[SerializeField]
-	private RectTransform controlsMenu;
+	private Toggle useFullscreenToggle = null;
 	[SerializeField]
-	private Toggle useFullscreenToggle;
+	private Dropdown gameQualityDropdown = null;
 	[SerializeField]
-	private Dropdown gameQualityDropdown;
+	private Player player = null;
 	[SerializeField]
-	private Player player;
+	private Slider SFXVolumeSlider = null;
 	[SerializeField]
-	private Slider SFXVolumeSlider;
+	private Slider MusicVolumeSlider = null;
 	[SerializeField]
-	private Slider MusicVolumeSlider;
+	private Text SFXVolumeText = null;
 	[SerializeField]
-	private Text SFXVolumeText;
-	[SerializeField]
-	private Text MusicVolumeText;
+	private Text MusicVolumeText = null;
 
 	private int skippedResolutions;
 	private PlayerActions playerActions;
 	private Dictionary<Button, Dictionary<InControl.PlayerAction, InControl.BindingSource>> bindingButtons = new Dictionary<Button, Dictionary<InControl.PlayerAction, InControl.BindingSource>>();
 
 
-	void Start()
+	private void Start()
 	{
 		#region GenerateControlPrefabs
 		playerActions = PlayerActions.CreateWithDefaultBindings();
@@ -73,7 +71,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 			if (PlayerPrefs.HasKey("QualityLevel") && PlayerPrefs.HasKey("IsFullScreen") && PlayerPrefs.HasKey("ScreenResolution"))
 			{
 				QualitySettings.SetQualityLevel(PlayerPrefs.GetInt("QualityLevel"));
-				Screen.SetResolution(Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width, Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height, PlayerPrefs.GetInt("IsFullScreen") == 1 ? true : false);
+				Screen.SetResolution(Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width, Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height, PlayerPrefs.GetInt("IsFullScreen") == 1);
 			}
 		}
 		gameQualityDropdown.template.GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50 * QualitySettings.names.Length);
@@ -85,11 +83,10 @@ public class PauseMenuManager : OverridableMonoBehaviour
 		{
 			gameQualityDropdown.options.Add(new Dropdown.OptionData() { text = QualitySettings.names[i] });
 
-			if (QualitySettings.GetQualityLevel() == i)
-			{
-				gameQualityDropdown.value = i;
-				gameQualityDropdown.captionText.text = QualitySettings.names[i];
-			}
+			if (QualitySettings.GetQualityLevel() != i) continue;
+
+			gameQualityDropdown.value = i;
+			gameQualityDropdown.captionText.text = QualitySettings.names[i];
 		}
 
 		for (int i = 0; i < Screen.resolutions.Length; i++)
@@ -109,24 +106,17 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 			screenResolutionDropdown.options.Add(new Dropdown.OptionData() { text = Screen.resolutions[i].width + " X " + Screen.resolutions[i].height });
 
-			if (Application.platform != RuntimePlatform.WindowsEditor)
-			{
-				if (Screen.resolutions[i].height == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height && Screen.resolutions[i].width == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width)
-				{
-					screenResolutionDropdown.value = i;
-					screenResolutionDropdown.captionText.text = Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width + " X " + Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height;
-				}
-			}
+			if (Application.platform == RuntimePlatform.WindowsEditor) continue;
+			if (Screen.resolutions[i].height !=
+				Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height ||
+				Screen.resolutions[i].width !=
+				Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width) continue;
+
+			screenResolutionDropdown.value = i;
+			screenResolutionDropdown.captionText.text = Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width + " X " + Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height;
 		}
 
-		if (Screen.fullScreen == true)
-		{
-			useFullscreenToggle.isOn = false;
-		}
-		else
-		{
-			useFullscreenToggle.isOn = true;
-		}
+		useFullscreenToggle.isOn = Screen.fullScreen != true;
 		#endregion
 
 		GetAudioSettings();
@@ -137,7 +127,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 		RedrawControllsMenu();
 	}
 
-	void RedrawControllsMenu()
+	private void RedrawControllsMenu()
 	{
 		bindingButtons.Clear();
 
@@ -152,7 +142,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 		for (int i = 0; i < playerActions.Actions.Count; i++)
 		{
-			var action = playerActions.Actions[i];
+			InControl.PlayerAction action = playerActions.Actions[i];
 
 			if (action == playerActions.rotateUp || action == playerActions.rotateDown || action == playerActions.rotateLeft || action == playerActions.rotateRight)
 			{
@@ -167,8 +157,8 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 			for (int j = 0; j < action.Bindings.Count; j++)
 			{
-				var acti = new Dictionary<InControl.PlayerAction, InControl.BindingSource>();
-				acti.Add(action, action.Bindings[j]);
+				Dictionary<InControl.PlayerAction, InControl.BindingSource> acti =
+					new Dictionary<InControl.PlayerAction, InControl.BindingSource> { { action, action.Bindings[j] } };
 
 				Button button = Instantiate(changer.ControllBinding);
 				bindingButtons.Add(button, acti);
@@ -200,7 +190,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 		foreach (Dictionary<InControl.PlayerAction, InControl.BindingSource> i in bindingButtons.Values)
 		{
-			foreach (var value in i.Values)
+			foreach (InControl.BindingSource value in i.Values)
 			{
 				if (value != actionAndBinding.Value)
 				{
@@ -209,23 +199,23 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 				options.IncludeModifiersAsFirstClassKeys = true;
 
-				if (value.BindingSourceType == InControl.BindingSourceType.DeviceBindingSource)
+				switch (value.BindingSourceType)
 				{
-					options.IncludeControllers = true;
-					options.IncludeKeys = false;
-					options.IncludeMouseButtons = false;
-				}
-				else if (value.BindingSourceType == InControl.BindingSourceType.KeyBindingSource)
-				{
-					options.IncludeControllers = false;
-					options.IncludeKeys = true;
-					options.IncludeMouseButtons = false;
-				}
-				else
-				{
-					options.IncludeControllers = false;
-					options.IncludeKeys = false;
-					options.IncludeMouseButtons = true;
+					case InControl.BindingSourceType.DeviceBindingSource:
+						options.IncludeControllers = true;
+						options.IncludeKeys = false;
+						options.IncludeMouseButtons = false;
+						break;
+					case InControl.BindingSourceType.KeyBindingSource:
+						options.IncludeControllers = false;
+						options.IncludeKeys = true;
+						options.IncludeMouseButtons = false;
+						break;
+					default:
+						options.IncludeControllers = false;
+						options.IncludeKeys = false;
+						options.IncludeMouseButtons = true;
+						break;
 				}
 
 				actionAndBinding.Key.ListenOptions = options;
@@ -259,22 +249,25 @@ public class PauseMenuManager : OverridableMonoBehaviour
 					button.Key.GetComponentInChildren<Text>().text = action.Value.Name;
 					continue;
 				}
+
+				if ((action.Key.ListenOptions.IncludeControllers == true &&
+					action.Value.BindingSourceType == InControl.BindingSourceType.DeviceBindingSource) ||
+					(action.Key.ListenOptions.IncludeKeys == true &&
+					action.Value.BindingSourceType == InControl.BindingSourceType.KeyBindingSource) ||
+					(action.Key.ListenOptions.IncludeMouseButtons == true &&
+					action.Value.BindingSourceType == InControl.BindingSourceType.MouseBindingSource))
+				{
+					button.Key.GetComponentInChildren<Text>().text = "Listening";
+				}
 				else
 				{
-					if ((action.Key.ListenOptions.IncludeControllers == true && action.Value.BindingSourceType == InControl.BindingSourceType.DeviceBindingSource) || (action.Key.ListenOptions.IncludeKeys == true && action.Value.BindingSourceType == InControl.BindingSourceType.KeyBindingSource) || (action.Key.ListenOptions.IncludeMouseButtons == true && action.Value.BindingSourceType == InControl.BindingSourceType.MouseBindingSource))
-					{
-						button.Key.GetComponentInChildren<Text>().text = "Listening";
-					}
-					else
-					{
-						button.Key.GetComponentInChildren<Text>().text = action.Value.Name;
-					}
-
-					action.Key.ListenOptions.OnBindingAdded = (act, binding) =>
-					{
-						RedrawControllsMenu();
-					};
+					button.Key.GetComponentInChildren<Text>().text = action.Value.Name;
 				}
+
+				action.Key.ListenOptions.OnBindingAdded = (act, binding) =>
+				{
+					RedrawControllsMenu();
+				};
 			}
 		}
 	}
@@ -321,14 +314,7 @@ public class PauseMenuManager : OverridableMonoBehaviour
 			isChanged = true;
 		}
 
-		if (useFullscreenToggle.isOn == true)
-		{
-			Screen.fullScreen = false;
-		}
-		else
-		{
-			Screen.fullScreen = true;
-		}
+		Screen.fullScreen = !useFullscreenToggle.isOn;
 
 		if (Screen.resolutions[screenResolutionDropdown.value + skippedResolutions].height != Screen.currentResolution.height || Screen.resolutions[screenResolutionDropdown.value + skippedResolutions].width != Screen.currentResolution.width)
 		{
@@ -336,13 +322,13 @@ public class PauseMenuManager : OverridableMonoBehaviour
 			isChanged = true;
 		}
 
-		if (isChanged == true)
-		{
-			PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel());
-			PlayerPrefs.SetInt("ScreenResolution", screenResolutionDropdown.value);
-			PlayerPrefs.SetInt("IsFullScreen", useFullscreenToggle.isOn == true ? 0 : 1);
-			PlayerPrefs.Save();
-		}
+		if (isChanged == false) return;
+
+		PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel());
+		PlayerPrefs.SetInt("ScreenResolution", screenResolutionDropdown.value);
+		PlayerPrefs.SetInt("IsFullScreen", useFullscreenToggle.isOn == true ? 0 : 1);
+		PlayerPrefs.Save();
+
 	}
 
 	public void OnFullscreenToggle()
@@ -417,14 +403,13 @@ public class PauseMenuManager : OverridableMonoBehaviour
 
 	public void ResetPauseMenuManager()
 	{
-		if (mainMenu.gameObject.activeInHierarchy == false)
-		{
+		if (mainMenu.gameObject.activeInHierarchy == true) return;
+
 			mainMenu.gameObject.SetActive(true);
 			optionsMenu.gameObject.SetActive(false);
 			videoMenu.gameObject.SetActive(false);
 			exitMenu.gameObject.SetActive(false);
 			audioMenu.gameObject.SetActive(false);
 			controlsMenu.gameObject.SetActive(false);
-		}
 	}
 }

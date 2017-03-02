@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class WeaponSlot : MonoBehaviour
 {
 	[SerializeField]
-	private Weapon holdedWeapon;
+	private Weapon holdedWeapon = null;
 	[SerializeField]
-	private Image activeWeaponImage;
+	private Image activeWeaponImage = null;
 	[SerializeField]
-	private Image inactiveWeaponImage;
+	private Image inactiveWeaponImage = null;
 
 	public Weapon HoldedWeapon
 	{

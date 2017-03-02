@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class SpectatorController : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private Spectator player;
+	private Spectator player = null;
 
 	private PlayerActions playerActions = PlayerActions.CreateWithDefaultBindings();
 
@@ -15,14 +14,14 @@ public class SpectatorController : OverridableMonoBehaviour
 			return;
 		}
 
-		if(GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == 0)
+		if (GameManager.GetInstance().GetNetworkManager().AllRemainingPlayers.Count == 0)
 		{
 			player.OpenEndscreen();
 		}
 
 		if (player.PlayerCamera != null)
 		{
-			if(player.PlayerCamera.transform.parent != player.transform)
+			if (player.PlayerCamera.transform.parent != player.transform)
 			{
 				if (player.PlayerCamera != null)
 				{
@@ -49,29 +48,28 @@ public class SpectatorController : OverridableMonoBehaviour
 		}
 	}
 
-	void FixedUpdate()
+	private void FixedUpdate()
 	{
 		MoveCharacter(playerActions.move.Value);
 	}
 
-	void MoveCharacter(Vector2 value)
+	private void MoveCharacter(Vector2 value)
 	{
 		Vector3 movement = (player.PlayerCamera.transform.forward * value.y) + (player.Rig.transform.right * value.x);
 
-		if (Physics.Raycast(transform.position + new Vector3(0, 0.75F, 0), movement.normalized, 0.25F) == false)
+		if (Physics.Raycast(transform.position + new Vector3(0, 0.75F, 0), movement.normalized, 0.25F) == true) return;
+
+		if (playerActions.sprint.IsPressed)
 		{
-			if (playerActions.sprint.IsPressed)
-			{
-				player.Rig.MovePosition(transform.position + (movement.normalized * player.SprintSpeed * Time.deltaTime));
-			}
-			else
-			{
-				player.Rig.MovePosition(transform.position + (movement.normalized * player.MovementSpeed * Time.deltaTime));
-			}
+			player.Rig.MovePosition(transform.position + (movement.normalized * player.SprintSpeed * Time.deltaTime));
+		}
+		else
+		{
+			player.Rig.MovePosition(transform.position + (movement.normalized * player.MovementSpeed * Time.deltaTime));
 		}
 	}
 
-	void RotateCharacter(Vector2 value)
+	private void RotateCharacter(Vector2 value)
 	{
 		Vector3 playerRotation = new Vector3(0, value.y, 0);
 		transform.Rotate(playerRotation * player.RotationSpeed);

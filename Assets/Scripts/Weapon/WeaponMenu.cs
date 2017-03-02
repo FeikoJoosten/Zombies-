@@ -1,25 +1,24 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class WeaponMenu : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private Image weaponSelector;
+	private Image weaponSelector = null;
 	[SerializeField]
-	private float selectorMovementSpeed;
+	private float selectorMovementSpeed = 0;
 	[SerializeField]
-	private WeaponSlot[] weaponSlots;
+	private WeaponSlot[] weaponSlots = null;
 
-	private int currentSelectedWeaponSlot = 0;
-	private bool isEnabled = false;
+	private int currentSelectedWeaponSlot;
+	private bool isEnabled;
 
 	public bool IsEnabled
 	{
 		get { return isEnabled; }
 	}
 
-	void Start()
+	private void Start()
 	{
 		for (int i = 0; i < weaponSlots.Length; i++)
 		{
@@ -107,23 +106,21 @@ public class WeaponMenu : OverridableMonoBehaviour
 	{
 		for (int i = currentSelectedWeaponSlot + 1; i < weaponSlots.Length; i++)
 		{
-			if (weaponSlots[i].HoldedWeapon.IsAllowedToUse)
-			{
-				currentSelectedWeaponSlot = i;
-				weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
-				weaponSelector.transform.SetAsFirstSibling();
-				return;
-			}
+			if (!weaponSlots[i].HoldedWeapon.IsAllowedToUse) continue;
+
+			currentSelectedWeaponSlot = i;
+			weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
+			weaponSelector.transform.SetAsFirstSibling();
+			return;
 		}
 		for (int i = 0; i < currentSelectedWeaponSlot + 1; i++)
 		{
-			if (weaponSlots[i].HoldedWeapon.IsAllowedToUse)
-			{
-				currentSelectedWeaponSlot = i;
-				weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
-				weaponSelector.transform.SetAsFirstSibling();
-				return;
-			}
+			if (!weaponSlots[i].HoldedWeapon.IsAllowedToUse) continue;
+
+			currentSelectedWeaponSlot = i;
+			weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
+			weaponSelector.transform.SetAsFirstSibling();
+			return;
 		}
 	}
 
@@ -131,23 +128,21 @@ public class WeaponMenu : OverridableMonoBehaviour
 	{
 		for (int i = currentSelectedWeaponSlot - 1; i >= 0; i--)
 		{
-			if (weaponSlots[i].HoldedWeapon.IsAllowedToUse)
-			{
-				currentSelectedWeaponSlot = i;
-				weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
-				weaponSelector.transform.SetAsFirstSibling();
-				return;
-			}
+			if (!weaponSlots[i].HoldedWeapon.IsAllowedToUse) continue;
+
+			currentSelectedWeaponSlot = i;
+			weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
+			weaponSelector.transform.SetAsFirstSibling();
+			return;
 		}
 		for (int i = weaponSlots.Length - 1; i >= currentSelectedWeaponSlot - 1; i--)
 		{
-			if (weaponSlots[i].HoldedWeapon.IsAllowedToUse)
-			{
-				currentSelectedWeaponSlot = i;
-				weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
-				weaponSelector.transform.SetAsFirstSibling();
-				return;
-			}
+			if (!weaponSlots[i].HoldedWeapon.IsAllowedToUse) continue;
+
+			currentSelectedWeaponSlot = i;
+			weaponSelector.transform.SetParent(weaponSlots[currentSelectedWeaponSlot].transform);
+			weaponSelector.transform.SetAsFirstSibling();
+			return;
 		}
 	}
 }

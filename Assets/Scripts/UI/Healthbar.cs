@@ -1,29 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class Healthbar : MonoBehaviour
 {
 	[SerializeField]
-	private Image healthBar;
+	private Image healthBar = null;
 	[SerializeField]
-	private Color almostDeadHealthColor;
+	private Color almostDeadHealthColor = Color.red;
 	[SerializeField]
-	private Color startingColor;
+	private Color startingColor = Color.green;
 	[SerializeField]
-	private float almostDeadPercentage;
+	private float almostDeadPercentage = 0;
 
 	public void UpdateHealthBar(float currentHealth)
 	{
 		healthBar.fillAmount = 1 * currentHealth * 0.01F;
 
-		if (healthBar.fillAmount <= almostDeadPercentage)
-		{
-			healthBar.color = almostDeadHealthColor;
-		}
-		else
-		{
-			healthBar.color = startingColor;
-		}
+		healthBar.color = healthBar.fillAmount <= almostDeadPercentage ? almostDeadHealthColor : startingColor;
 	}
 }

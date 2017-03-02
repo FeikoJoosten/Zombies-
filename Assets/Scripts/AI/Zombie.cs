@@ -1,56 +1,55 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System;
 using System.Linq;
 using System.Collections;
 
 public class Zombie : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private NavMeshAgent agent;
+	private NavMeshAgent agent = null;
 	[SerializeField]
-	private Rigidbody rig;
+	private Rigidbody rig = null;
 	[SerializeField]
-	private Rigidbody[] ragdollRigidBodys;
+	private Rigidbody[] ragdollRigidBodys = null;
 	[SerializeField]
-	private float startingHealth;
+	private float startingHealth = 100;
 	[SerializeField]
-	private float damage;
+	private float damage = 0;
 	[SerializeField]
-	private float healthMultiplier;
+	private float healthMultiplier = 0;
 	[SerializeField]
-	private Image healthBar;
+	private Image healthBar = null;
 	[SerializeField]
-	private Animator ani;
+	private Animator ani = null;
 	[SerializeField]
-	private Color almostDeadHealthColor;
+	private Color almostDeadHealthColor = Color.red;
 	[SerializeField]
-	private float almostDeadPercentage;
+	private float almostDeadPercentage = 0;
 	[SerializeField]
-	private float attackWaitTime;
+	private float attackWaitTime = 0;
 	[SerializeField]
-	private float despawnAfterDeathTime;
+	private float despawnAfterDeathTime = 5;
 	[SerializeField]
-	private float minimumWaitTimeBeforeGrunt;
+	private float minimumWaitTimeBeforeGrunt = 0;
 	[SerializeField]
-	private float maximumWaitTimeBeforeGrunt;
+	private float maximumWaitTimeBeforeGrunt = 0;
 	[SerializeField]
-	private Collider[] triggers;
+	private Collider[] triggers = null;
 	[SerializeField]
-	private AudioSource audioSource;
+	private AudioSource audioSource = null;
 	[SerializeField]
-	private AudioClip gruntSound;
+	private AudioClip gruntSound = null;
 	[SerializeField]
-	private AudioClip attackSound;
+	private AudioClip attackSound = null;
 
 	private float currentHealth;
 	private float currentAttackWaitTime;
 	private int walkingHashID;
 	private int attackHashID;
 	private int lastPlayerIDThatDidDamage;
-	private bool finishedSpawning = false;
-	private bool isAttacking = false;
-	private bool isDead = false;
+	private bool finishedSpawning;
+	private bool isAttacking;
+	private bool isDead;
 
 	public NavMeshAgent Agent
 	{
@@ -85,17 +84,13 @@ public class Zombie : OverridableMonoBehaviour
 	protected override void Awake()
 	{
 		base.Awake();
-		if (PhotonNetwork.offlineMode == false)
-		{
-			GameManager.GetInstance().GetAIManager().AllRemainingZombies.Add(photonView.viewID, this);
-		}
-		else
-		{
-			GameManager.GetInstance().GetAIManager().AllRemainingZombies.Add(gameObject.GetInstanceID(), this);
-		}
+
+		GameManager.GetInstance()
+			.GetAIManager()
+			.AllRemainingZombies.Add(PhotonNetwork.offlineMode != false ? gameObject.GetInstanceID() : photonView.viewID, this);
 	}
 
-	void Start()
+	private void Start()
 	{
 		for (int i = 0; i < ragdollRigidBodys.Length; i++)
 		{
@@ -174,7 +169,7 @@ public class Zombie : OverridableMonoBehaviour
 	}
 
 	[PunRPC]
-	void RemoveHealth(float healthToRemove)
+	private void RemoveHealth(float healthToRemove)
 	{
 		if (currentHealth - healthToRemove > 0)
 		{
@@ -198,7 +193,7 @@ public class Zombie : OverridableMonoBehaviour
 		}
 	}
 
-	void Die()
+	private void Die()
 	{
 		ani.SetBool(attackHashID, false);
 		ani.SetBool(walkingHashID, false);
@@ -233,17 +228,19 @@ public class Zombie : OverridableMonoBehaviour
 		}
 
 		isDead = true;
-		if (PhotonNetwork.offlineMode == false)
+
+		switch(PhotonNetwork.offlineMode)
 		{
-			GameManager.GetInstance().GetAIManager().AllRemainingZombies.Remove(photonView.viewID);
-		}
-		else
-		{
-			GameManager.GetInstance().GetAIManager().AllRemainingZombies.Remove(gameObject.GetInstanceID());
+			case true:
+				GameManager.GetInstance().GetAIManager().AllRemainingZombies.Remove(gameObject.GetInstanceID());
+				break;
+			case false:
+				GameManager.GetInstance().GetAIManager().AllRemainingZombies.Remove(photonView.viewID);
+				break;
 		}
 	}
 
-	IEnumerator SpawnTimer()
+	private IEnumerator SpawnTimer()
 	{
 		yield return new WaitForSeconds(2.3333333F);
 		agent.enabled = true;
@@ -254,7 +251,7 @@ public class Zombie : OverridableMonoBehaviour
 		finishedSpawning = true;
 	}
 
-	IEnumerator Attack()
+	private IEnumerator Attack()
 	{
 		ani.SetBool(attackHashID, true);
 
@@ -269,7 +266,7 @@ public class Zombie : OverridableMonoBehaviour
 		currentAttackWaitTime = attackWaitTime;
 	}
 
-	IEnumerator GruntTimer()
+	private IEnumerator GruntTimer()
 	{
 		while (finishedSpawning == false)
 		{
@@ -287,28 +284,30 @@ public class Zombie : OverridableMonoBehaviour
 			yield return null;
 		}
 
-		float waitTime = UnityEngine.Random.Range(minimumWaitTimeBeforeGrunt, maximumWaitTimeBeforeGrunt);
+		float waitTime = Random.Range(minimumWaitTimeBeforeGrunt, maximumWaitTimeBeforeGrunt);
 
 		yield return new WaitForSeconds(waitTime);
 
-		if (isDead == false)
+		switch (isDead)
 		{
-			if (PhotonNetwork.offlineMode == false)
-			{
-				GameManager.GetInstance().GetAIManager().photonView.RPC("CreatePositionPointOnMinimap", PhotonTargets.All, transform.position);
-				photonView.RPC("Grunt", PhotonTargets.All);
-			}
-			else
-			{
-				Grunt();
-			}
+			case false:
+				if (PhotonNetwork.offlineMode == false)
+				{
+					GameManager.GetInstance().GetAIManager().photonView.RPC("CreatePositionPointOnMinimap", PhotonTargets.All, transform.position);
+					photonView.RPC("Grunt", PhotonTargets.All);
+				}
+				else
+				{
+					Grunt();
+				}
 
-			StartCoroutine(GruntTimer());
+				StartCoroutine(GruntTimer());
+				break;
 		}
 	}
 
 	[PunRPC]
-	void Grunt()
+	private void Grunt()
 	{
 		GameManager.GetInstance().GetAIManager().CreatePositionPointOnMinimap(transform.position);
 		GameManager.GetInstance().GetAudioManager().PlaySFXSound(audioSource, gruntSound);
@@ -322,7 +321,7 @@ public class Zombie : OverridableMonoBehaviour
 		currentAttackWaitTime = attackWaitTime;
 	}
 
-	void OnTriggerEnter(Collider other)
+	private void OnTriggerEnter(Collider other)
 	{
 		if(PhotonNetwork.isMasterClient == false)
 		{

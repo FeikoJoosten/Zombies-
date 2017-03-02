@@ -1,27 +1,26 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class AmmoPickup : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private int amountToReload;
+	private int amountToReload = 0;
 	[SerializeField]
-	private int weaponToReload;
+	private int weaponToReload = 0;
 	[SerializeField]
-	private float rotationSpeed;
+	private float rotationSpeed = 0;
 	[SerializeField]
-	private float trailMovementSpeed;
+	private float trailMovementSpeed = 0;
 	[SerializeField]
-	private TrailRenderer trail;
+	private TrailRenderer trail = null;
 	[SerializeField]
-	private ParticleSystem particles;
+	private ParticleSystem particles = null;
 	[SerializeField]
-	private Vector3 trailEndPosition;
+	private Vector3 trailEndPosition = Vector3.zero;
 
 	private Vector3 trailStartPosition;
 	private float currentMovementSpeed;
 	private float currentMovementPercentage;
-	private bool gaveAmmo = false;
+	private bool gaveAmmo;
 	private bool shouldShowLineRenderer = true;
 
 	public bool ShouldShowLineRenderer
@@ -30,65 +29,57 @@ public class AmmoPickup : OverridableMonoBehaviour
 		set { shouldShowLineRenderer = value; }
 	}
 
-	void Start()
+	private void Start()
 	{
 		trailStartPosition = trail.transform.localPosition;
 
-		if (shouldShowLineRenderer == false)
-		{
-			trail.enabled = false;
-			particles.Stop(true);
-		}
+		if (shouldShowLineRenderer != false) return;
+
+		trail.enabled = false;
+		particles.Stop(true);
 	}
 
 	public override void UpdateMe()
 	{
-		if (shouldShowLineRenderer == true)
-		{
-			transform.Rotate(transform.up * rotationSpeed * Time.deltaTime);
-			trail.transform.localPosition = Vector3.Lerp(trailStartPosition, trailStartPosition + trailEndPosition, currentMovementPercentage);
+		if (shouldShowLineRenderer == false) return;
 
-			if (currentMovementSpeed < trailMovementSpeed)
-			{
-				currentMovementSpeed += Time.deltaTime;
-				currentMovementPercentage = currentMovementSpeed / trailMovementSpeed;
-			}
-		}
+		transform.Rotate(transform.up * rotationSpeed * Time.deltaTime);
+		trail.transform.localPosition = Vector3.Lerp(trailStartPosition, trailStartPosition + trailEndPosition, currentMovementPercentage);
+
+		if (currentMovementSpeed > trailMovementSpeed) return;
+
+		currentMovementSpeed += Time.deltaTime;
+		currentMovementPercentage = currentMovementSpeed / trailMovementSpeed;
 	}
 
-	void OnTriggerEnter(Collider other)
+	private void OnTriggerEnter(Collider other)
 	{
 		Player player = other.GetComponent<Player>();
-		if (player != null)
-		{
-			if (player.GetWeaponInformation(weaponToReload).CurrentTotalAmmunitionLeft >= player.GetWeaponInformation(weaponToReload).MaxAmmunitionCount)
-			{
-				return;
-			}
-			else
-			{
-				if (gaveAmmo == false)
-				{
-					if (player.CurrentWeapon != null)
-					{
-						if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
-						{
-							player.PickupWeapon(weaponToReload);
-						}
-						player.GetWeaponInformation(weaponToReload).AddAmmoToAmmoPile(amountToReload);
-					}
-					gaveAmmo = true;
 
-					if (PhotonNetwork.isMasterClient == true)
-					{
-						UpdateManager.RemoveSpecificItemAndDestroyIt(this); 
-					}
-				}
+		if (player == null) return;
+
+		if (player.GetWeaponInformation(weaponToReload).CurrentTotalAmmunitionLeft >=
+			player.GetWeaponInformation(weaponToReload).MaxAmmunitionCount) return;
+
+		if (gaveAmmo == true) return;
+
+		if (player.CurrentWeapon != null)
+		{
+			if (GameManager.GetInstance().CurrentGameType == GameTypes.TTT)
+			{
+				player.PickupWeapon(weaponToReload);
 			}
+			player.GetWeaponInformation(weaponToReload).AddAmmoToAmmoPile(amountToReload);
+		}
+		gaveAmmo = true;
+
+		if (PhotonNetwork.isMasterClient == true)
+		{
+			UpdateManager.RemoveSpecificItemAndDestroyIt(this);
 		}
 	}
 
-	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	private void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.isWriting == true && PhotonNetwork.isMasterClient == true)
 		{
@@ -97,11 +88,11 @@ public class AmmoPickup : OverridableMonoBehaviour
 		else
 		{
 			shouldShowLineRenderer = (bool)stream.ReceiveNext();
-			if (shouldShowLineRenderer == false)
-			{
-				trail.enabled = false;
-				particles.Stop(true);
-			}
+
+			if (shouldShowLineRenderer == true) return;
+
+			trail.enabled = false;
+			particles.Stop(true);
 		}
 	}
 }

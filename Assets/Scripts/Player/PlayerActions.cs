@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using InControl;
-using System.Collections;
+﻿using InControl;
 
 public class PlayerActions : PlayerActionSet
 {
@@ -66,7 +64,7 @@ public class PlayerActions : PlayerActionSet
 
 	public static PlayerActions CreateWithDefaultBindings()
 	{
-		var playerActions = new PlayerActions();
+		PlayerActions playerActions = new PlayerActions();
 
 		playerActions.left.AddDefaultBinding(Key.A);
 		playerActions.left.AddDefaultBinding(InputControlType.LeftStickLeft);

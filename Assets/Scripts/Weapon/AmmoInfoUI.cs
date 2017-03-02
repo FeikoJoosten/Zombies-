@@ -4,9 +4,9 @@ using UnityEngine.UI;
 public class AmmoInfoUI : MonoBehaviour
 {
 	[SerializeField]
-	private Text magText;
+	private Text magText = null;
 	[SerializeField]
-	private Text totalAmmoText;
+	private Text totalAmmoText = null;
 
 	public void UpdateMagText(int ammoCount)
 	{

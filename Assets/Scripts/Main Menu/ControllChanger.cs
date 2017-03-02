@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using System.Collections;
 
 public class ControllChanger : MonoBehaviour
 {
 	[SerializeField]
-	private Button controllBindingPrefab;
+	private Button controllBindingPrefab = null;
 	[SerializeField]
-	private Text controllName;
+	private Text controllName = null;
 
 	public Button ControllBinding
 	{

@@ -1,17 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class PlayerScoreInfo : MonoBehaviour
 {
 	[SerializeField]
-	private Text playerName;
+	private Text playerName = null;
 	[SerializeField]
-	private Text playerKillCount;
+	private Text playerKillCount = null;
 	[SerializeField]
-	private Text playerKarmaCount;
+	private Text playerKarmaCount = null;
 	[SerializeField]
-	private Image background;
+	private Image background = null;
 
 	private int currentKillCount = 0;
 	private int currentKarmaCount = 1000;
@@ -21,9 +20,9 @@ public class PlayerScoreInfo : MonoBehaviour
 		get { return currentKillCount; }
 	}
 
-	public void UpdatePlayerName(string name)
+	public void UpdatePlayerName(string Name)
 	{
-		playerName.text = name;
+		playerName.text = Name;
 	}
 
 	public void UpdateKillCount(int value)

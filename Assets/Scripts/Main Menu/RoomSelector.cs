@@ -1,17 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class RoomSelector : MonoBehaviour
 {
 	[SerializeField]
-	private Text roomName;
+	private Text roomName = null;
 	[SerializeField]
-	private Text currentPlayerCount;
+	private Text currentPlayerCount = null;
 	[SerializeField]
-	private Text maxPlayerCount;
+	private Text maxPlayerCount = null;
 	[SerializeField]
-	private Text gameType;
+	private Text gameType = null;
 
 	public string RoomName
 	{
