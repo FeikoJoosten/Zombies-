@@ -136,8 +136,8 @@ public class AIManager : OverridableMonoBehaviour
 
 			if (target.position == zomb.Value.Agent.destination) return;
 
-			NavMeshPath path = new NavMeshPath();
-			NavMesh.CalculatePath(zomb.Value.transform.position, target.position, NavMesh.AllAreas, path);
+			UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+			UnityEngine.AI.NavMesh.CalculatePath(zomb.Value.transform.position, target.position, UnityEngine.AI.NavMesh.AllAreas, path);
 
 			if (PhotonNetwork.offlineMode == false)
 			{
@@ -158,7 +158,7 @@ public class AIManager : OverridableMonoBehaviour
 			return;
 		}
 
-		NavMeshPath p = new NavMeshPath();
+		UnityEngine.AI.NavMeshPath p = new UnityEngine.AI.NavMeshPath();
 		Zombie zomb = allRemainingZombies[AINumber];
 
 		if (zomb.Agent.isOnNavMesh == false || zomb.Agent.enabled == false || path == null)
@@ -170,7 +170,7 @@ public class AIManager : OverridableMonoBehaviour
 
 		zomb.Agent.CalculatePath(path[path.Length - 1], p);
 
-		FieldInfo a = typeof(NavMeshPath).GetField("m_corners", BindingFlags.Public |
+		FieldInfo a = typeof(UnityEngine.AI.NavMeshPath).GetField("m_corners", BindingFlags.Public |
 											 BindingFlags.NonPublic |
 											 BindingFlags.Instance);
 

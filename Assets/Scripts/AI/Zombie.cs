@@ -6,7 +6,7 @@ using System.Collections;
 public class Zombie : OverridableMonoBehaviour
 {
 	[SerializeField]
-	private NavMeshAgent agent = null;
+	private UnityEngine.AI.NavMeshAgent agent = null;
 	[SerializeField]
 	private Rigidbody rig = null;
 	[SerializeField]
@@ -51,7 +51,7 @@ public class Zombie : OverridableMonoBehaviour
 	private bool isAttacking;
 	private bool isDead;
 
-	public NavMeshAgent Agent
+	public UnityEngine.AI.NavMeshAgent Agent
 	{
 		get { return agent; }
 	}
