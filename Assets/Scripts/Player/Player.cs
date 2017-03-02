@@ -364,7 +364,7 @@ public class Player : OverridableMonoBehaviour
 			return;
 		}
 
-		Debug.DrawLine(rig.transform.position, rig.transform.position + rig.transform.forward * value.y * 10);
+		//Debug.DrawLine(rig.transform.position, rig.transform.position + rig.transform.forward * value.y * 10);
 
 		Vector3 movement = (rig.transform.forward * value.y) + (rig.transform.right * value.x);
 
@@ -910,7 +910,7 @@ public class Player : OverridableMonoBehaviour
 	{
 		if (isReloading == true) return;
 
-		if (currentWeapon.CurrentAmmunitionInMagLeft == currentWeapon.MaxAmmunitionInMagCount || currentWeapon.CurrentTotalAmmunitionLeft == 0)
+		if (currentWeapon.CurrentAmmunitionInMagLeft == currentWeapon.MaxAmmunitionInMagCount || currentWeapon.CurrentTotalAmmunitionLeft == 0 && currentWeapon.HasInfiniteAmmo == false)
 		{
 			isReloading = false;
 			return;

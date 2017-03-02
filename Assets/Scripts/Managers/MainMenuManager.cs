@@ -134,7 +134,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 		{
 			gameQualityDropdown.options.Add(new Dropdown.OptionData() { text = QualitySettings.names[i] });
 
-			if (QualitySettings.GetQualityLevel() != i) return;
+			if (QualitySettings.GetQualityLevel() != i) break;
 
 			gameQualityDropdown.value = i;
 			gameQualityDropdown.captionText.text = QualitySettings.names[i];
@@ -157,7 +157,7 @@ public class MainMenuManager : Photon.MonoBehaviour
 
 			screenResolutionDropdown.options.Add(new Dropdown.OptionData() { text = Screen.resolutions[i].width + " X " + Screen.resolutions[i].height });
 
-			if (Application.platform == RuntimePlatform.WindowsEditor) return;
+			if (Application.platform == RuntimePlatform.WindowsEditor) break;
 
 			if (Screen.resolutions[i].height == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].height && Screen.resolutions[i].width == Screen.resolutions[PlayerPrefs.GetInt("ScreenResolution") + skippedResolutions].width)
 			{
@@ -340,9 +340,11 @@ public class MainMenuManager : Photon.MonoBehaviour
 					{
 						Text newPlayerNameHolder = Instantiate(inRoomPlayerName);
 						newPlayerNameHolder.transform.localScale = Vector3.one;
-						newPlayerNameHolder.gameObject.transform.SetParent(inRoomPlayerNames[0].transform.parent);
 
 						inRoomPlayerNames.Add(newPlayerNameHolder);
+
+						inRoomPlayerNames[inRoomPlayerNames.Count - 1].gameObject.transform.SetParent(inRoomPlayerNames[0].transform.parent); 
+
 					}
 
 					if (PhotonNetwork.playerList[i].Equals(PhotonNetwork.masterClient))

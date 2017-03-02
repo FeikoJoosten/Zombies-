@@ -53,7 +53,7 @@ public class FireWeapon : Weapon
 
 		if (CurrentAmmunitionInMagLeft <= 0)
 		{
-			if (CurrentTotalAmmunitionLeft > 0)
+			if (CurrentTotalAmmunitionLeft > 0 || HasInfiniteAmmo == true)
 			{
 				Player.ReloadWeapon();
 			}
