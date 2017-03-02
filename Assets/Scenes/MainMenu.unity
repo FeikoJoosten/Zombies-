@@ -12923,7 +12923,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1602799330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16534,7 +16534,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1997215600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16563,14 +16563,11 @@ MonoBehaviour:
   playerControllsHolder: {fileID: 742661106}
   playerControllerChangerPrefab: {fileID: 11451746, guid: dfc40e1a8af222b4b836713ce6746923,
     type: 2}
-  controlsMenuSlider: {fileID: 90643386}
   loadingBar: {fileID: 176588141}
   loadingBarText: {fileID: 1753714863}
   multiplayerLoadingBar: {fileID: 1726967425}
   multiplayerStartGameButton: {fileID: 427055235}
   screenResolutionDropdown: {fileID: 106855613}
-  screenResolutionPrefab: {fileID: 22489324, guid: 0b6990e6ab7905843b7df223981ad3e0,
-    type: 2}
   gameSettingsMenu: {fileID: 1218900407}
   useFullscreenToggle: {fileID: 1857397340}
   gameQualityDropdown: {fileID: 1207313507}
@@ -16613,8 +16610,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ownerId: 0
   group: 0
+  OwnerShipWasTransfered: 0
   prefixBackup: -1
-  observed: {fileID: 0}
   synchronization: 0
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
@@ -16624,6 +16621,7 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 1
   instantiationId: 1
+  currentMasterID: -1
   isRuntimeInstantiated: 0
 --- !u!82 &1997215603
 AudioSource:
