@@ -19,15 +19,16 @@ Add different gamemodes									-- Working on
 		Add bullet damage against players				-- DONE
 		Update UI to show team status					-- DONE
 			Add info for terrorists - locations			-- DONE
-			Update highscore list						-- Need testing
+			Update highscore list						-- Needs fixing
 				Add detective information				-- DONE
 				Add terrorist information				-- DONE
-				Add Confirmed Dead information			-- Need testing
+				Add Confirmed Dead information			-- Needs fixing
 				Add MIA information						-- DONE
 				Add team tabs							-- DONE
-		Add karma										-- 
+		Add karma										-- Working on
 			Show it on highscore list					-- DONE
-			Add calculations							-- 
+			Add calculations to damage calculations		-- 
+			Save Karma between rounds					-- Working on
 		Add more than 4 player support					-- DONE
 			Highscore list								-- DONE
 			Room creation								-- DONE
@@ -39,9 +40,10 @@ Add different gamemodes									-- Working on
 			Shot through * body part					-- Need testing
 			Killed by * weapon							-- Need testing
 			Update highscore menu						-- Need testing
-		Add game rounds									-- 
-			Traitor victory								-- 
-			Innocent victory							-- 
+		Add game rounds									-- Working on
+			Traitor victory								-- DONE
+			Innocent victory							-- DONE
+			Reset round									-- Working on
 		Add Traitor/Detective menu						-- //Queued for 2nd version
 		Victory screen									-- //Queued for 2nd version
 	?
@@ -89,7 +91,7 @@ Add night map											--
 Add credits menu										-- 
 Look into issue with AI performance						-- DONE
 Add notifications on player leaved/ on player death		--  
-	Also update highscore list							-- 
+	Also update highscore list							-- DONE
 Redesign UI to look prettier							-- 
 	Highscore list										-- 
 	Control rebinding menu								-- 
