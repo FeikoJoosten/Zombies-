@@ -51,4 +51,5 @@ MonoBehaviour:
   - AddNumberToKarmaCountForPlayer
   - ConfirmDeathForPlayer
   - ReceiveDeathInformation
+  - RemoveKarmaPoints
   DisableAutoOpenWizard: 1
